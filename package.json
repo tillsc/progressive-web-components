@@ -1,0 +1,20 @@
+{
+  "name": "progressive-web-components",
+  "version": "0.1.0",
+  "description": "Server-first web components.",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    "./dialog-opener": "./dist/dialog-opener.js"
+  },
+  "scripts": {
+    "build": "node build.js",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.2"
+  }
+}
