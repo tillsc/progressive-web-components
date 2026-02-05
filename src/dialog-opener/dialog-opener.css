@@ -1,0 +1,37 @@
+dialog.pwc-dialog-opener-modal {
+  border: 0;
+  padding: 0;
+  max-width: min(900px, 92vw);
+  width: 92vw;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+dialog.pwc-dialog-opener-modal::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+dialog.pwc-dialog-opener-modal .pwcdo__header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+dialog.pwc-dialog-opener-modal .pwcdo__close {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+dialog.pwc-dialog-opener-modal .pwcdo__close:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+dialog.pwc-dialog-opener-modal .pwcdo__body {
+  padding: 0;
+}

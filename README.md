@@ -2,21 +2,22 @@
 
 Server-first web components.
 
-This repository collects Custom Elements designed to work with server-rendered HTML.
+This repository collects Custom Elements designed to work with server-rendered HTML and progressive enhancement.
 
-## Scope
+## Principles
 
+- Server-rendered HTML is the baseline
 - Custom Elements without Shadow DOM by default
-- Server-rendered HTML as the baseline
 - Small, composable components
-- Optional Bootstrap 5 variants
 - Minimal JavaScript
+- No framework lock-in
 - Bundler-independent source files
-- JS-only distribution
+- JavaScript-only distribution artifacts
+- Optional framework-specific variants (e.g. Bootstrap 5)
 
 ## Source structure
 
-Example: <dialog-opener> component
+Example: `<dialog-opener>` component
 
     src/
         core/
@@ -38,41 +39,49 @@ Example: <dialog-opener> component
         dialog-opener.js
         dialog-opener-bs5.js
 
-## Conventions
+## Component conventions
 
-- Each component has an internal base class (base.js)
+- Each component has an internal base class (`base.js`)
 - Base classes are not registered as Custom Elements
-- Base classes contain shared logic and stable DOM contracts
+- Base classes define shared logic and stable DOM contracts
 - Public variants subclass the base class
 - Each public variant defines exactly one Custom Element
-- Base and variant source files do not import CSS directly
-- CSS is coupled only in index.js for bundling
 - No Shadow DOM
-- Stable internal markup and explicit styling hooks
-- Styles are registered once, never per instance
+- Stable internal markup with explicit styling hooks
 - Shared runtime helpers are imported, not duplicated
 
-## Bootstrap 5 variants
+## Variants (e.g. Bootstrap 5)
 
 - Implemented as separate component variants
-- Located in a dedicated bs5/ subdirectory
+- Located in a dedicated subdirectory per component (e.g. `bs5/`)
 - Subclass the shared base implementation
-- Built as separate distribution artifacts
 - Same DOM structure and behavior as the base
 - Additional classes and attributes only
-- Optional Bootstrap-specific CSS
+- Optional variant-specific CSS
+- Built as separate distribution artifacts
 
 ## CSS handling
 
-- Authoritative styles live in plain .css files
-- CSS is not imported by component source files
-- index.js files are responsible for bundling JS and CSS
+- Authoritative styles live in plain `.css` files
+- Component source files do not import CSS directly
+- `index.js` files are responsible for bundling JS and CSS
 - CSS is installed once at define time
+- No per-instance style registration
 
 ## Distribution
 
-- dist contains JavaScript files only
+- `dist/` contains JavaScript files only
 - One file per component variant
 - Base implementations are not published
 - Components may be bundled or code-split
 - No required build step for consumers
+
+## Testing
+
+- Tests are written as HTML pages
+- Each component may provide `src/<component>/test/index.html`
+- Test pages are explicitly listed via `data-test-page` links
+- Tests run in a real browser (headless or interactive)
+- A minimal harness provides assertions and result reporting
+- No test framework dependency
+- Tests can be run headless via Playwright or manually in the browser

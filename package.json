@@ -11,10 +11,18 @@
     "./dialog-opener": "./dist/dialog-opener.js"
   },
   "scripts": {
+    "clean": "rm -rf dist",
     "build": "node build.js",
-    "clean": "rm -rf dist"
+    "build:watch": "node build.js --watch",
+    "test": "npm run build && node test/run.mjs",
+    "test:verbose": "npm run build && TEST_VERBOSE=1 TEST_CONCURRENCY=1 node test/run.mjs",
+    "serve": "node test/server/serve.mjs",
+    "watch": "concurrently -k -n build,serve \"npm run build:watch\" \"npm run serve\""
   },
   "devDependencies": {
-    "esbuild": "^0.27.2"
+    "concurrently": "^9.0.0",
+    "esbuild": "^0.27.2",
+    "express": "^4.19.2",
+    "playwright": "^1.41.2"
   }
 }
