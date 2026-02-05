@@ -20,10 +20,11 @@ Example: <dialog-opener> component
 
     src/
         core/
-            define-once.js
-            install-css-once.js
+            css.js
+            pwc-element.js
 
         dialog-opener/
+            base.js
             dialog-opener.js
             dialog-opener.css
             index.js
@@ -39,9 +40,12 @@ Example: <dialog-opener> component
 
 ## Conventions
 
-- Each component has a base Custom Element
-- The base component defines structure and behavior
-- Base components do not import CSS directly
+- Each component has an internal base class (base.js)
+- Base classes are not registered as Custom Elements
+- Base classes contain shared logic and stable DOM contracts
+- Public variants subclass the base class
+- Each public variant defines exactly one Custom Element
+- Base and variant source files do not import CSS directly
 - CSS is coupled only in index.js for bundling
 - No Shadow DOM
 - Stable internal markup and explicit styling hooks
@@ -50,10 +54,11 @@ Example: <dialog-opener> component
 
 ## Bootstrap 5 variants
 
-- Located in a dedicated subdirectory per component
-- Implemented as extensions of the base component
+- Implemented as separate component variants
+- Located in a dedicated bs5/ subdirectory
+- Subclass the shared base implementation
 - Built as separate distribution artifacts
-- Same DOM structure as the base component
+- Same DOM structure and behavior as the base
 - Additional classes and attributes only
 - Optional Bootstrap-specific CSS
 
@@ -68,5 +73,6 @@ Example: <dialog-opener> component
 
 - dist contains JavaScript files only
 - One file per component variant
+- Base implementations are not published
 - Components may be bundled or code-split
 - No required build step for consumers

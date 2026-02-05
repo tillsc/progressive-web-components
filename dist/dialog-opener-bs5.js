@@ -73,8 +73,8 @@ function defineOnce(name, classDef) {
   customElements.define(name, classDef);
 }
 
-// src/dialog-opener/dialog-opener.js
-var PwcDialogOpener = class extends PwcElement {
+// src/dialog-opener/base.js
+var BaseDialogOpener = class extends PwcElement {
   static events = ["click"];
   handleEvent(e) {
     if (e.type !== "click") return;
@@ -87,28 +87,18 @@ var PwcDialogOpener = class extends PwcElement {
     }
     const href = link.getAttribute("href");
     if (!href) return;
-    this.findOrCreateDialog(this.prepareIFrameLink(href));
+    this.open(href);
+  }
+  open(href) {
+    const src = this.prepareIFrameLink(href);
+    this.findOrCreateDialog(src);
     this.enhanceIFrame().then(() => this.modal.show());
   }
-  dialogContent = (closeText) => `
-<div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-body"></div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schlie\xDFen</button>
-      </div>
-    </div>
-  </div>
-</div>`;
   prepareIFrameLink(src) {
     const s = new URL(src, document.location.href);
     const defaultValues = [...this.querySelectorAll("input")].map((input) => {
-      if (input.type !== "hidden" && input.value) {
-        return input.value;
-      } else {
-        return null;
-      }
+      if (input.type !== "hidden" && input.value) return input.value;
+      return null;
     }).filter((item) => item !== null);
     if (defaultValues.length > 0) {
       s.searchParams.set("default", defaultValues.join(","));
@@ -116,20 +106,14 @@ var PwcDialogOpener = class extends PwcElement {
     s.searchParams.set("_layout", false);
     return s.toString();
   }
-  findOrCreateDialog(src) {
-    this.dialog = document.querySelector("div.pwc-dialog-opener-modal");
-    if (!this.dialog) {
-      this.dialog = document.createElement("div");
-      this.dialog.classList.add("pwc-dialog-opener-modal");
-      document.body.appendChild(this.dialog);
-    }
-    this.dialog.innerHTML = this.dialogContent(this.getAttribute("close") || "Close");
-    this.dialog.querySelector(".modal-body").innerHTML = `<iframe src="${src}" height="550px"></iframe>`;
-    this.modal = new bootstrap.Modal(this.dialog.querySelector(".modal"));
+  // Variant hook: must set this.dialog and this.modal
+  // eslint-disable-next-line no-unused-vars
+  findOrCreateDialog(_src) {
+    throw new Error("BaseDialogOpener: findOrCreateDialog(src) must be implemented by a variant");
   }
   enhanceIFrame() {
     this.iframe = this.dialog.querySelector("iframe");
-    return new Promise((resolve, _reject) => {
+    return new Promise((resolve) => {
       this.iframe.addEventListener(
         "load",
         (e) => this.iFrameLoad(e).then(resolve),
@@ -137,8 +121,8 @@ var PwcDialogOpener = class extends PwcElement {
       );
     });
   }
-  async iFrameLoad(e) {
-    let uri = new URL(this.iframe.contentWindow.location);
+  async iFrameLoad(_e) {
+    const uri = new URL(this.iframe.contentWindow.location);
     if (uri.searchParams.has("dialog_finished_with")) {
       this.modal.hide();
       uri.searchParams.delete("_layout");
@@ -147,15 +131,17 @@ var PwcDialogOpener = class extends PwcElement {
       if (!localReloadWorked) {
         window.location.href = uri.toString();
       }
-    } else {
-      this.moveElementsToOuterActions();
-      this.iframe.style.display = "unset";
+      return;
     }
+    this.moveElementsToOuterActions();
+    this.iframe.style.display = "unset";
   }
   async tryLocalReload(newUri) {
     const currentUri = new URL(window.location.href);
     if (currentUri.hostname !== newUri.hostname || currentUri.pathname !== newUri.pathname || currentUri.protocol !== newUri.protocol) {
-      console.log(`<dialog-opener> Warning: local-reload got different base uri (${newUri.toString()}) then window has (${currentUri.toString()}). This might lead to problems, but we'll try it anyway.`);
+      console.log(
+        `<dialog-opener> Warning: local-reload got different base uri (${newUri.toString()}) then window has (${currentUri.toString()}). This might lead to problems, but we'll try it anyway.`
+      );
     }
     if (this.hasAttribute("local-reload") && this.id) {
       newUri.searchParams.set("local_reload", this.id);
@@ -167,61 +153,86 @@ var PwcDialogOpener = class extends PwcElement {
         if (fragment) {
           this.replaceChildren(...fragment.children);
           return true;
-        } else {
-          console.log(`<dialog-opener> Problem: Element with id "${this.id}" not found in new serverside fragment`, html);
         }
+        console.log(
+          `<dialog-opener> Problem: Element with id "${this.id}" not found in new serverside fragment`,
+          html
+        );
       }
     }
     return false;
   }
   moveElementsToOuterActions() {
-    if (!this.getAttribute("move-out")) {
-      return;
+    if (!this.getAttribute("move-out")) return;
+    const iframeDoc = this.iframe.contentWindow.document;
+    if (!iframeDoc) return;
+    let buttonContainer = this.dialog.querySelector("dialog-opener-buttons");
+    if (!buttonContainer) {
+      buttonContainer = document.createElement("dialog-opener-buttons");
+      this.dialog.querySelector(".modal-footer").prepend(buttonContainer);
+    } else {
+      buttonContainer.innerHTML = "";
     }
-    let iframeDoc = this.iframe.contentWindow.document;
-    if (iframeDoc) {
-      let buttonContainer = this.dialog.querySelector("dialog-opener-buttons");
-      if (!buttonContainer) {
-        buttonContainer = document.createElement("dialog-opener-buttons");
-        this.dialog.querySelector(".modal-footer").prepend(buttonContainer);
-      } else {
-        buttonContainer.innerHTML = "";
-      }
-      let selector = this.getAttribute("move-out");
-      if (selector == "submit") {
-        selector = "button[type=submit], input[type=submit]";
-      } else if (selector == "primary") {
-        selector = "button[type=submit].btn-primary, input[type=submit].btn-primary";
-      }
-      let elements = iframeDoc.querySelectorAll(selector);
-      for (let i = 0; i < elements.length; i++) {
-        let btn = elements[i];
-        let outerBtn = document.createElement(btn.tagName);
-        outerBtn.setAttribute("class", btn.getAttribute("class"));
-        outerBtn.setAttribute("type", btn.getAttribute("type"));
-        outerBtn.setAttribute("value", btn.getAttribute("value"));
-        outerBtn.innerHTML = btn.innerHTML;
-        outerBtn.addEventListener("click", () => {
-          this.iframe.style.display = "none";
-          btn.click();
-        });
-        buttonContainer.append(outerBtn);
-        btn.style.visibility = "hidden";
-        btn.style.display = "none";
-      }
+    let selector = this.getAttribute("move-out");
+    if (selector === "submit") {
+      selector = "button[type=submit], input[type=submit]";
+    } else if (selector === "primary") {
+      selector = "button[type=submit].btn-primary, input[type=submit].btn-primary";
+    }
+    const elements = iframeDoc.querySelectorAll(selector);
+    for (let i = 0; i < elements.length; i++) {
+      const btn = elements[i];
+      const outerBtn = document.createElement(btn.tagName);
+      outerBtn.setAttribute("class", btn.getAttribute("class"));
+      outerBtn.setAttribute("type", btn.getAttribute("type"));
+      outerBtn.setAttribute("value", btn.getAttribute("value"));
+      outerBtn.innerHTML = btn.innerHTML;
+      outerBtn.addEventListener("click", () => {
+        this.iframe.style.display = "none";
+        btn.click();
+      });
+      buttonContainer.append(outerBtn);
+      btn.style.visibility = "hidden";
+      btn.style.display = "none";
     }
   }
 };
+
+// src/dialog-opener/bs5/dialog-opener.js
+var PwcDialogOpenerBs5 = class extends BaseDialogOpener {
+  dialogContent = (closeText) => `
+<div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${closeText}</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+  findOrCreateDialog(src) {
+    this.dialog = document.querySelector("div.pwc-dialog-opener-modal");
+    if (!this.dialog) {
+      this.dialog = document.createElement("div");
+      this.dialog.classList.add("pwc-dialog-opener-modal");
+      document.body.appendChild(this.dialog);
+    }
+    this.dialog.innerHTML = this.dialogContent(this.getAttribute("close") || "Close");
+    this.dialog.querySelector(".modal-body").innerHTML = `<iframe src="${src}" height="550px"></iframe>`;
+    this.modal = new bootstrap.Modal(this.dialog.querySelector(".modal"));
+  }
+};
 function define() {
-  defineOnce("pwc-dialog-opener", PwcDialogOpener);
+  defineOnce("pwc-dialog-opener-bs5", PwcDialogOpenerBs5);
 }
 
-// src/dialog-opener/dialog-opener.css
+// src/dialog-opener/bs5/dialog-opener.css
 var dialog_opener_default = "div.pwc-dialog-opener-modal {\n  iframe {\n    width: 100%;\n    height: var(--pwc-dialog-opener-height, 550px);\n  }\n}\n";
 
-// src/dialog-opener/index.js
+// src/dialog-opener/bs5/index.js
 function register() {
-  installOnce("pwc-dialog-opener", dialog_opener_default);
+  installOnce("pwc-dialog-opener-bs5", dialog_opener_default);
   define();
 }
 register();

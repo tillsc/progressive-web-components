@@ -2,7 +2,7 @@ import esbuild from "esbuild";
 
 await esbuild.build({
   entryPoints: {
-    "dialog-opener": "src/dialog-opener/index.js"
+    "dialog-opener-bs5": "src/dialog-opener/bs5/index.js"
   },
   outdir: "dist",
   bundle: true,
