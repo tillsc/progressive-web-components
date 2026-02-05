@@ -1,4 +1,4 @@
-import {PwcElement} from '../core/pwc-element.js'
+import {PwcElement, defineOnce} from '../core/pwc-element.js'
 
 export class PwcDialogOpener extends PwcElement {
 
@@ -163,6 +163,6 @@ export class PwcDialogOpener extends PwcElement {
   }
 }
 
-export const define = () => {
-  customElements.define('pwc-dialog-opener', PwcDialogOpener);
+export function define() {
+  defineOnce('pwc-dialog-opener', PwcDialogOpener);
 }

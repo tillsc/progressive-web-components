@@ -68,6 +68,10 @@ var PwcElement = class extends HTMLElement {
   handleEvent(_event) {
   }
 };
+function defineOnce(name, classDef) {
+  if (customElements.get(name)) return;
+  customElements.define(name, classDef);
+}
 
 // src/dialog-opener/dialog-opener.js
 var PwcDialogOpener = class extends PwcElement {
@@ -208,9 +212,9 @@ var PwcDialogOpener = class extends PwcElement {
     }
   }
 };
-var define = () => {
-  customElements.define("pwc-dialog-opener", PwcDialogOpener);
-};
+function define() {
+  defineOnce("pwc-dialog-opener", PwcDialogOpener);
+}
 
 // src/dialog-opener/dialog-opener.css
 var dialog_opener_default = "div.pwc-dialog-opener-modal {\n  iframe {\n    width: 100%;\n    height: var(--pwc-dialog-opener-height, 550px);\n  }\n}\n";

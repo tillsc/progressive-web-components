@@ -79,3 +79,8 @@ export class PwcElement extends HTMLElement {
     // intentionally empty
   }
 }
+
+export function defineOnce(name, classDef) {
+  if (customElements.get(name)) return;
+  customElements.define(name, classDef);
+}
