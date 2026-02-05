@@ -1,6 +1,0 @@
-div.pwc-dialog-opener-modal {
-  iframe {
-    width: 100%;
-    height: var(--pwc-dialog-opener-height, 550px);
-  }
-}

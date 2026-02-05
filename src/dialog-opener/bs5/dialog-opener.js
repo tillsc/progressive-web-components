@@ -23,7 +23,12 @@ export class PwcDialogOpenerBs5 extends BaseDialogOpener {
     }
 
     this.dialog.innerHTML = this.dialogContent(this.getAttribute("close") || "Close");
-    this.dialog.querySelector(".modal-body").innerHTML = `<iframe src="${src}" height="550px"></iframe>`;
+
+    const body = this.dialog.querySelector(".modal-body");
+    body.innerHTML = "";
+
+    const iframe = this.createIFrame(src);
+    body.appendChild(iframe);
 
     this.modal = new bootstrap.Modal(this.dialog.querySelector(".modal"));
   }

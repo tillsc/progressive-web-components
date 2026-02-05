@@ -52,6 +52,17 @@ export class BaseDialogOpener extends PwcElement {
     throw new Error("BaseDialogOpener: findOrCreateDialog(src) must be implemented by a variant");
   }
 
+  createIFrame(src) {
+    const iframe = document.createElement("iframe");
+    iframe.src = src;
+
+    iframe.style.width = "100%";
+    iframe.style.height = getComputedStyle(this).getPropertyValue("--pwc-dialog-opener-height").trim() || "550px";
+    iframe.style.display = "none"
+
+    return iframe;
+  }
+
   enhanceIFrame() {
     this.iframe = this.dialog.querySelector("iframe");
     return new Promise((resolve) => {
@@ -64,7 +75,7 @@ export class BaseDialogOpener extends PwcElement {
 
   async iFrameLoad(_e) {
     const uri = new URL(this.iframe.contentWindow.location);
- 
+
     if (uri.searchParams.has("dialog_finished_with")) {
       this.modal.hide();
 

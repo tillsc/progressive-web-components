@@ -1,12 +1,3 @@
-// src/core/css.js
-function installOnce(id, cssText, root = document) {
-  if (root.getElementById(id)) return;
-  const style = root.createElement("style");
-  style.id = id;
-  style.textContent = cssText;
-  root.head.appendChild(style);
-}
-
 // src/core/pwc-element.js
 var PwcElement = class extends HTMLElement {
   /**
@@ -110,6 +101,14 @@ var BaseDialogOpener = class extends PwcElement {
   // eslint-disable-next-line no-unused-vars
   findOrCreateDialog(_src) {
     throw new Error("BaseDialogOpener: findOrCreateDialog(src) must be implemented by a variant");
+  }
+  createIFrame(src) {
+    const iframe = document.createElement("iframe");
+    iframe.src = src;
+    iframe.style.width = "100%";
+    iframe.style.height = getComputedStyle(this).getPropertyValue("--pwc-dialog-opener-height").trim() || "550px";
+    iframe.style.display = "none";
+    return iframe;
   }
   enhanceIFrame() {
     this.iframe = this.dialog.querySelector("iframe");
@@ -219,7 +218,10 @@ var PwcDialogOpenerBs5 = class extends BaseDialogOpener {
       document.body.appendChild(this.dialog);
     }
     this.dialog.innerHTML = this.dialogContent(this.getAttribute("close") || "Close");
-    this.dialog.querySelector(".modal-body").innerHTML = `<iframe src="${src}" height="550px"></iframe>`;
+    const body = this.dialog.querySelector(".modal-body");
+    body.innerHTML = "";
+    const iframe = this.createIFrame(src);
+    body.appendChild(iframe);
     this.modal = new bootstrap.Modal(this.dialog.querySelector(".modal"));
   }
 };
@@ -227,12 +229,8 @@ function define() {
   defineOnce("pwc-dialog-opener-bs5", PwcDialogOpenerBs5);
 }
 
-// src/dialog-opener/bs5/dialog-opener.css
-var dialog_opener_default = "div.pwc-dialog-opener-modal {\n  iframe {\n    width: 100%;\n    height: var(--pwc-dialog-opener-height, 550px);\n  }\n}\n";
-
 // src/dialog-opener/bs5/index.js
 function register() {
-  installOnce("pwc-dialog-opener-bs5", dialog_opener_default);
   define();
 }
 register();
