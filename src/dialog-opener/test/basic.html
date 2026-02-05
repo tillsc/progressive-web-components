@@ -4,6 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <title>dialog-opener: click opens dialog</title>
+    <script type="module" src="../../../dist/dialog-opener.js"></script>
   </head>
   <body>
     <pwc-dialog-opener id="do1">
@@ -11,12 +12,9 @@
     </pwc-dialog-opener>
 
     <script type="module">
-      import { run } from "/test/static/harness.js";
+      import { run } from "../../../test/static/harness.js";
 
       run(async ({ assert, equal, waitFor, nextTick, log }) => {
-        log("importing bundle");
-        await import("/dist/dialog-opener.js");
-
         log("checking element definition");
         assert(customElements.get("pwc-dialog-opener"), "pwc-dialog-opener not defined");
 
@@ -27,14 +25,15 @@
         assert(link, "missing link");
 
         log("clicking link");
-        link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, composed: true }));
+        link.dispatchEvent(
+          new MouseEvent("click", { bubbles: true, cancelable: true, composed: true })
+        );
         await nextTick();
 
         log("waiting for dialog to exist");
-        await waitFor(() => {
-          const dlg = document.querySelector("dialog.pwc-dialog-opener-modal");
-          return Boolean(dlg);
-        }, { message: "dialog not created" });
+        await waitFor(() => Boolean(document.querySelector("dialog.pwc-dialog-opener-modal")), {
+          message: "dialog not created"
+        });
 
         const dlg = document.querySelector("dialog.pwc-dialog-opener-modal");
         assert(dlg, "dialog missing");
@@ -48,13 +47,13 @@
 
         log("waiting for iframe load");
         await waitFor(() => {
-          // contentDocument may be null briefly; load event should have fired by then.
           return iframe.contentDocument && iframe.contentDocument.readyState === "complete";
         }, { timeoutMs: 10_000, message: "iframe did not load" });
 
         log("checking iframe src is correct");
         const src = iframe.getAttribute("src") || "";
-        assert(src.endsWith("iframe-target.html?_layout=false"),
+        assert(
+          src.endsWith("iframe-target.html?_layout=false"),
           `unexpected iframe src: ${src}`
         );
 
@@ -63,8 +62,11 @@
 
         await waitFor(() => dlg.open === false, { message: "dialog did not close" });
 
-        // Basic sanity: no unexpected extra dialogs
-        equal(document.querySelectorAll("dialog.pwc-dialog-opener-modal").length, 1, "unexpected dialog count");
+        equal(
+          document.querySelectorAll("dialog.pwc-dialog-opener-modal").length,
+          1,
+          "unexpected dialog count"
+        );
       });
     </script>
   </body>
