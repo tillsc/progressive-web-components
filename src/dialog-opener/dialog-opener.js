@@ -22,10 +22,12 @@ class DialogController {
 export class PwcDialogOpener extends BaseDialogOpener {
   dialogContent(closeText) {
     return `
-      <header class="pwcdo__header">
-        <button class="pwcdo__close" type="button" aria-label="Close">${closeText}</button>
-      </header>
-      <section class="pwcdo__body"></section>
+      <div class="pwc-dialog-opener-surface" role="document">
+        <header class="pwc-dialog-opener-header">
+          <button class="pwc-dialog-opener-close" type="button" aria-label="Close">${closeText}</button>
+        </header>
+        <section class="pwc-dialog-opener-body"></section>
+      </div>
     `;
   }
 
@@ -37,7 +39,7 @@ export class PwcDialogOpener extends BaseDialogOpener {
 
       // Close on backdrop click (native dialog does not do this by default).
       this.dialog.addEventListener("click", (e) => {
-        if (e.target === this.dialog) this.dialog.close();
+        if (e.target === this.dialog) this.modal.hide();
       });
 
       // Ensure iframe is dropped when dialog closes.
@@ -52,10 +54,10 @@ export class PwcDialogOpener extends BaseDialogOpener {
 
     this.dialog.innerHTML = this.dialogContent(this.getAttribute("close") || "Close");
 
-    const closeBtn = this.dialog.querySelector(".pwcdo__close");
+    const closeBtn = this.dialog.querySelector(".pwc-dialog-opener-close");
     if (closeBtn) closeBtn.addEventListener("click", () => this.modal.hide());
 
-    const body = this.dialog.querySelector(".pwcdo__body");
+    const body = this.dialog.querySelector(".pwc-dialog-opener-body");
     body.innerHTML = "";
 
     // Create iframe via base helper (width/height are intrinsic behavior).

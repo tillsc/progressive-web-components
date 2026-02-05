@@ -1,37 +1,60 @@
 dialog.pwc-dialog-opener-modal {
-  border: 0;
+  border: none;
   padding: 0;
-  max-width: min(900px, 92vw);
-  width: 92vw;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  background: transparent;
 }
 
 dialog.pwc-dialog-opener-modal::backdrop {
   background: rgba(0, 0, 0, 0.45);
 }
 
-dialog.pwc-dialog-opener-modal .pwcdo__header {
+/* Visual surface */
+dialog.pwc-dialog-opener-modal .pwc-dialog-opener-surface {
+  width: min(900px, 92vw);
+  max-height: 92vh;
+
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* Header */
+dialog.pwc-dialog-opener-modal .pwc-dialog-opener-header {
   display: flex;
   justify-content: flex-end;
-  padding: 12px;
+  padding: 10px 12px;
+
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-dialog.pwc-dialog-opener-modal .pwcdo__close {
+/* Close button */
+dialog.pwc-dialog-opener-modal .pwc-dialog-opener-close {
   appearance: none;
-  border: 0;
+  border: none;
   background: transparent;
   font: inherit;
-  padding: 6px 10px;
-  border-radius: 8px;
+
+  padding: 6px 8px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
-dialog.pwc-dialog-opener-modal .pwcdo__close:hover {
+dialog.pwc-dialog-opener-modal .pwc-dialog-opener-close:hover {
   background: rgba(0, 0, 0, 0.06);
 }
 
-dialog.pwc-dialog-opener-modal .pwcdo__body {
+/* Body */
+dialog.pwc-dialog-opener-modal .pwc-dialog-opener-body {
   padding: 0;
+}
+
+/* iframe */
+dialog.pwc-dialog-opener-modal iframe {
+  display: block;
+  width: 100%;
+  height: var(--pwc-dialog-opener-height, 550px);
+  border: none;
 }

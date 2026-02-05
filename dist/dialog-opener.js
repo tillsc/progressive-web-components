@@ -225,10 +225,12 @@ var DialogController = class {
 var PwcDialogOpener = class extends BaseDialogOpener {
   dialogContent(closeText) {
     return `
-      <header class="pwcdo__header">
-        <button class="pwcdo__close" type="button" aria-label="Close">${closeText}</button>
-      </header>
-      <section class="pwcdo__body"></section>
+      <div class="pwc-dialog-opener-surface" role="document">
+        <header class="pwc-dialog-opener-header">
+          <button class="pwc-dialog-opener-close" type="button" aria-label="Close">${closeText}</button>
+        </header>
+        <section class="pwc-dialog-opener-body"></section>
+      </div>
     `;
   }
   findOrCreateDialog(src) {
@@ -236,7 +238,7 @@ var PwcDialogOpener = class extends BaseDialogOpener {
       this.dialog = document.createElement("dialog");
       this.dialog.className = "pwc-dialog-opener-modal";
       this.dialog.addEventListener("click", (e) => {
-        if (e.target === this.dialog) this.dialog.close();
+        if (e.target === this.dialog) this.modal.hide();
       });
       this.dialog.addEventListener("close", () => {
         const iframe2 = this.dialog.querySelector("iframe");
@@ -246,9 +248,9 @@ var PwcDialogOpener = class extends BaseDialogOpener {
       this.modal = new DialogController(this.dialog);
     }
     this.dialog.innerHTML = this.dialogContent(this.getAttribute("close") || "Close");
-    const closeBtn = this.dialog.querySelector(".pwcdo__close");
+    const closeBtn = this.dialog.querySelector(".pwc-dialog-opener-close");
     if (closeBtn) closeBtn.addEventListener("click", () => this.modal.hide());
-    const body = this.dialog.querySelector(".pwcdo__body");
+    const body = this.dialog.querySelector(".pwc-dialog-opener-body");
     body.innerHTML = "";
     const iframe = this.createIFrame(src);
     body.appendChild(iframe);
@@ -259,7 +261,7 @@ function define() {
 }
 
 // src/dialog-opener/dialog-opener.css
-var dialog_opener_default = "dialog.pwc-dialog-opener-modal {\n  border: 0;\n  padding: 0;\n  max-width: min(900px, 92vw);\n  width: 92vw;\n  border-radius: 12px;\n  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);\n}\n\ndialog.pwc-dialog-opener-modal::backdrop {\n  background: rgba(0, 0, 0, 0.45);\n}\n\ndialog.pwc-dialog-opener-modal .pwcdo__header {\n  display: flex;\n  justify-content: flex-end;\n  padding: 12px;\n  border-bottom: 1px solid rgba(0, 0, 0, 0.08);\n}\n\ndialog.pwc-dialog-opener-modal .pwcdo__close {\n  appearance: none;\n  border: 0;\n  background: transparent;\n  font: inherit;\n  padding: 6px 10px;\n  border-radius: 8px;\n  cursor: pointer;\n}\n\ndialog.pwc-dialog-opener-modal .pwcdo__close:hover {\n  background: rgba(0, 0, 0, 0.06);\n}\n\ndialog.pwc-dialog-opener-modal .pwcdo__body {\n  padding: 0;\n}";
+var dialog_opener_default = "dialog.pwc-dialog-opener-modal {\n  border: none;\n  padding: 0;\n  background: transparent;\n}\n\ndialog.pwc-dialog-opener-modal::backdrop {\n  background: rgba(0, 0, 0, 0.45);\n}\n\n/* Visual surface */\ndialog.pwc-dialog-opener-modal .pwc-dialog-opener-surface {\n  width: min(900px, 92vw);\n  max-height: 92vh;\n\n  background: #fff;\n  border-radius: 10px;\n  overflow: hidden;\n\n  box-shadow:\n    0 12px 30px rgba(0, 0, 0, 0.25);\n}\n\n/* Header */\ndialog.pwc-dialog-opener-modal .pwc-dialog-opener-header {\n  display: flex;\n  justify-content: flex-end;\n  padding: 10px 12px;\n\n  border-bottom: 1px solid rgba(0, 0, 0, 0.08);\n}\n\n/* Close button */\ndialog.pwc-dialog-opener-modal .pwc-dialog-opener-close {\n  appearance: none;\n  border: none;\n  background: transparent;\n  font: inherit;\n\n  padding: 6px 8px;\n  border-radius: 6px;\n  cursor: pointer;\n}\n\ndialog.pwc-dialog-opener-modal .pwc-dialog-opener-close:hover {\n  background: rgba(0, 0, 0, 0.06);\n}\n\n/* Body */\ndialog.pwc-dialog-opener-modal .pwc-dialog-opener-body {\n  padding: 0;\n}\n\n/* iframe */\ndialog.pwc-dialog-opener-modal iframe {\n  display: block;\n  width: 100%;\n  height: var(--pwc-dialog-opener-height, 550px);\n  border: none;\n}";
 
 // src/dialog-opener/index.js
 function register() {
