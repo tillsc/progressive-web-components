@@ -1,24 +1,49 @@
 <!-- src/dialog-opener/test/click-opens-dialog.html -->
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>dialog-opener: click opens dialog</title>
-    <script type="module" src="../../../dist/dialog-opener.js"></script>
-  </head>
-  <body>
-    <pwc-dialog-opener id="do1">
-      <a href="./iframe-target.html">Open</a>
-    </pwc-dialog-opener>
 
+<head>
+  <meta charset="utf-8" />
+  <title>dialog-opener: click opens dialog</title>
+  <script type="module" src="../../../dist/dialog-opener.js"></script>
+</head>
+
+<body>
+  <pwc-dialog-opener id="dialog-opener-demo" move-out="submit" local-reload="with-scripts replace-url">
+    <a href="./iframe-target.html">Open</a><br>
+    Hello <span id="first_name"></span> <span id="last_name"></span>
+    <input type="hidden" name="default_for_iframe_target">
     <script type="module">
-      import { run } from "../../../test/static/harness.js";
+      const url = new URL(window.location.href);
+      const firstName = url.searchParams.get("first_name") || "";
+      const lastName = url.searchParams.get("last_name") || "";
+      document.getElementById("first_name").textContent = firstName
+      document.getElementById("last_name").textContent = lastName
+      document.querySelector("input[name=default_for_iframe_target]").value = JSON.stringify({firstName , lastName});
+    </script
+  </pwc-dialog-opener>
 
+  <script type="module">
+    import { run } from "../../../test/static/harness.js";
+    
+    const u = new URL(window.location.href);
+    if (u.searchParams.has("commit")) {
+      // IFrame subission mode
+      if (u.searchParams.has("commit") && !u.searchParams.has("dialog_finished_with")) {
+        // Ensure the iframe URL contains the marker param your component expects.
+        // This runs inside the iframe page.
+        // This would usually be done by the server handling the form submission, 
+        // but we can simulate it here for testing.
+        u.searchParams.set("dialog_finished_with", "ok");
+        window.location.replace(u.toString());
+      }
+    }
+    else {
       run(async ({ assert, equal, waitFor, nextTick, log }) => {
         log("checking element definition");
         assert(customElements.get("pwc-dialog-opener"), "pwc-dialog-opener not defined");
 
-        const el = document.querySelector("#do1");
+        const el = document.querySelector("#dialog-opener-demo");
         assert(el, "missing pwc-dialog-opener");
 
         const link = el.querySelector("a");
@@ -50,24 +75,35 @@
           return iframe.contentDocument && iframe.contentDocument.readyState === "complete";
         }, { timeoutMs: 10_000, message: "iframe did not load" });
 
-        log("checking iframe src is correct");
-        const src = iframe.getAttribute("src") || "";
-        assert(
-          src.endsWith("iframe-target.html?_layout=false"),
-          `unexpected iframe src: ${src}`
+        log("checking iframe src has _layout=false");
+        {
+          const raw = iframe.getAttribute("src") || "";
+          const u = new URL(raw, window.location.href);
+          assert(u.pathname.endsWith("/src/dialog-opener/test/iframe-target.html"), `unexpected iframe pathname: ${u.pathname}`);
+          assert(u.searchParams.get("_layout") === "false", `missing or wrong _layout param: ${u.search}`);
+        }
+
+        log("waiting for moved-out OK button");
+        await waitFor(() => {
+          const btn = dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]");
+          return Boolean(btn);
+        }, { timeoutMs: 10_000, message: "moved-out submit button not found" });
+
+        const okBtn = dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]");
+        assert(okBtn, "moved-out submit button missing");
+
+        log("clicking moved-out OK button");
+        okBtn.dispatchEvent(
+          new MouseEvent("click", { bubbles: true, cancelable: true, composed: true })
         );
 
-        log("closing dialog");
-        dlg.close();
+        log("waiting for dialog to close after redirect");
+        await waitFor(() => dlg.open === false, { timeoutMs: 10_000, message: "dialog did not close after OK" });
 
-        await waitFor(() => dlg.open === false, { message: "dialog did not close" });
-
-        equal(
-          document.querySelectorAll("dialog.pwc-dialog-opener-modal").length,
-          1,
-          "unexpected dialog count"
-        );
+        equal(document.querySelectorAll("dialog.pwc-dialog-opener-modal").length, 1, "unexpected dialog count");
       });
-    </script>
-  </body>
+    }
+  </script>
+</body>
+
 </html>

@@ -23,10 +23,10 @@ export class PwcDialogOpener extends BaseDialogOpener {
   dialogContent(closeText) {
     return `
       <div class="pwc-dialog-opener-surface" role="document">
-        <header class="pwc-dialog-opener-header">
-          <button class="pwc-dialog-opener-close" type="button" aria-label="Close">${closeText}</button>
-        </header>
         <section class="pwc-dialog-opener-body"></section>
+        <footer class="pwc-dialog-opener-actions pwc-dialog-opener-footer">
+          <button class="pwc-dialog-opener-close" type="button" aria-label="Close">${closeText}</button>
+        </footer>
       </div>
     `;
   }

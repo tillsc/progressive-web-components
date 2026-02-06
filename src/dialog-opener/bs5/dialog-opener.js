@@ -7,7 +7,7 @@ export class PwcDialogOpenerBs5 extends BaseDialogOpener {
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-body"></div>
-      <div class="modal-footer">
+      <div class="modal-footer pwc-dialog-opener-actions">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${closeText}</button>
       </div>
     </div>

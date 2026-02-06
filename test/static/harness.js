@@ -11,16 +11,16 @@
 // - window.__TEST_RESULTS__ = { done, ok, message?, error?, logs?, ms?, assertions? }
 //
 // Behavior
-// - Shows a "Run tests" button when NOT automated (navigator.webdriver !== true)
-// - Auto-starts when automated
-// - Captures window.onerror + unhandledrejection
+// - Shows a "Run tests" button when NOT automated
+// - Auto-starts ONLY in headless automation (Playwright Chromium headless)
+// - Captures window.onerror + unhandledrejection ONLY while the test is running
 // - Counts assertions (assert + equal)
 //
 // Notes
-// - No "verbose mode" in the UI. In the browser you always see the logs you emit via t.log().
-// - The harness does not auto-log successful assertions. Keep output intentional.
+// - In UI mode, tests do not start automatically.
+// - In UI mode, errors from manual interaction do not fail a test unless you started it.
 
-function isAutomated() {
+function isAutomatedHeadless() {
   return navigator.webdriver === true;
 }
 
@@ -32,16 +32,19 @@ function serializeError(err) {
 
 export function run(fn, options = {}) {
   const timeoutMs = options.timeoutMs ?? 15_000;
-  const showUi = options.ui ?? !isAutomated();
+
+  const automated = options.automated ?? isAutomatedHeadless();
+  const showUi = options.ui ?? !automated;
 
   let started = false;
   let finished = false;
 
-  const startedAt = performance.now();
+  let startedAt = null;
   const logs = [];
   let assertions = 0;
 
   function nowMs() {
+    if (startedAt == null) return 0;
     return Math.round(performance.now() - startedAt);
   }
 
@@ -96,14 +99,16 @@ export function run(fn, options = {}) {
     }
   }
 
-  window.__TEST_RESULTS__ = { done: false, ok: false, message: "waiting" };
+  // Runner reads this. Do not mark as done unless we actually ran.
+  window.__TEST_RESULTS__ = { done: false, ok: false, message: "idle" };
 
   function finishOk() {
     if (finished) return;
     finished = true;
-    const ms = Math.round(performance.now() - startedAt);
 
+    const ms = startedAt == null ? 0 : Math.round(performance.now() - startedAt);
     window.__TEST_RESULTS__ = { done: true, ok: true, logs, ms, assertions };
+
     render("ok");
   }
 
@@ -112,7 +117,7 @@ export function run(fn, options = {}) {
     finished = true;
 
     const e = serializeError(err);
-    const ms = Math.round(performance.now() - startedAt);
+    const ms = startedAt == null ? 0 : Math.round(performance.now() - startedAt);
 
     window.__TEST_RESULTS__ = {
       done: true,
@@ -123,28 +128,53 @@ export function run(fn, options = {}) {
       ms,
       assertions
     };
+
     render("fail", e.message, e.stack);
   }
 
+  // Global error capture is only active while the test is running.
   function onGlobalError(e) {
+    if (!started || finished) return;
     finishFail(e?.error || e?.reason || e?.message || e);
   }
 
-  window.addEventListener("error", onGlobalError);
-  window.addEventListener("unhandledrejection", onGlobalError);
+  function installGlobalErrorHandlers() {
+    window.addEventListener("error", onGlobalError);
+    window.addEventListener("unhandledrejection", onGlobalError);
+  }
 
-  const timeoutId = setTimeout(() => finishFail(new Error("timeout")), timeoutMs);
-
-  function cleanup() {
-    clearTimeout(timeoutId);
+  function uninstallGlobalErrorHandlers() {
     window.removeEventListener("error", onGlobalError);
     window.removeEventListener("unhandledrejection", onGlobalError);
+  }
+
+  // Timeout is armed only once the test starts (UI click or headless autostart).
+  let timeoutId = null;
+
+  function armTimeout() {
+    if (timeoutId != null) return;
+    timeoutId = setTimeout(() => finishFail(new Error("timeout")), timeoutMs);
+  }
+
+  function disarmTimeout() {
+    if (timeoutId != null) clearTimeout(timeoutId);
+    timeoutId = null;
+  }
+
+  function cleanup() {
+    disarmTimeout();
+    uninstallGlobalErrorHandlers();
   }
 
   async function start() {
     if (started) return;
     started = true;
+
+    startedAt = performance.now();
     render("running");
+
+    installGlobalErrorHandlers();
+    armTimeout();
 
     try {
       const t = { assert, equal, waitFor, nextTick, log };
@@ -167,13 +197,13 @@ export function run(fn, options = {}) {
     const ms = typeof res?.ms === "number" ? res.ms : null;
     const asrt = typeof res?.assertions === "number" ? res.assertions : assertions;
 
-    if (state === "idle") statusEl.textContent = "Ready";
-    if (state === "running") statusEl.textContent = "Running…";
-    if (state === "ok") statusEl.textContent = "OK";
-    if (state === "fail") statusEl.textContent = `FAIL: ${message || ""}`;
+    if (!started) statusEl.textContent = "Ready";
+    else if (state === "running") statusEl.textContent = "Running…";
+    else if (state === "ok") statusEl.textContent = "OK";
+    else if (state === "fail") statusEl.textContent = `FAIL: ${message || ""}`;
 
     metaEl.textContent = [
-      ms != null ? `${ms} ms` : null,
+      started && ms != null ? `${ms} ms` : null,
       `${asrt} assertions`
     ].filter(Boolean).join(" | ");
 
@@ -220,8 +250,9 @@ export function run(fn, options = {}) {
     panel.appendChild(logEl);
     document.body.appendChild(panel);
 
-    render("idle");
+    render();
   } else {
+    // Headless automation: auto-start.
     start();
   }
 

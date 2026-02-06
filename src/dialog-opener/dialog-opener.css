@@ -21,8 +21,8 @@ dialog.pwc-dialog-opener-modal .pwc-dialog-opener-surface {
     0 12px 30px rgba(0, 0, 0, 0.25);
 }
 
-/* Header */
-dialog.pwc-dialog-opener-modal .pwc-dialog-opener-header {
+/* Footer */
+dialog.pwc-dialog-opener-modal .pwc-dialog-opener-footer {
   display: flex;
   justify-content: flex-end;
   padding: 10px 12px;

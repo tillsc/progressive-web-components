@@ -33,7 +33,7 @@ export class BaseDialogOpener extends PwcElement {
 
     const defaultValues = [...this.querySelectorAll("input")]
       .map((input) => {
-        if (input.type !== "hidden" && input.value) return input.value;
+        if (input.value) return input.value;
         return null;
       })
       .filter((item) => item !== null);
@@ -67,9 +67,7 @@ export class BaseDialogOpener extends PwcElement {
     this.iframe = this.dialog.querySelector("iframe");
     return new Promise((resolve) => {
       this.iframe.addEventListener("load",
-        (e) => this.iFrameLoad(e).then(resolve),
-        { once: true }
-      );
+        (e) => this.iFrameLoad(e).then(resolve));
     });
   }
 
@@ -100,12 +98,18 @@ export class BaseDialogOpener extends PwcElement {
       currentUri.pathname !== newUri.pathname ||
       currentUri.protocol !== newUri.protocol
     ) {
-      console.log(
-        `<dialog-opener> Warning: local-reload got different base uri (${newUri.toString()}) then window has (${currentUri.toString()}). This might lead to problems, but we'll try it anyway.`
-      );
+      console.log(`<dialog-opener> Warning: local-reload got different base uri (${newUri.toString()}) then window has (${currentUri.toString()}). This might lead to problems, but we'll try it anyway.`);
     }
 
     if (this.hasAttribute("local-reload") && this.id) {
+      const localReloadOptionTokens = document.createElement("div").classList;
+      if (this.hasAttribute("local-reload")) localReloadOptionTokens.add(...this.getAttribute("local-reload").split(/\s+/));
+      const localReloadOptions = {
+        replaceUrl: localReloadOptionTokens.contains("replace-url"),
+        pushUrl: localReloadOptionTokens.contains("push-url"),
+        withScripts: localReloadOptionTokens.contains("with-scripts")
+      };
+
       newUri.searchParams.set("local_reload", this.id);
 
       const res = await fetch(newUri);
@@ -115,18 +119,60 @@ export class BaseDialogOpener extends PwcElement {
         const fragment = newDocument.getElementById(this.id);
 
         if (fragment) {
-          this.replaceChildren(...fragment.children);
+          this.replaceChildren(...fragment.childNodes);
+
+          // Optional History API update
+          if (localReloadOptions.replaceUrl || localReloadOptions.pushUrl) {
+
+            if (localReloadOptions.pushUrl) {
+              history.pushState(null, "", newUri);
+            }
+            else if (localReloadOptions.replaceUrl) {
+              history.replaceState(null, "", newUri);
+            }
+          }
+
+          if (localReloadOptions.withScripts) {
+            this.executeInlineScripts(this);
+          }
+
+          this.dispatchEvent(
+            new CustomEvent("pwc-dialog-opener:local-reload", {
+              bubbles: true,
+              detail: { url: newUri.toString() }
+            })
+          );
+
           return true;
         }
-
-        console.log(
-          `<dialog-opener> Problem: Element with id "${this.id}" not found in new serverside fragment`,
-          html
-        );
+        console.Console.log("local-reload not possible, falling back to full reload");
       }
     }
 
     return false;
+  }
+
+  executeInlineScripts(root) {
+    console.log("Executing inline scripts in local-reload fragment", root);
+    const scripts = Array.from(root.querySelectorAll("script"));
+
+    for (const old of scripts) {
+      if (old.src) {
+        console.warn("Ignoring external script in local-reload fragment:", old.src);
+        old.remove();
+        continue;
+      }
+
+      // Re-create script to execute it
+      const s = document.createElement("script");
+      // preserve type if present (default is classic)
+      if (old.type) s.type = old.type;
+      if (old.noModule) s.noModule = true;
+
+      s.textContent = old.textContent || "";
+
+      old.replaceWith(s);
+    }
   }
 
   moveElementsToOuterActions() {
@@ -138,7 +184,7 @@ export class BaseDialogOpener extends PwcElement {
     let buttonContainer = this.dialog.querySelector("dialog-opener-buttons");
     if (!buttonContainer) {
       buttonContainer = document.createElement("dialog-opener-buttons");
-      this.dialog.querySelector(".modal-footer").prepend(buttonContainer);
+      this.dialog.querySelector(".pwc-dialog-opener-actions").prepend(buttonContainer);
     } else {
       buttonContainer.innerHTML = "";
     }

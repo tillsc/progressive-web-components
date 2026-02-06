@@ -2,9 +2,27 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>iframe target</title>
+    <title>dialog-opener iframe target</title>
   </head>
   <body>
     <h1>iframe target</h1>
+    <form method="get" action="./basic.html">
+      <label>First name: </label><input name="first_name" value="John" /></label><br />
+      <label>Last name: </label><input name="last_name" value="Doe" /></label><br />
+      <button type="submit" name="commit" value="ok">OK</button>
+    </form>
+    <script type="module">
+      const url = new URL(window.location.href);
+      const defaultData = url.searchParams.get("default");
+      if (defaultData) {
+        try {
+          const data = JSON.parse(defaultData);
+            document.querySelector("input[name=first_name]").value = data.firstName;
+            document.querySelector("input[name=last_name]").value = data.lastName;
+        } catch (e) {
+          console.error("Failed to parse default data:", e);
+        }
+      }
+    </script>
   </body>
 </html>
