@@ -1,8 +1,7 @@
-// test/server/server.mjs
 import express from "express";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,6 +25,9 @@ function isFile(p) {
 export async function startServer({ port = 0 } = {}) {
   const app = express();
 
+  app.use(express.urlencoded({ extended: false }));
+  app.use(express.json());
+
   const repoRoot = path.resolve(__dirname, "../..");
   const srcRoot = path.join(repoRoot, "src");
   const distRoot = path.join(repoRoot, "dist");
@@ -35,7 +37,6 @@ export async function startServer({ port = 0 } = {}) {
 
   app.use("/dist", express.static(distRoot, staticOpts));
   app.use("/test/static", express.static(testStaticRoot, staticOpts));
-
 
   // /src/<component>/test/*
   const components = fs
@@ -51,7 +52,20 @@ export async function startServer({ port = 0 } = {}) {
     const indexFile = path.join(testDir, "index.html");
     if (!isDir(testDir) || !isFile(indexFile)) continue;
 
+    // Static test assets for this component
     app.use(`/src/${c}/test`, express.static(testDir, staticOpts));
+
+    // Optional dynamic routes for this component
+    const routesFile = path.join(testDir, "routes.mjs");
+    if (isFile(routesFile)) {
+      const mod = await import(pathToFileURL(routesFile).href);
+      if (typeof mod?.default === "function") {
+        mod.default(app);
+      } else {
+        console.warn(`[routes] ${c}: routes.mjs has no default export function`);
+      }
+    }
+
     componentsWithTests.push(c);
   }
 
@@ -62,7 +76,7 @@ export async function startServer({ port = 0 } = {}) {
   // Root index: list component test indexes
   app.get("/", (_req, res) => {
     const links = componentsWithTests
-      .map((c) => `<li><a href="/src/${c}/test/index.html" data-test-page]>${c}</a></li>`)
+      .map((c) => `<li><a href="/src/${c}/test/index.html" data-test-page>${c}</a></li>`)
       .join("\n");
 
     res.type("html").send(`<!doctype html>
