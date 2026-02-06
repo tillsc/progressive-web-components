@@ -20,22 +20,13 @@ var PwcElement = class extends HTMLElement {
   connectedCallback() {
     if (this._connected) return;
     this._connected = true;
-    queueMicrotask(() => {
-      this._bindEvents();
-      this.onConnect();
-    });
+    this._bindEvents();
   }
   disconnectedCallback() {
     if (!this._connected) return;
     this._connected = false;
     this._unbindEvents();
     this.onDisconnect();
-  }
-  /**
-   * Hook for subclasses.
-   * Called once per connection, after microtask deferral.
-   */
-  onConnect() {
   }
   /**
    * Optional cleanup hook for subclasses.
