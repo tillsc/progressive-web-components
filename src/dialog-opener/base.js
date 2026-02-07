@@ -206,9 +206,9 @@ export class BaseDialogOpener extends PwcElement {
       const btn = elements[i];
 
       const outerBtn = document.createElement(btn.tagName);
-      outerBtn.setAttribute("class", btn.getAttribute("class"));
-      outerBtn.setAttribute("type", btn.getAttribute("type"));
-      outerBtn.setAttribute("value", btn.getAttribute("value"));
+      for (const attr of btn.attributes) {
+        outerBtn.setAttribute(attr.name, attr.value);
+      }
       outerBtn.innerHTML = btn.innerHTML;
 
       outerBtn.addEventListener("click", () => {

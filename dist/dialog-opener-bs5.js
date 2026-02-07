@@ -111,11 +111,16 @@ var BaseDialogOpener = class extends PwcElement {
     });
   }
   async iFrameLoad(_e) {
-    const uri = new URL(this.iframe.contentWindow.location);
+    let uri;
+    try {
+      uri = new URL(this.iframe.contentWindow.location);
+    } catch (e) {
+      throw new Error(`<pwc-dialog-opener> cannot access iframe location (cross-origin?): ${e.message}`);
+    }
     if (uri.searchParams.has("dialog_finished_with")) {
       this.modal.hide();
       uri.searchParams.delete("_layout");
-      uri.searchParams.set("dummy", Math.random(1e5));
+      uri.searchParams.set("dummy", Math.floor(Math.random() * 1e5));
       const localReloadWorked = await this.tryLocalReload(uri);
       if (!localReloadWorked) {
         window.location.href = uri.toString();
@@ -164,7 +169,7 @@ var BaseDialogOpener = class extends PwcElement {
           );
           return true;
         }
-        console.Console.log("local-reload not possible, falling back to full reload");
+        console.log("local-reload not possible, falling back to full reload");
       }
     }
     return false;
@@ -206,9 +211,9 @@ var BaseDialogOpener = class extends PwcElement {
     for (let i = 0; i < elements.length; i++) {
       const btn = elements[i];
       const outerBtn = document.createElement(btn.tagName);
-      outerBtn.setAttribute("class", btn.getAttribute("class"));
-      outerBtn.setAttribute("type", btn.getAttribute("type"));
-      outerBtn.setAttribute("value", btn.getAttribute("value"));
+      for (const attr of btn.attributes) {
+        outerBtn.setAttribute(attr.name, attr.value);
+      }
       outerBtn.innerHTML = btn.innerHTML;
       outerBtn.addEventListener("click", () => {
         this.iframe.style.display = "none";
