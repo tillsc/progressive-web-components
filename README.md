@@ -32,7 +32,6 @@ Example: `<dialog-opener>` component
 
             bs5/
                 dialog-opener.js
-                dialog-opener.css
                 index.js
 
     dist/
