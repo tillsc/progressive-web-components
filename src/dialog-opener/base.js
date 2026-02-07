@@ -58,7 +58,7 @@ export class BaseDialogOpener extends PwcElement {
 
     iframe.style.width = "100%";
     iframe.style.height = getComputedStyle(this).getPropertyValue("--pwc-dialog-opener-height").trim() || "550px";
-    iframe.style.display = "none"
+    iframe.style.display = "none";
 
     return iframe;
   }
@@ -78,7 +78,7 @@ export class BaseDialogOpener extends PwcElement {
       this.modal.hide();
 
       uri.searchParams.delete("_layout");
-      uri.searchParams.set("dummy", Math.random(100000));
+      uri.searchParams.set("dummy", Math.floor(Math.random() * 100000));
 
       const localReloadWorked = await this.tryLocalReload(uri);
       if (!localReloadWorked) {
@@ -145,7 +145,7 @@ export class BaseDialogOpener extends PwcElement {
 
           return true;
         }
-        console.Console.log("local-reload not possible, falling back to full reload");
+        console.log("local-reload not possible, falling back to full reload");
       }
     }
 
