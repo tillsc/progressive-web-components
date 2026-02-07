@@ -72,7 +72,12 @@ export class BaseDialogOpener extends PwcElement {
   }
 
   async iFrameLoad(_e) {
-    const uri = new URL(this.iframe.contentWindow.location);
+    let uri;
+    try {
+      uri = new URL(this.iframe.contentWindow.location);
+    } catch (e) {
+      throw new Error(`<pwc-dialog-opener> cannot access iframe location (cross-origin?): ${e.message}`);
+    }
 
     if (uri.searchParams.has("dialog_finished_with")) {
       this.modal.hide();
