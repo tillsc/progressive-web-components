@@ -1,36 +1,52 @@
 import { defineOnce } from "../../core/pwc-element.js";
 import { BaseDialogOpener } from "../base.js";
 
+/**
+ * <pwc-dialog-opener-bs5>
+ *
+ * Uses <pwc-modal-dialog-bs5> as the Bootstrap modal socket.
+ *
+ * Requirements:
+ * - Bootstrap 5 CSS + JS present (globalThis.bootstrap.Modal)
+ * - pwc-modal-dialog-bs5 defined (either imported/bundled or already on page)
+ */
 export class PwcDialogOpenerBs5 extends BaseDialogOpener {
-  dialogContent = (closeText) => `
-<div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-body"></div>
-      <div class="modal-footer pwc-dialog-opener-actions">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${closeText}</button>
-      </div>
-    </div>
-  </div>
-</div>`;
-
   findOrCreateDialog(src) {
-    this.dialog = document.querySelector("div.pwc-dialog-opener-modal");
+    const tag = "pwc-modal-dialog-bs5";
+
+    // Prefer one modal socket per opener instance.
     if (!this.dialog) {
-      this.dialog = document.createElement("div");
-      this.dialog.classList.add("pwc-dialog-opener-modal");
-      document.body.appendChild(this.dialog);
+      // Use existing child socket if provided, otherwise create one.
+      this.dialog = this.querySelector(tag) || document.createElement(tag);
+
+      // If caller didn't place it into the DOM, keep it associated with this component.
+      // ModalDialogBase will auto-append itself to <body> on open() if not connected.
+      if (!this.dialog.isConnected) {
+        this.appendChild(this.dialog);
+      }
     }
 
-    this.dialog.innerHTML = this.dialogContent(this.getAttribute("close") || "Close");
+    // Open modal and get access to the body/footer containers.
+    this.dialog.open({
+      title: this.getAttribute("title") || "",
+      size: this.getAttribute("size") || "lg",
+      closeText: this.getAttribute("close") || "Close",
+      backdrop: true,
+      keyboard: true,
+      focus: true
+    });
 
-    const body = this.dialog.querySelector(".modal-body");
-    body.innerHTML = "";
+    const body = this.dialog.bodyEl;
+    body.replaceChildren(this.createIFrame(src));
 
-    const iframe = this.createIFrame(src);
-    body.appendChild(iframe);
-
-    this.modal = new bootstrap.Modal(this.dialog.querySelector(".modal"));
+    // BaseDialogOpener expects this.modal.show()/hide()
+    // Map those to the modal-dialog component API.
+    this.modal = {
+      show: () => {
+        // already shown by open(); no-op for compatibility
+      },
+      hide: () => this.dialog.close()
+    };
   }
 }
 

@@ -50,6 +50,22 @@ var PwcElement = class extends HTMLElement {
   handleEvent(_event) {
   }
 };
+var PwcSimpleInitElement = class extends PwcElement {
+  connectedCallback() {
+    if (this._connected) return;
+    super.connectedCallback();
+    queueMicrotask(() => {
+      if (!this._connected) return;
+      this.onConnect();
+    });
+  }
+  /**
+   * Hook for subclasses.
+   * Called once per connection, after microtask deferral.
+   */
+  onConnect() {
+  }
+};
 function defineOnce(name, classDef) {
   if (customElements.get(name)) return;
   customElements.define(name, classDef);
@@ -228,41 +244,209 @@ var BaseDialogOpener = class extends PwcElement {
 
 // src/dialog-opener/bs5/dialog-opener.js
 var PwcDialogOpenerBs5 = class extends BaseDialogOpener {
-  dialogContent = (closeText) => `
-<div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-body"></div>
-      <div class="modal-footer pwc-dialog-opener-actions">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${closeText}</button>
-      </div>
-    </div>
-  </div>
-</div>`;
   findOrCreateDialog(src) {
-    this.dialog = document.querySelector("div.pwc-dialog-opener-modal");
+    const tag = "pwc-modal-dialog-bs5";
     if (!this.dialog) {
-      this.dialog = document.createElement("div");
-      this.dialog.classList.add("pwc-dialog-opener-modal");
-      document.body.appendChild(this.dialog);
+      this.dialog = this.querySelector(tag) || document.createElement(tag);
+      if (!this.dialog.isConnected) {
+        this.appendChild(this.dialog);
+      }
     }
-    this.dialog.innerHTML = this.dialogContent(this.getAttribute("close") || "Close");
-    const body = this.dialog.querySelector(".modal-body");
-    body.innerHTML = "";
-    const iframe = this.createIFrame(src);
-    body.appendChild(iframe);
-    this.modal = new bootstrap.Modal(this.dialog.querySelector(".modal"));
+    this.dialog.open({
+      title: this.getAttribute("title") || "",
+      size: this.getAttribute("size") || "lg",
+      closeText: this.getAttribute("close") || "Close",
+      backdrop: true,
+      keyboard: true,
+      focus: true
+    });
+    const body = this.dialog.bodyEl;
+    body.replaceChildren(this.createIFrame(src));
+    this.modal = {
+      show: () => {
+      },
+      hide: () => this.dialog.close()
+    };
   }
 };
 function define() {
   defineOnce("pwc-dialog-opener-bs5", PwcDialogOpenerBs5);
 }
 
-// src/dialog-opener/bs5/index.js
+// src/modal-dialog/base.js
+var ModalDialogBase = class extends PwcSimpleInitElement {
+  static events = ["click"];
+  onDisconnect() {
+    this._teardown();
+  }
+  get ui() {
+    if (!this._ui) throw new Error("ui is only available after open()");
+    return this._ui;
+  }
+  get rootEl() {
+    return this.ui.rootEl;
+  }
+  get bodyEl() {
+    return this.ui.bodyEl;
+  }
+  get headerEl() {
+    return this.ui.headerEl;
+  }
+  get footerEl() {
+    return this.ui.footerEl;
+  }
+  isOpen() {
+    return false;
+  }
+  open({ title = "", size = "lg", closeText = "Close", ...options }) {
+    if (!this.isConnected) {
+      this._autoRemove = true;
+      document.body.appendChild(this);
+    }
+    this._teardown();
+    const ui = this._render({ title, size, closeText, ...options });
+    this._ui = ui;
+    const parent = this._getOpenSibling();
+    this._parent = parent && parent !== ui.rootEl ? parent : null;
+    this._closed = false;
+    this._armFinalClose(ui, () => this._onFinalClose());
+    if (this._parent) {
+      this._parent.dataset.closeReason = "suspend";
+      this._suspend(this._parent);
+    }
+    this._show(ui, { title, size, closeText, ...options });
+  }
+  close() {
+    if (this._closed) return;
+    this._closed = true;
+    this.dataset.closeReason = "final";
+    this._hide(this._ui);
+  }
+  _onFinalClose() {
+    this._closed = true;
+    delete this.dataset.closeReason;
+    const parent = this._parent;
+    this._parent = null;
+    this._teardown();
+    if (parent && parent.isConnected) {
+      delete parent.dataset.closeReason;
+      queueMicrotask(() => this._restore(parent));
+    }
+    if (this._autoRemove && this.isConnected) this.remove();
+  }
+  handleEvent(e) {
+    if (e.type !== "click") return;
+    if (e.defaultPrevented) return;
+    const ui = this._ui;
+    if (!ui?.rootEl) return;
+    if (e.target === ui.rootEl) {
+      this.close();
+      return;
+    }
+    const closeEl = e.target.closest('[data-pwc-action="close"]');
+    if (!closeEl || !this.contains(closeEl)) return;
+    this.close();
+  }
+  _teardown() {
+    const ui = this._ui;
+    this._ui = null;
+    ui?.teardown?.();
+  }
+};
+
+// src/modal-dialog/bs5/modal-dialog.js
+var PwcModalDialogBs5 = class extends ModalDialogBase {
+  static events = ["click", "hidden.bs.modal"];
+  onConnect() {
+    this.classList.add("modal", "fade");
+    this.tabIndex = -1;
+    this.setAttribute("aria-hidden", "true");
+  }
+  isOpen() {
+    return this.classList.contains("show");
+  }
+  requireBsModal() {
+    const BsModal = globalThis.bootstrap?.Modal;
+    if (!BsModal) throw new Error("Bootstrap Modal required (globalThis.bootstrap.Modal)");
+    return BsModal;
+  }
+  _render({ title, size, closeText }) {
+    this.innerHTML = `
+      <div class="modal-dialog modal-dialog-centered modal-${size}">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title"></h3>
+            <button type="button" class="btn-close" data-pwc-action="close" aria-label=""></button>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer"></div>
+        </div>
+      </div>
+    `;
+    this.querySelector(".modal-title").textContent = title;
+    this.querySelector(".btn-close").setAttribute("aria-label", closeText);
+    return {
+      rootEl: this,
+      bodyEl: this.querySelector(".modal-body"),
+      headerEl: this.querySelector(".modal-header"),
+      footerEl: this.querySelector(".modal-footer"),
+      modal: null,
+      teardown: () => {
+        const BsModal = this.requireBsModal();
+        BsModal.getInstance(this)?.dispose();
+        this.innerHTML = "";
+        this._finalClose = null;
+      }
+    };
+  }
+  _getOpenSibling() {
+    const el = document.querySelector(".modal.show");
+    if (el === this) return null;
+    return el;
+  }
+  _suspend(el) {
+    const BsModal = this.requireBsModal();
+    BsModal.getOrCreateInstance(el).hide();
+  }
+  _restore(el) {
+    const BsModal = this.requireBsModal();
+    BsModal.getOrCreateInstance(el).show();
+  }
+  _show(ui, { backdrop = true, keyboard = true, focus = true } = {}) {
+    const BsModal = this.requireBsModal();
+    ui.modal = BsModal.getOrCreateInstance(this, { backdrop, keyboard, focus });
+    ui.modal.show();
+  }
+  _hide(ui) {
+    ui.modal?.hide();
+  }
+  _armFinalClose(_ui, onFinalClose) {
+    this._finalClose = onFinalClose;
+  }
+  handleEvent(e) {
+    if (e.type === "hidden.bs.modal") {
+      if (this.dataset.closeReason === "suspend") return;
+      const fn = this._finalClose;
+      this._finalClose = null;
+      if (typeof fn === "function") fn();
+      return;
+    }
+    super.handleEvent(e);
+  }
+};
+var define2 = () => defineOnce("pwc-modal-dialog-bs5", PwcModalDialogBs5);
+
+// src/modal-dialog/bs5/index.js
 function register() {
-  define();
+  define2();
 }
 register();
+
+// src/dialog-opener/bs5/index.js
+function register2() {
+  define();
+}
+register2();
 export {
-  register
+  register2 as register
 };

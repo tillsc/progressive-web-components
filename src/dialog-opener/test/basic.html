@@ -56,11 +56,11 @@
         await nextTick();
 
         log("waiting for dialog to exist");
-        await waitFor(() => Boolean(document.querySelector("dialog.pwc-dialog-opener-modal")), {
+        await waitFor(() => Boolean(document.querySelector("dialog.pwc-modal-dialog")), {
           message: "dialog not created"
         });
 
-        const dlg = document.querySelector("dialog.pwc-dialog-opener-modal");
+        const dlg = document.querySelector("dialog.pwc-modal-dialog");
         assert(dlg, "dialog missing");
 
         log("waiting for dialog to be open");
@@ -100,7 +100,7 @@
         log("waiting for dialog to close after redirect");
         await waitFor(() => dlg.open === false, { timeoutMs: 10_000, message: "dialog did not close after OK" });
 
-        equal(document.querySelectorAll("dialog.pwc-dialog-opener-modal").length, 1, "unexpected dialog count");
+        equal(document.querySelectorAll("pwc-modal-dialog").length, 1, "modal-dialog element should persist for reuse");
       });
     }
   </script>

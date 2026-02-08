@@ -54,8 +54,7 @@ Example: `<dialog-opener>` component
 - Implemented as separate component variants
 - Located in a dedicated subdirectory per component (e.g. `bs5/`)
 - Subclass the shared base implementation
-- Same DOM structure and behavior as the base
-- Additional classes and attributes only
+- Same behavior as the base, variant-specific DOM structure
 - Optional variant-specific CSS
 - Built as separate distribution artifacts
 

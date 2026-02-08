@@ -1,68 +1,37 @@
 import { defineOnce } from "../core/pwc-element.js";
 import { BaseDialogOpener } from "./base.js";
 
-class DialogController {
-  constructor(dialogEl) {
-    this.el = dialogEl;
-  }
-
-  show() {
-    if (typeof this.el.showModal === "function" && !this.el.open) {
-      this.el.showModal();
-    }
-  }
-
-  hide() {
-    if (this.el.open) {
-      this.el.close();
-    }
-  }
-}
-
 export class PwcDialogOpener extends BaseDialogOpener {
-  dialogContent(closeText) {
-    return `
-      <div class="pwc-dialog-opener-surface" role="document">
-        <section class="pwc-dialog-opener-body"></section>
-        <footer class="pwc-dialog-opener-actions pwc-dialog-opener-footer">
-          <button class="pwc-dialog-opener-close" type="button" aria-label="Close">${closeText}</button>
-        </footer>
-      </div>
-    `;
-  }
-
   findOrCreateDialog(src) {
-    // One dialog per component instance (no global sharing).
-    if (!this.dialog) {
-      this.dialog = document.createElement("dialog");
-      this.dialog.className = "pwc-dialog-opener-modal";
-
-      // Close on backdrop click (native dialog does not do this by default).
-      this.dialog.addEventListener("click", (e) => {
-        if (e.target === this.dialog) this.modal.hide();
-      });
-
-      // Ensure iframe is dropped when dialog closes.
-      this.dialog.addEventListener("close", () => {
-        const iframe = this.dialog.querySelector("iframe");
-        if (iframe) iframe.remove();
-      });
-
-      document.body.appendChild(this.dialog);
-      this.modal = new DialogController(this.dialog);
+    if (!this.modalDialog) {
+      this.modalDialog = document.createElement("pwc-modal-dialog");
+      document.body.appendChild(this.modalDialog);
     }
 
-    this.dialog.innerHTML = this.dialogContent(this.getAttribute("close") || "Close");
-
-    const closeBtn = this.dialog.querySelector(".pwc-dialog-opener-close");
-    if (closeBtn) closeBtn.addEventListener("click", () => this.modal.hide());
-
-    const body = this.dialog.querySelector(".pwc-dialog-opener-body");
-    body.innerHTML = "";
-
-    // Create iframe via base helper (width/height are intrinsic behavior).
+    const closeText = this.getAttribute("close") || "Close";
+    this.modalDialog.open({
+      closeText
+    });
+this.modalDialog.footerEl.innerHTML = `
+  <div class="pwc-dialog-opener-actions pwc-dialog-opener-footer">
+    <button type="button" class="pwc-dialog-opener-close" data-pwc-action="close" aria-label="${closeText}">
+      ${closeText}
+    </button>
+  </div>
+`;
     const iframe = this.createIFrame(src);
-    body.appendChild(iframe);
+    this.modalDialog.bodyEl.replaceChildren(iframe);
+
+    // Contract for BaseDialogOpener.enhanceIFrame():
+    // it queries this.dialog for "iframe".
+    this.dialog = this.modalDialog.ui.rootEl;
+
+    // Contract for BaseDialogOpener.open():
+    // it calls this.modal.show()/hide().
+    this.modal = {
+      show: () => {}, // modal-dialog is already shown by open()
+      hide: () => this.modalDialog.close()
+    };
   }
 }
 

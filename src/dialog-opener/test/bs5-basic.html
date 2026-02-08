@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>dialog-opener-bs5: basic</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+
+<body>
+  <pwc-dialog-opener-bs5 id="opener" local-reload="with-scripts replace-url">
+    <a href="./bs5-iframe-target.html">Open dialog</a>
+    Hello <span id="first_name"></span> <span id="last_name"></span>
+    <input type="hidden" name="default_for_iframe_target">
+    <script type="module">
+      const url = new URL(window.location.href);
+      const firstName = url.searchParams.get("first_name") || "";
+      const lastName = url.searchParams.get("last_name") || "";
+      document.getElementById("first_name").textContent = firstName
+      document.getElementById("last_name").textContent = lastName
+      document.querySelector("input[name=default_for_iframe_target]").value = JSON.stringify({ firstName, lastName });
+    </script>
+  </pwc-dialog-opener-bs5>
+
+  <!-- component bundle -->
+  <script type="module" src="../../../dist/dialog-opener-bs5.js"></script>
+
+  <!-- bootstrap js -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script type="module">
+    import { run } from "../../../test/static/harness.js";
+
+    const u = new URL(window.location.href);
+    if (u.searchParams.has("commit")) {
+      // IFrame subission mode
+      if (u.searchParams.has("commit") && !u.searchParams.has("dialog_finished_with")) {
+        // Ensure the iframe URL contains the marker param your component expects.
+        // This runs inside the iframe page.
+        // This would usually be done by the server handling the form submission, 
+        // but we can simulate it here for testing.
+        u.searchParams.set("dialog_finished_with", "ok");
+        window.location.replace(u.toString());
+      }
+    }
+    else {
+
+      run(async ({ assert, waitFor, log }) => {
+        log("checking custom element definition");
+        assert(
+          customElements.get("pwc-dialog-opener-bs5"),
+          "pwc-dialog-opener-bs5 not defined"
+        );
+
+        const opener = document.getElementById("opener");
+        assert(opener, "missing dialog opener element");
+
+        const link = opener.querySelector("a");
+        assert(link, "missing link");
+
+        log("clicking opener link");
+        link.click();
+
+        log("waiting for bootstrap modal to appear");
+        await waitFor(() => document.querySelector(".modal.show"), {
+          message: "modal not shown"
+        });
+
+        const modal = document.querySelector(".modal.show");
+        assert(modal, "modal element missing");
+
+        log("checking iframe existence");
+        const iframe = modal.querySelector("iframe");
+        assert(iframe, "iframe not created");
+
+        log("waiting for iframe to load");
+        await waitFor(() => {
+          return iframe.contentDocument && iframe.contentDocument.readyState === "complete";
+        }, { message: "iframe did not load" });
+
+        log("finding modal close button");
+        const closeButton =
+          modal.querySelector("[data-bs-dismiss='modal'], .btn-close");
+
+        assert(closeButton, "close button not found on modal");
+
+        log("clicking close button");
+        closeButton.click();
+
+        log("waiting for modal to close");
+        await waitFor(() => !modal.classList.contains("show"), {
+          message: "modal did not close after clicking close button"
+        });
+
+        log("done");
+      });
+    }
+  </script>
+</body>
+
+</html>
