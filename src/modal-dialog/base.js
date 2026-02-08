@@ -74,6 +74,9 @@ export class ModalDialogBase extends PwcSimpleInitElement {
   }
 
   _onFinalClose() {
+    this._closed = true;
+    delete this.dataset.closeReason;
+
     const parent = this._parent;
     this._parent = null;
 

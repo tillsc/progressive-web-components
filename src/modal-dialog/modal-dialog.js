@@ -3,7 +3,7 @@ import { defineOnce } from "../core/pwc-element.js";
 
 export class PwcModalDialog extends ModalDialogBase {
   isOpen() {
-    return Boolean(this.rootEl?.open);
+    return Boolean(this._ui?.rootEl?.open);
   }
 
   _render({ title, size, closeText }) {
@@ -71,8 +71,8 @@ export class PwcModalDialog extends ModalDialogBase {
     if (!dlg) return;
 
     const onClose = () => {
-      // Critical: suspend closes must NOT teardown.
-      if (this.dataset.closeReason !== "final") return;
+      // Suspend closes must NOT teardown.
+      if (this.dataset.closeReason === "suspend") return;
       onFinalClose();
     };
 

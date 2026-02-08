@@ -26,7 +26,7 @@ export class PwcModalDialogBs5 extends ModalDialogBase {
         <div class="modal-content">
           <div class="modal-header">
             <h3 class="modal-title"></h3>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label=""></button>
+            <button type="button" class="btn-close" data-pwc-action="close" aria-label=""></button>
           </div>
           <div class="modal-body"></div>
           <div class="modal-footer"></div>
@@ -86,7 +86,7 @@ export class PwcModalDialogBs5 extends ModalDialogBase {
 
   handleEvent(e) {
     if (e.type === "hidden.bs.modal") {
-      if (this.dataset.closeReason !== "final") return;
+      if (this.dataset.closeReason === "suspend") return;
 
       const fn = this._finalClose;
       this._finalClose = null;
