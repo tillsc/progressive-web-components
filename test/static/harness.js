@@ -86,7 +86,6 @@ export function run(fn, options = {}) {
     while (true) {
       try {
         if (await predicate()) {
-          log(`waitFor ok${label ? `: ${label}` : ""}`);
           return;
         }
       } catch {
