@@ -6,59 +6,76 @@
   <script type="module" src="../../../dist/modal-dialog.js"></script>
 </head>
 <body>
+  <a href="#" id="open-parent">Open Parent</a>
+
+  <script type="module">
+    document.getElementById("open-parent").addEventListener("click", (e) => {
+      e.preventDefault();
+      const modal = document.createElement("pwc-modal-dialog");
+      modal.open({ title: "Parent", size: "lg", closeText: "Close" });
+      modal.bodyEl.innerHTML = `
+        <p>Parent body</p>
+        <a href="#" id="open-child">Open Child</a>
+      `;
+      modal.bodyEl.querySelector("#open-child").addEventListener("click", (ev) => {
+        ev.preventDefault();
+        const child = document.createElement("pwc-modal-dialog");
+        child.open({ title: "Child", size: "sm", closeText: "Close" });
+        child.bodyEl.innerHTML = `<p>Child body</p>`;
+      });
+    });
+  </script>
+
   <script type="module">
     import { run } from "../../../test/static/harness.js";
 
     run(async ({ assert, equal, waitFor, log }) => {
-      const waitForDialogOpen = async (dlgEl, label) => {
-        await waitFor(() => dlgEl.open === true, { label });
-      };
+      log("clicking open-parent link");
+      document.getElementById("open-parent").click();
 
-      const waitForDialogClosed = async (dlgEl, label) => {
-        await waitFor(() => dlgEl.open === false, { label });
-      };
-
-      log("opening parent modal");
-      const parent = document.createElement("pwc-modal-dialog");
-      parent.open({ title: "Parent", size: "lg", closeText: "Close" });
-
-      parent.bodyEl.innerHTML = `<p id="parent-body">Parent body</p>`;
-
-      await waitForDialogOpen(parent.ui.rootEl, "parent opened");
+      await waitFor(
+        () => document.querySelector("dialog.pwc-modal-dialog[open]"),
+        { label: "parent opened" }
+      );
+      const parentDlg = document.querySelector("dialog.pwc-modal-dialog[open]");
 
       equal(
-        document.querySelectorAll("dialog.pwc-modal-dialog[open]").length,
-        1,
-        "expected exactly one open dialog (parent)"
+        document.querySelectorAll("dialog.pwc-modal-dialog[open]").length, 1,
+        "exactly one open dialog (parent)"
       );
 
-      log("opening child modal (should suspend parent)");
-      const child = document.createElement("pwc-modal-dialog");
-      child.open({ title: "Child", size: "sm", closeText: "Close" });
-      child.bodyEl.innerHTML = `<p id="child-body">Child body</p>`;
+      log("clicking open-child link inside parent");
+      parentDlg.querySelector("#open-child").click();
 
-      await waitForDialogOpen(child.ui.rootEl, "child opened");
-      await waitForDialogClosed(parent.ui.rootEl, "parent suspended");
+      await waitFor(() => {
+        const open = document.querySelectorAll("dialog.pwc-modal-dialog[open]");
+        return open.length === 1 && open[0] !== parentDlg;
+      }, { label: "child opened, parent suspended" });
+
+      const childDlg = document.querySelector("dialog.pwc-modal-dialog[open]");
 
       equal(
-        document.querySelectorAll("dialog.pwc-modal-dialog[open]").length,
-        1,
-        "expected exactly one open dialog (child)"
+        document.querySelectorAll("dialog.pwc-modal-dialog[open]").length, 1,
+        "exactly one open dialog (child)"
       );
 
-      log("closing child (should restore parent)");
-      child.close();
+      log("closing child via X button");
+      childDlg.querySelector('[data-pwc-action="close"]').click();
 
-      await waitForDialogClosed(child.ui.rootEl, "child closed");
-      await waitForDialogOpen(parent.ui.rootEl, "parent restored");
+      await waitFor(() => parentDlg.open === true, { label: "parent restored" });
 
-      log("closing parent");
-      parent.close();
+      equal(
+        document.querySelectorAll("dialog.pwc-modal-dialog[open]").length, 1,
+        "exactly one open dialog (restored parent)"
+      );
 
-      await waitForDialogClosed(parent.ui.rootEl, "parent closed");
+      log("closing parent via X button");
+      parentDlg.querySelector('[data-pwc-action="close"]').click();
 
-      await waitFor(() => !document.body.contains(child), { label: "child removed" });
-      await waitFor(() => !document.body.contains(parent), { label: "parent removed" });
+      await waitFor(
+        () => document.querySelectorAll("pwc-modal-dialog").length === 0,
+        { label: "all modals removed from DOM" }
+      );
 
       log("done");
     });
