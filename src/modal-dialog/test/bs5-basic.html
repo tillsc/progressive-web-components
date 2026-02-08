@@ -17,66 +17,98 @@
       assert(BsModal, "Bootstrap Modal missing on window.bootstrap.Modal");
 
       const waitForShownStable = async (el, label) => {
-        // Prefer the public event, but don't hang if it already fired.
         let seenEvent = false;
         const onShown = () => { seenEvent = true; };
         el.addEventListener("shown.bs.modal", onShown, { once: true });
 
         await waitFor(() => {
           const inst = BsModal.getInstance(el);
-          const transitioning = inst && inst._isTransitioning === true; // private but stable enough for tests
+          const transitioning = inst && inst._isTransitioning === true;
           const shown = el.classList.contains("show");
           return shown && !transitioning;
-        }, { message: `modal not shown/stable: ${label}` });
+        }, { label: `modal shown & stable: ${label}` });
 
-        // If event didn't fire (already fired before listener), that's fine.
         el.removeEventListener("shown.bs.modal", onShown);
-        if (!seenEvent) {
-          // ensure we passed at least one microtask after reaching stable state
-          await nextTick(`shown stable (no event): ${label}`);
-        }
+        if (!seenEvent) await nextTick(`shown stable (no event): ${label}`);
       };
 
       log("opening parent modal");
       const parent = document.createElement("pwc-modal-dialog-bs5");
-      const parentHandle = parent.open({ title: "Parent", size: "lg" });
-      parentHandle.bodyEl.innerHTML = `<p id="parent-body">Parent body</p>`;
+      parent.open({ title: "Parent", size: "lg" });
+      parent.bodyEl.innerHTML = `<p id="parent-body">Parent body</p>`;
 
       await waitForShownStable(parent, "parent initial");
 
-      equal(document.querySelectorAll(".modal.show").length, 1, "expected exactly one shown modal (parent)");
+      equal(
+        document.querySelectorAll(".modal.show").length,
+        1,
+        "expected exactly one shown modal (parent)"
+      );
 
       log("opening child modal (should suspend parent)");
       const child = document.createElement("pwc-modal-dialog-bs5");
-      const childHandle = child.open({ title: "Child", size: "sm" });
-      childHandle.bodyEl.innerHTML = `<p id="child-body">Child body</p>`;
+      child.open({ title: "Child", size: "sm" });
+      child.bodyEl.innerHTML = `<p id="child-body">Child body</p>`;
 
       await waitForShownStable(child, "child");
 
-      await waitFor(() => !parent.classList.contains("show"), { message: "parent not suspended" });
+      await waitFor(
+        () => !parent.classList.contains("show"),
+        { label: "parent suspended" }
+      );
 
-      equal(document.querySelectorAll(".modal.show").length, 1, "expected exactly one shown modal (child)");
-      assert(document.querySelector(".modal.show") === child, "expected child to be the shown modal");
+      equal(
+        document.querySelectorAll(".modal.show").length,
+        1,
+        "expected exactly one shown modal (child)"
+      );
+      assert(
+        document.querySelector(".modal.show") === child,
+        "expected child to be the shown modal"
+      );
 
       log("closing child (should restore parent)");
-      childHandle.close();
+      child.close();
 
-      await waitFor(() => !child.classList.contains("show"), { message: "child still shown after close" });
-      await waitFor(() => parent.classList.contains("show"), { message: "parent not restored after child close" });
+      await waitFor(
+        () => !child.classList.contains("show"),
+        { label: "child closed" }
+      );
 
-      // critical: wait until parent is fully shown again before closing it
+      await waitFor(
+        () => parent.classList.contains("show"),
+        { label: "parent restored" }
+      );
+
       await waitForShownStable(parent, "parent restored");
 
-      equal(document.querySelectorAll(".modal.show").length, 1, "expected exactly one shown modal (restored parent)");
-      assert(document.querySelector(".modal.show") === parent, "expected parent to be shown again");
+      equal(
+        document.querySelectorAll(".modal.show").length,
+        1,
+        "expected exactly one shown modal (restored parent)"
+      );
+      assert(
+        document.querySelector(".modal.show") === parent,
+        "expected parent to be shown again"
+      );
 
       log("closing parent");
-      parentHandle.close();
+      parent.close();
 
-      await waitFor(() => !parent.classList.contains("show"), { message: "parent still shown after close" });
+      await waitFor(
+        () => !parent.classList.contains("show"),
+        { label: "parent closed" }
+      );
 
-      await waitFor(() => !document.body.contains(child), { message: "child element not removed" });
-      await waitFor(() => !document.body.contains(parent), { message: "parent element not removed" });
+      await waitFor(
+        () => !document.body.contains(child),
+        { label: "child element removed from DOM" }
+      );
+
+      await waitFor(
+        () => !document.body.contains(parent),
+        { label: "parent element removed from DOM" }
+      );
 
       log("done");
     });

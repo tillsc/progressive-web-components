@@ -5,6 +5,7 @@ const watch = process.argv.includes("--watch");
 const entryPoints = {
   "dialog-opener": "src/dialog-opener/index.js",
   "dialog-opener-bs5": "src/dialog-opener/bs5/index.js",
+  "modal-dialog": "src/modal-dialog/index.js",
   "modal-dialog-bs5": "src/modal-dialog/bs5/index.js"
 };
 

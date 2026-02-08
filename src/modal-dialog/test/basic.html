@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>modal-dialog: basic</title>
+  <script type="module" src="../../../dist/modal-dialog.js"></script>
+</head>
+<body>
+  <script type="module">
+    import { run } from "../../../test/static/harness.js";
+
+    run(async ({ assert, equal, waitFor, log }) => {
+      const waitForDialogOpen = async (dlgEl, label) => {
+        await waitFor(() => dlgEl.open === true, { label });
+      };
+
+      const waitForDialogClosed = async (dlgEl, label) => {
+        await waitFor(() => dlgEl.open === false, { label });
+      };
+
+      log("opening parent modal");
+      const parent = document.createElement("pwc-modal-dialog");
+      parent.open({ title: "Parent", size: "lg", closeText: "Close" });
+
+      parent.bodyEl.innerHTML = `<p id="parent-body">Parent body</p>`;
+
+      await waitForDialogOpen(parent.ui.rootEl, "parent opened");
+
+      equal(
+        document.querySelectorAll("dialog.pwc-modal-dialog[open]").length,
+        1,
+        "expected exactly one open dialog (parent)"
+      );
+
+      log("opening child modal (should suspend parent)");
+      const child = document.createElement("pwc-modal-dialog");
+      child.open({ title: "Child", size: "sm", closeText: "Close" });
+      child.bodyEl.innerHTML = `<p id="child-body">Child body</p>`;
+
+      await waitForDialogOpen(child.ui.rootEl, "child opened");
+      await waitForDialogClosed(parent.ui.rootEl, "parent suspended");
+
+      equal(
+        document.querySelectorAll("dialog.pwc-modal-dialog[open]").length,
+        1,
+        "expected exactly one open dialog (child)"
+      );
+
+      log("closing child (should restore parent)");
+      child.close();
+
+      await waitForDialogClosed(child.ui.rootEl, "child closed");
+      await waitForDialogOpen(parent.ui.rootEl, "parent restored");
+
+      log("closing parent");
+      parent.close();
+
+      await waitForDialogClosed(parent.ui.rootEl, "parent closed");
+
+      await waitFor(() => !document.body.contains(child), { label: "child removed" });
+      await waitFor(() => !document.body.contains(parent), { label: "parent removed" });
+
+      log("done");
+    });
+  </script>
+</body>
+</html>
