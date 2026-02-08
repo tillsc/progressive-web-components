@@ -31,10 +31,20 @@ export class PwcDialogOpenerBs5 extends BaseDialogOpener {
       title: this.getAttribute("title") || "",
       size: this.getAttribute("size") || "lg",
       closeText: this.getAttribute("close") || "Close",
+      showClose: false,
       backdrop: true,
       keyboard: true,
       focus: true
     });
+
+    const closeText = this.getAttribute("close") || "Close";
+    this.dialog.footerEl.innerHTML = `
+      <div class="pwc-dialog-opener-actions">
+        <button type="button" class="btn btn-secondary" data-pwc-action="close" aria-label="${closeText}">
+          ${closeText}
+        </button>
+      </div>
+    `;
 
     const body = this.dialog.bodyEl;
     body.replaceChildren(this.createIFrame(src));

@@ -256,10 +256,19 @@ var PwcDialogOpenerBs5 = class extends BaseDialogOpener {
       title: this.getAttribute("title") || "",
       size: this.getAttribute("size") || "lg",
       closeText: this.getAttribute("close") || "Close",
+      showClose: false,
       backdrop: true,
       keyboard: true,
       focus: true
     });
+    const closeText = this.getAttribute("close") || "Close";
+    this.dialog.footerEl.innerHTML = `
+      <div class="pwc-dialog-opener-actions">
+        <button type="button" class="btn btn-secondary" data-pwc-action="close" aria-label="${closeText}">
+          ${closeText}
+        </button>
+      </div>
+    `;
     const body = this.dialog.bodyEl;
     body.replaceChildren(this.createIFrame(src));
     this.modal = {
@@ -370,13 +379,12 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
     if (!BsModal) throw new Error("Bootstrap Modal required (globalThis.bootstrap.Modal)");
     return BsModal;
   }
-  _render({ title, size, closeText }) {
+  _render({ title, size, closeText, showClose = true }) {
     this.innerHTML = `
       <div class="modal-dialog modal-dialog-centered modal-${size}">
         <div class="modal-content">
           <div class="modal-header">
             <h3 class="modal-title"></h3>
-            <button type="button" class="btn-close" data-pwc-action="close" aria-label=""></button>
           </div>
           <div class="modal-body"></div>
           <div class="modal-footer"></div>
@@ -384,7 +392,14 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
       </div>
     `;
     this.querySelector(".modal-title").textContent = title;
-    this.querySelector(".btn-close").setAttribute("aria-label", closeText);
+    if (showClose) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn-close";
+      btn.setAttribute("aria-label", closeText);
+      btn.setAttribute("data-pwc-action", "close");
+      this.querySelector(".modal-header").appendChild(btn);
+    }
     return {
       rootEl: this,
       bodyEl: this.querySelector(".modal-body"),

@@ -10,7 +10,8 @@ export class PwcDialogOpener extends BaseDialogOpener {
 
     const closeText = this.getAttribute("close") || "Close";
     this.modalDialog.open({
-      closeText
+      closeText,
+      showClose: false
     });
 this.modalDialog.footerEl.innerHTML = `
   <div class="pwc-dialog-opener-actions pwc-dialog-opener-footer">

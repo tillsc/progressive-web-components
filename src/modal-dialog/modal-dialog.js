@@ -6,7 +6,7 @@ export class PwcModalDialog extends ModalDialogBase {
     return Boolean(this._ui?.rootEl?.open);
   }
 
-  _render({ title, size, closeText }) {
+  _render({ title, size, closeText, showClose = true }) {
     const dlg = document.createElement("dialog");
     dlg.className = `pwc-modal-dialog pwc-modal-dialog--${size}`;
 
@@ -14,7 +14,6 @@ export class PwcModalDialog extends ModalDialogBase {
       <div class="pwc-modal-dialog-surface" role="document">
         <header class="pwc-modal-dialog-header">
           <h3 class="pwc-modal-dialog-title"></h3>
-          <button type="button" class="pwc-modal-dialog-x" aria-label="Close" data-pwc-action="close">×</button>
         </header>
         <section class="pwc-modal-dialog-body"></section>
         <footer class="pwc-modal-dialog-footer"></footer>
@@ -22,7 +21,16 @@ export class PwcModalDialog extends ModalDialogBase {
     `;
 
     dlg.querySelector(".pwc-modal-dialog-title").textContent = title;
-    dlg.querySelector("[data-pwc-action='close']").setAttribute("aria-label", closeText);
+
+    if (showClose) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "pwc-modal-dialog-x";
+      btn.setAttribute("aria-label", closeText);
+      btn.setAttribute("data-pwc-action", "close");
+      btn.textContent = "\u00d7";
+      dlg.querySelector(".pwc-modal-dialog-header").appendChild(btn);
+    }
 
     this.replaceChildren(dlg);
 

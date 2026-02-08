@@ -80,9 +80,7 @@
         }, { message: "iframe did not load" });
 
         log("finding modal close button");
-        const closeButton =
-          modal.querySelector("[data-bs-dismiss='modal'], .btn-close");
-
+        const closeButton = modal.querySelector("[data-pwc-action='close']");
         assert(closeButton, "close button not found on modal");
 
         log("clicking close button");
