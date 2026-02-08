@@ -4,7 +4,8 @@ const watch = process.argv.includes("--watch");
 
 const entryPoints = {
   "dialog-opener": "src/dialog-opener/index.js",
-  "dialog-opener-bs5": "src/dialog-opener/bs5/index.js"
+  "dialog-opener-bs5": "src/dialog-opener/bs5/index.js",
+  "modal-dialog-bs5": "src/modal-dialog/bs5/index.js"
 };
 
 const config = {
@@ -31,4 +32,4 @@ await ctx.watch();
 console.log("[build] watching...");
 
 // Keep process alive (ctx.watch should keep it, but make it explicit)
-await new Promise(() => {});
+await new Promise(() => { });
