@@ -58,6 +58,14 @@ export class PwcDialogOpenerBs5 extends BaseDialogOpener {
       hide: () => this.dialog.close()
     };
   }
+
+  _moveOutSelector() {
+    let selector = super._moveOutSelector();
+    if (selector === "primary") {
+      selector = ".btn-primary[type=submit]";
+    }
+    return selector
+  }
 }
 
 export function define() {
