@@ -3,10 +3,9 @@ import {PwcElement} from "./pwc-element.js";
 /**
  * Children observer element.
  *
- * Calls onChildrenChanged() whenever child nodes change.
- * This is for truly dynamic components, not as an init strategy.
+ * Calls onChildrenChanged() on connect and on every subsequent child mutation.
  *
- * Modes:
+ * Modes (static observeMode):
  * - "children": direct children only
  * - "tree": full subtree
  */
@@ -24,12 +23,13 @@ export class PwcChildrenObserverElement extends PwcElement {
     super.disconnectedCallback();
   }
 
-  /**
-   * Hook for subclasses.
-   * Called on every observed mutation.
-   * Must be cheap and idempotent.
-   */
   onChildrenChanged(_mutations) {}
+
+  /** Run fn() without triggering onChildrenChanged for the resulting DOM mutations. */
+  _withoutChildrenChangedNotification(fn) {
+    fn();
+    this._childrenObserver?.takeRecords();
+  }
 
   _startChildrenObserver() {
     const mode = this.constructor.observeMode || "children";
@@ -41,6 +41,8 @@ export class PwcChildrenObserverElement extends PwcElement {
     });
 
     this._childrenObserver.observe(this, { childList: true, subtree });
+
+    this.onChildrenChanged([]);
   }
 
   _stopChildrenObserver() {
