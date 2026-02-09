@@ -3,13 +3,6 @@ function defineOnce(name, classDef) {
   if (customElements.get(name)) return;
   customElements.define(name, classDef);
 }
-function installCssOnce(id, cssText, root = document) {
-  if (root.getElementById(id)) return;
-  const style = root.createElement("style");
-  style.id = id;
-  style.textContent = cssText;
-  root.head.appendChild(style);
-}
 
 // src/core/pwc-element.js
 var PwcElement = class extends HTMLElement {
@@ -21,6 +14,11 @@ var PwcElement = class extends HTMLElement {
    *   static events = ["click", "input"];
    */
   static events = [];
+  static registerCss(cssText) {
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(cssText);
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+  }
   connectedCallback() {
     if (this._connected) return;
     this._connected = true;
@@ -210,13 +208,7 @@ var BaseDialogOpener = class extends PwcElement {
     } else {
       buttonContainer.innerHTML = "";
     }
-    let selector = this.getAttribute("move-out");
-    if (selector === "submit") {
-      selector = "button[type=submit], input[type=submit]";
-    } else if (selector === "primary") {
-      selector = "button[type=submit].btn-primary, input[type=submit].btn-primary";
-    }
-    const elements = iframeDoc.querySelectorAll(selector);
+    const elements = iframeDoc.querySelectorAll(this._moveOutSelector());
     for (let i = 0; i < elements.length; i++) {
       const btn = elements[i];
       const outerBtn = document.createElement(btn.tagName);
@@ -232,6 +224,13 @@ var BaseDialogOpener = class extends PwcElement {
       btn.style.visibility = "hidden";
       btn.style.display = "none";
     }
+  }
+  _moveOutSelector() {
+    let selector = this.getAttribute("move-out");
+    if (selector === "submit") {
+      selector = "button[type=submit], input[type=submit]";
+    }
+    return selector;
   }
 };
 
@@ -452,14 +451,14 @@ var modal_dialog_default = "pwc-modal-dialog {\n  /* sizing */\n  --pwc-modal-ma
 
 // src/modal-dialog/index.js
 function register() {
-  installCssOnce("pwc-modal-dialog", modal_dialog_default);
+  PwcModalDialog.registerCss(modal_dialog_default);
   define2();
 }
 register();
 
 // src/dialog-opener/index.js
 function register2() {
-  installCssOnce("pwc-dialog-opener", dialog_opener_default);
+  PwcDialogOpener.registerCss(dialog_opener_default);
   define();
 }
 register2();

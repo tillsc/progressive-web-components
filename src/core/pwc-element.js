@@ -19,6 +19,12 @@ export class PwcElement extends HTMLElement {
    */
   static events = [];
 
+  static registerCss(cssText) {
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(cssText);
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+  }
+
   connectedCallback() {
     if (this._connected) return;
     this._connected = true;

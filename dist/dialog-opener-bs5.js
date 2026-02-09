@@ -14,6 +14,11 @@ var PwcElement = class extends HTMLElement {
    *   static events = ["click", "input"];
    */
   static events = [];
+  static registerCss(cssText) {
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(cssText);
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+  }
   connectedCallback() {
     if (this._connected) return;
     this._connected = true;
@@ -203,13 +208,7 @@ var BaseDialogOpener = class extends PwcElement {
     } else {
       buttonContainer.innerHTML = "";
     }
-    let selector = this.getAttribute("move-out");
-    if (selector === "submit") {
-      selector = "button[type=submit], input[type=submit]";
-    } else if (selector === "primary") {
-      selector = "button[type=submit].btn-primary, input[type=submit].btn-primary";
-    }
-    const elements = iframeDoc.querySelectorAll(selector);
+    const elements = iframeDoc.querySelectorAll(this._moveOutSelector());
     for (let i = 0; i < elements.length; i++) {
       const btn = elements[i];
       const outerBtn = document.createElement(btn.tagName);
@@ -225,6 +224,13 @@ var BaseDialogOpener = class extends PwcElement {
       btn.style.visibility = "hidden";
       btn.style.display = "none";
     }
+  }
+  _moveOutSelector() {
+    let selector = this.getAttribute("move-out");
+    if (selector === "submit") {
+      selector = "button[type=submit], input[type=submit]";
+    }
+    return selector;
   }
 };
 
@@ -262,6 +268,13 @@ var PwcDialogOpenerBs5 = class extends BaseDialogOpener {
       },
       hide: () => this.dialog.close()
     };
+  }
+  _moveOutSelector() {
+    let selector = super._moveOutSelector();
+    if (selector === "primary") {
+      selector = ".btn-primary[type=submit]";
+    }
+    return selector;
   }
 };
 function define() {

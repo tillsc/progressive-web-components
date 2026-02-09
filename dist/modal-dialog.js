@@ -1,16 +1,3 @@
-// src/core/utils.js
-function defineOnce(name, classDef) {
-  if (customElements.get(name)) return;
-  customElements.define(name, classDef);
-}
-function installCssOnce(id, cssText, root = document) {
-  if (root.getElementById(id)) return;
-  const style = root.createElement("style");
-  style.id = id;
-  style.textContent = cssText;
-  root.head.appendChild(style);
-}
-
 // src/core/pwc-element.js
 var PwcElement = class extends HTMLElement {
   /**
@@ -21,6 +8,11 @@ var PwcElement = class extends HTMLElement {
    *   static events = ["click", "input"];
    */
   static events = [];
+  static registerCss(cssText) {
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(cssText);
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+  }
   connectedCallback() {
     if (this._connected) return;
     this._connected = true;
@@ -163,6 +155,12 @@ var ModalDialogBase = class extends PwcSimpleInitElement {
   }
 };
 
+// src/core/utils.js
+function defineOnce(name, classDef) {
+  if (customElements.get(name)) return;
+  customElements.define(name, classDef);
+}
+
 // src/modal-dialog/modal-dialog.js
 var PwcModalDialog = class extends ModalDialogBase {
   isOpen() {
@@ -244,7 +242,7 @@ var modal_dialog_default = "pwc-modal-dialog {\n  /* sizing */\n  --pwc-modal-ma
 
 // src/modal-dialog/index.js
 function register() {
-  installCssOnce("pwc-modal-dialog", modal_dialog_default);
+  PwcModalDialog.registerCss(modal_dialog_default);
   define();
 }
 register();
