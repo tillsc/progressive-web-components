@@ -33,12 +33,12 @@ Text for the close button inside the dialog.
 ### `move-out`
 Moves action buttons from the iframe content into the dialog footer.
 
-Supported values:
+Supported magic values:
 - `submit`
-- `primary`
+- `primary` – **Bootstrap 5 variant only**
 
 ```html
-<pwc-dialog-opener move-out="primary">
+<pwc-dialog-opener move-out="submit">
 ```
 
 ### `local-reload`
