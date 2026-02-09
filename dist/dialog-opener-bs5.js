@@ -1,3 +1,9 @@
+// src/core/utils.js
+function defineOnce(name, classDef) {
+  if (customElements.get(name)) return;
+  customElements.define(name, classDef);
+}
+
 // src/core/pwc-element.js
 var PwcElement = class extends HTMLElement {
   /**
@@ -50,26 +56,6 @@ var PwcElement = class extends HTMLElement {
   handleEvent(_event) {
   }
 };
-var PwcSimpleInitElement = class extends PwcElement {
-  connectedCallback() {
-    if (this._connected) return;
-    super.connectedCallback();
-    queueMicrotask(() => {
-      if (!this._connected) return;
-      this.onConnect();
-    });
-  }
-  /**
-   * Hook for subclasses.
-   * Called once per connection, after microtask deferral.
-   */
-  onConnect() {
-  }
-};
-function defineOnce(name, classDef) {
-  if (customElements.get(name)) return;
-  customElements.define(name, classDef);
-}
 
 // src/dialog-opener/base.js
 var BaseDialogOpener = class extends PwcElement {
@@ -281,6 +267,24 @@ var PwcDialogOpenerBs5 = class extends BaseDialogOpener {
 function define() {
   defineOnce("pwc-dialog-opener-bs5", PwcDialogOpenerBs5);
 }
+
+// src/core/pwc-simple-init-element.js
+var PwcSimpleInitElement = class extends PwcElement {
+  connectedCallback() {
+    if (this._connected) return;
+    super.connectedCallback();
+    queueMicrotask(() => {
+      if (!this._connected) return;
+      this.onConnect();
+    });
+  }
+  /**
+   * Hook for subclasses.
+   * Called once per connection, after microtask deferral.
+   */
+  onConnect() {
+  }
+};
 
 // src/modal-dialog/base.js
 var ModalDialogBase = class extends PwcSimpleInitElement {

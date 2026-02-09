@@ -1,5 +1,5 @@
 // base.js
-import { PwcSimpleInitElement } from "../core/pwc-element.js";
+import { PwcSimpleInitElement } from "../core/pwc-simple-init-element.js";
 
 /**
  * ModalDialogBase

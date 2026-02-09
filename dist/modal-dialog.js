@@ -1,5 +1,9 @@
-// src/core/css.js
-function installOnce(id, cssText, root = document) {
+// src/core/utils.js
+function defineOnce(name, classDef) {
+  if (customElements.get(name)) return;
+  customElements.define(name, classDef);
+}
+function installCssOnce(id, cssText, root = document) {
   if (root.getElementById(id)) return;
   const style = root.createElement("style");
   style.id = id;
@@ -59,6 +63,8 @@ var PwcElement = class extends HTMLElement {
   handleEvent(_event) {
   }
 };
+
+// src/core/pwc-simple-init-element.js
 var PwcSimpleInitElement = class extends PwcElement {
   connectedCallback() {
     if (this._connected) return;
@@ -75,10 +81,6 @@ var PwcSimpleInitElement = class extends PwcElement {
   onConnect() {
   }
 };
-function defineOnce(name, classDef) {
-  if (customElements.get(name)) return;
-  customElements.define(name, classDef);
-}
 
 // src/modal-dialog/base.js
 var ModalDialogBase = class extends PwcSimpleInitElement {
@@ -242,7 +244,7 @@ var modal_dialog_default = "pwc-modal-dialog {\n  /* sizing */\n  --pwc-modal-ma
 
 // src/modal-dialog/index.js
 function register() {
-  installOnce("pwc-modal-dialog", modal_dialog_default);
+  installCssOnce("pwc-modal-dialog", modal_dialog_default);
   define();
 }
 register();

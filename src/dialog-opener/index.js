@@ -1,4 +1,4 @@
-import { installOnce } from "../core/css.js";
+import { installCssOnce } from "../core/utils.js";
 
 import { define } from "./dialog-opener.js";
 import cssText from "./dialog-opener.css";
@@ -7,7 +7,7 @@ import cssText from "./dialog-opener.css";
 import "../modal-dialog/index.js";
 
 export function register() {
-  installOnce("pwc-dialog-opener", cssText);
+  installCssOnce("pwc-dialog-opener", cssText);
   define();
 }
 

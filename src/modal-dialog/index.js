@@ -1,10 +1,10 @@
-import { installOnce } from "../core/css.js";
+import { installCssOnce } from "../core/utils.js";
 
 import { define } from "./modal-dialog.js";
 import cssText from "./modal-dialog.css";
 
 export function register() {
-  installOnce("pwc-modal-dialog", cssText);
+  installCssOnce("pwc-modal-dialog", cssText);
   define();
 }
 

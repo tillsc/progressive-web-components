@@ -1,5 +1,9 @@
-// src/core/css.js
-function installOnce(id, cssText, root = document) {
+// src/core/utils.js
+function defineOnce(name, classDef) {
+  if (customElements.get(name)) return;
+  customElements.define(name, classDef);
+}
+function installCssOnce(id, cssText, root = document) {
   if (root.getElementById(id)) return;
   const style = root.createElement("style");
   style.id = id;
@@ -59,26 +63,6 @@ var PwcElement = class extends HTMLElement {
   handleEvent(_event) {
   }
 };
-var PwcSimpleInitElement = class extends PwcElement {
-  connectedCallback() {
-    if (this._connected) return;
-    super.connectedCallback();
-    queueMicrotask(() => {
-      if (!this._connected) return;
-      this.onConnect();
-    });
-  }
-  /**
-   * Hook for subclasses.
-   * Called once per connection, after microtask deferral.
-   */
-  onConnect() {
-  }
-};
-function defineOnce(name, classDef) {
-  if (customElements.get(name)) return;
-  customElements.define(name, classDef);
-}
 
 // src/dialog-opener/base.js
 var BaseDialogOpener = class extends PwcElement {
@@ -288,6 +272,24 @@ function define() {
 // src/dialog-opener/dialog-opener.css
 var dialog_opener_default = "/* Footer actions container (used by move-out) */\n.pwc-dialog-opener-footer {\n  display: flex;\n  justify-content: flex-end;\n  gap: 8px;\n}\n\n/* Close button */\n.pwc-dialog-opener-close {\n  appearance: none;\n  border: 1px solid rgba(0, 0, 0, 0.25);\n  background: transparent;\n  font: inherit;\n  padding: 6px 12px;\n  border-radius: 4px;\n  cursor: pointer;\n}\n\n.pwc-dialog-opener-close:hover {\n  background: rgba(0, 0, 0, 0.06);\n}\n";
 
+// src/core/pwc-simple-init-element.js
+var PwcSimpleInitElement = class extends PwcElement {
+  connectedCallback() {
+    if (this._connected) return;
+    super.connectedCallback();
+    queueMicrotask(() => {
+      if (!this._connected) return;
+      this.onConnect();
+    });
+  }
+  /**
+   * Hook for subclasses.
+   * Called once per connection, after microtask deferral.
+   */
+  onConnect() {
+  }
+};
+
 // src/modal-dialog/base.js
 var ModalDialogBase = class extends PwcSimpleInitElement {
   static events = ["click"];
@@ -450,14 +452,14 @@ var modal_dialog_default = "pwc-modal-dialog {\n  /* sizing */\n  --pwc-modal-ma
 
 // src/modal-dialog/index.js
 function register() {
-  installOnce("pwc-modal-dialog", modal_dialog_default);
+  installCssOnce("pwc-modal-dialog", modal_dialog_default);
   define2();
 }
 register();
 
 // src/dialog-opener/index.js
 function register2() {
-  installOnce("pwc-dialog-opener", dialog_opener_default);
+  installCssOnce("pwc-dialog-opener", dialog_opener_default);
   define();
 }
 register2();

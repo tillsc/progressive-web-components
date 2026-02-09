@@ -50,6 +50,8 @@ var PwcElement = class extends HTMLElement {
   handleEvent(_event) {
   }
 };
+
+// src/core/pwc-simple-init-element.js
 var PwcSimpleInitElement = class extends PwcElement {
   connectedCallback() {
     if (this._connected) return;
@@ -66,10 +68,6 @@ var PwcSimpleInitElement = class extends PwcElement {
   onConnect() {
   }
 };
-function defineOnce(name, classDef) {
-  if (customElements.get(name)) return;
-  customElements.define(name, classDef);
-}
 
 // src/modal-dialog/base.js
 var ModalDialogBase = class extends PwcSimpleInitElement {
@@ -151,6 +149,12 @@ var ModalDialogBase = class extends PwcSimpleInitElement {
     ui?.teardown?.();
   }
 };
+
+// src/core/utils.js
+function defineOnce(name, classDef) {
+  if (customElements.get(name)) return;
+  customElements.define(name, classDef);
+}
 
 // src/modal-dialog/bs5/modal-dialog.js
 var PwcModalDialogBs5 = class extends ModalDialogBase {

@@ -1,4 +1,4 @@
-import { defineOnce } from "../../core/pwc-element.js";
+import { defineOnce } from "../../core/utils.js";
 import { BaseDialogOpener } from "../base.js";
 
 /**

@@ -1,5 +1,5 @@
 import { ModalDialogBase } from "./base.js";
-import { defineOnce } from "../core/pwc-element.js";
+import { defineOnce } from "../core/utils.js";
 
 export class PwcModalDialog extends ModalDialogBase {
   isOpen() {
