@@ -30,7 +30,7 @@ async function pool(items, worker, concurrency) {
 const { baseUrl, components, close } = await startServer({ port: 0 });
 
 if (!components || components.length === 0) {
-  console.log("No component tests found. Expected src/<component>/test/index.html");
+  console.log("No component tests found. Expected src/<component>/index.html");
   await close();
   process.exit(0);
 }
@@ -43,7 +43,7 @@ let totalFailed = 0;
 
 try {
   for (const component of components) {
-    const indexPath = `/src/${component}/test/index.html`;
+    const indexPath = `/src/${component}/index.html`;
     const indexUrl = `${baseUrl}${indexPath}`;
 
     console.log(`\n## ${component}`);

@@ -17,8 +17,9 @@ A collection of Custom Elements designed to work with server-rendered HTML and p
 
 | Component | Description |
 |-----------|-------------|
-| [`<pwc-dialog-opener>`](src/dialog-opener/README.md) | Enhances links to open their targets in a modal dialog |
-| [`<pwc-modal-dialog>`](src/modal-dialog/README.md) | Low-level building block for modal dialogs from JavaScript |
+| [`<pwc-dialog-opener>`](src/dialog-opener/) | Enhances links to open their targets in a modal dialog |
+| [`<pwc-modal-dialog>`](src/modal-dialog/) | Low-level building block for modal dialogs from JavaScript |
+| [`<pwc-multiselect-dual-list>`](src/multiselect-dual-list/) | Dual-list multiselect UI that enhances a native `<select>` element |
 
 Each component ships a **vanilla** variant and a **Bootstrap 5** variant.
 
@@ -28,3 +29,5 @@ Each component ships a **vanilla** variant and a **Bootstrap 5** variant.
 
 - `dialog-opener.js` / `dialog-opener-bs5.js`
 - `modal-dialog.js` / `modal-dialog-bs5.js`
+- `multiselect-dual-list.js` / `multiselect-dual-list-bs5.js`
+- `all.js` / `all-bs5.js` (all components bundled)

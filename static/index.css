@@ -1,0 +1,62 @@
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 72rem;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+  line-height: 1.6;
+  color: #1a1a1a;
+}
+
+h2 {
+  margin-top: 2rem;
+  border-top: 1px solid #ddd;
+  padding-top: 1.5rem;
+}
+
+.pwc-page-layout {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.pwc-page-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.pwc-page-sidebar {
+  width: 14rem;
+  flex-shrink: 0;
+  position: sticky;
+  top: 2rem;
+  border-left: 1px solid #ddd;
+  padding-left: 1.5rem;
+}
+
+.pwc-page-sidebar h3 {
+  margin-top: 0;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #666;
+}
+
+.pwc-page-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pwc-page-sidebar li {
+  margin-bottom: 0.4rem;
+}
+
+.pwc-page-sidebar a {
+  color: #0969da;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.pwc-page-sidebar a:hover {
+  text-decoration: underline;
+}
