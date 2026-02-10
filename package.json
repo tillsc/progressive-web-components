@@ -1,6 +1,6 @@
 {
   "name": "@tillsc/progressive-web-components",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Server-first web components.",
   "type": "module",
   "license": "MIT",
