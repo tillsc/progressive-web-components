@@ -73,7 +73,7 @@ export class BaseFilter extends PwcSimpleInitElement {
     const safe = token.replace(/"/g, '\\"');
     const expr =
       `.//*[contains(` +
-      `translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),` +
+      `translate(normalize-space(string(.)), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),` +
       `"${safe}")]`;
 
     const snap = document.evaluate(
