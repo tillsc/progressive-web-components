@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>multiselect-dual-list: basic</title>
+  <script type="module" src="../../../dist/multiselect-dual-list.js"></script>
+</head>
+<body>
+  <pwc-multiselect-dual-list id="demo" available-label="Available" selected-label="Selected">
+    <select multiple name="items">
+      <option value="1">Root A</option>
+      <option value="2" data-parent="1">Child A1</option>
+      <option value="3" data-parent="1">Child A2</option>
+      <option value="4" selected>Pre-selected</option>
+      <option value="5" disabled>Disabled Item</option>
+      <option value="6">Root B</option>
+    </select>
+  </pwc-multiselect-dual-list>
+
+  <script type="module">
+    import { run } from "../../../test/static/harness.js";
+
+    run(async ({ assert, equal, waitFor, log }) => {
+      const host = document.getElementById("demo");
+
+      log("waiting for UI to build");
+      await waitFor(
+        () => host.querySelector(".pwc-msdl-container"),
+        { label: "container rendered" }
+      );
+
+      const container = host.querySelector(".pwc-msdl-container");
+      assert(container, "container exists");
+
+      // Check select is hidden
+      const select = host.querySelector("select");
+      equal(select.style.display, "none", "select is hidden");
+
+      // Check available list has all items
+      const availableItems = container.querySelectorAll(".pwc-msdl-available [data-value]");
+      equal(availableItems.length, 6, "6 available items rendered");
+
+      // Check pre-selected item is in selected list
+      const selectedItems = container.querySelectorAll(".pwc-msdl-selected [data-value]");
+      equal(selectedItems.length, 1, "1 pre-selected item");
+      equal(selectedItems[0].dataset.value, "4", "pre-selected item has value 4");
+
+      // Check disabled item has no add button
+      const disabledItem = container.querySelector("[data-value='5']");
+      assert(disabledItem.classList.contains("pwc-msdl-item--disabled"), "disabled item has disabled class");
+      assert(!disabledItem.querySelector("[data-action='add']"), "disabled item has no add button");
+
+      // Check hierarchy indentation
+      const child = container.querySelector(".pwc-msdl-available [data-value='2']");
+      assert(child.style.paddingLeft, "child item has indentation");
+
+      // Test adding an item
+      log("adding item via click");
+      const addBtn = container.querySelector(".pwc-msdl-available [data-value='1'] [data-action='add']");
+      addBtn.click();
+
+      await waitFor(
+        () => container.querySelectorAll(".pwc-msdl-selected [data-value]").length === 2,
+        { label: "item added to selected" }
+      );
+      equal(select.querySelector("option[value='1']").selected, true, "option 1 is selected in native select");
+
+      // Available entry should be marked as selected
+      const availEntry = container.querySelector(".pwc-msdl-available [data-value='1']");
+      assert(availEntry.classList.contains("pwc-msdl-item--selected"), "available entry marked as selected");
+
+      // Test removing an item
+      log("removing item via click");
+      const removeBtn = container.querySelector(".pwc-msdl-selected [data-value='4'] [data-action='remove']");
+      removeBtn.click();
+
+      await waitFor(
+        () => container.querySelectorAll(".pwc-msdl-selected [data-value]").length === 1,
+        { label: "item removed from selected" }
+      );
+      equal(select.querySelector("option[value='4']").selected, false, "option 4 is deselected in native select");
+
+      // Test filter
+      log("testing filter");
+      const filterInput = container.querySelector(".pwc-msdl-filter");
+      filterInput.value = "Root";
+      filterInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+      await waitFor(
+        () => {
+          const visible = Array.from(container.querySelectorAll(".pwc-msdl-available [data-value]"))
+            .filter((el) => el.style.display !== "none");
+          return visible.length === 2; // Root A + Root B
+        },
+        { label: "filter shows only matching items" }
+      );
+
+      // Clear filter
+      filterInput.value = "";
+      filterInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+      await waitFor(
+        () => {
+          const visible = Array.from(container.querySelectorAll(".pwc-msdl-available [data-value]"))
+            .filter((el) => el.style.display !== "none");
+          return visible.length === 6;
+        },
+        { label: "clearing filter shows all items" }
+      );
+
+      log("done");
+    });
+  </script>
+</body>
+</html>

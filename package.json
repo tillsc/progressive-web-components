@@ -8,7 +8,14 @@
     "dist"
   ],
   "exports": {
-    "./dialog-opener": "./dist/dialog-opener.js"
+    "./all": "./dist/all.js",
+    "./all-bs5": "./dist/all-bs5.js",
+    "./dialog-opener": "./dist/dialog-opener.js",
+    "./dialog-opener-bs5": "./dist/dialog-opener-bs5.js",
+    "./modal-dialog": "./dist/modal-dialog.js",
+    "./modal-dialog-bs5": "./dist/modal-dialog-bs5.js",
+    "./multiselect-dual-list": "./dist/multiselect-dual-list.js",
+    "./multiselect-dual-list-bs5": "./dist/multiselect-dual-list-bs5.js"
   },
   "scripts": {
     "clean": "rm -rf dist",

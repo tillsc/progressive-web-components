@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>multiselect-dual-list: bs5-basic</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <script type="module" src="../../../dist/multiselect-dual-list-bs5.js"></script>
+</head>
+<body class="p-3">
+  <pwc-multiselect-dual-list-bs5 id="demo" available-label="Available" selected-label="Selected">
+    <select multiple name="items">
+      <option value="1">Root A</option>
+      <option value="2" data-parent="1">Child A1</option>
+      <option value="3" selected>Pre-selected</option>
+      <option value="4" disabled>Disabled</option>
+    </select>
+  </pwc-multiselect-dual-list-bs5>
+
+  <script type="module">
+    import { run } from "../../../test/static/harness.js";
+
+    run(async ({ assert, equal, waitFor, log }) => {
+      const host = document.getElementById("demo");
+
+      log("waiting for UI to build");
+      await waitFor(
+        () => host.querySelector(".row"),
+        { label: "container rendered" }
+      );
+
+      const container = host.querySelector(".row");
+      assert(container, "container exists");
+
+      // Check select is hidden
+      const select = host.querySelector("select");
+      equal(select.style.display, "none", "select is hidden");
+
+      // Get columns: first = selected, last = available
+      const cols = container.querySelectorAll(".col");
+      const selectedCol = cols[0];
+      const availableCol = cols[1];
+
+      // Check list-group items rendered
+      const available = availableCol.querySelectorAll(".list-group [data-value]");
+      equal(available.length, 4, "4 available items rendered");
+      const selectedItems = selectedCol.querySelectorAll(".list-group [data-value]");
+      equal(selectedItems.length, 1, "1 pre-selected item");
+      equal(selectedItems[0].dataset.value, "3", "pre-selected item has value 3");
+
+      // Test adding an item
+      log("adding item via click");
+      const addBtn = container.querySelector("[data-value='1'] [data-action='add']");
+      addBtn.click();
+
+      await waitFor(
+        () => selectedCol.querySelectorAll(".list-group [data-value]").length === 2,
+        { label: "item added to selected" }
+      );
+      equal(select.querySelector("option[value='1']").selected, true, "option 1 is selected");
+
+      // Test removing an item
+      log("removing item via click");
+      const removeBtn = selectedCol.querySelector("[data-value='3'] [data-action='remove']");
+      removeBtn.click();
+
+      await waitFor(
+        () => selectedCol.querySelectorAll(".list-group [data-value]").length === 1,
+        { label: "item removed from selected" }
+      );
+      equal(select.querySelector("option[value='3']").selected, false, "option 3 deselected");
+
+      // Test filter
+      log("testing filter");
+      const filterInput = availableCol.querySelector("input[type='search']");
+      assert(filterInput, "filter input exists");
+
+      filterInput.value = "Root";
+      filterInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+      await waitFor(
+        () => {
+          const visible = Array.from(availableCol.querySelectorAll(".list-group [data-value]"))
+            .filter((el) => !el.classList.contains("d-none"));
+          return visible.length === 1; // Root A
+        },
+        { label: "filter shows only matching items" }
+      );
+
+      // Clear filter
+      filterInput.value = "";
+      filterInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+      await waitFor(
+        () => {
+          const visible = Array.from(availableCol.querySelectorAll(".list-group [data-value]"))
+            .filter((el) => !el.classList.contains("d-none"));
+          return visible.length === 4;
+        },
+        { label: "clearing filter shows all items" }
+      );
+
+      log("done");
+    });
+  </script>
+</body>
+</html>

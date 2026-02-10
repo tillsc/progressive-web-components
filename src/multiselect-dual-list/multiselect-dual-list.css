@@ -1,0 +1,123 @@
+pwc-multiselect-dual-list {
+  /* sizing */
+  --pwc-msdl-width: 100%;
+
+  /* spacing */
+  --pwc-msdl-gap: 12px;
+  --pwc-msdl-padding: 8px;
+  --pwc-msdl-item-padding: 6px 10px;
+  --pwc-msdl-indent: 1.5em;
+
+  /* list */
+  --pwc-msdl-list-max-height: 20em;
+
+  /* visuals */
+  --pwc-msdl-bg: #fff;
+  --pwc-msdl-border: 1px solid rgba(0, 0, 0, 0.15);
+  --pwc-msdl-border-radius: 4px;
+  --pwc-msdl-separator: rgba(0, 0, 0, 0.08);
+
+  /* item */
+  --pwc-msdl-item-bg: #f8f8f8;
+  --pwc-msdl-item-hover-bg: #f0f0f0;
+  --pwc-msdl-item-selected-bg: #e8e8e8;
+  --pwc-msdl-item-selected-color: #999;
+  --pwc-msdl-item-disabled-color: #bbb;
+
+  /* button */
+  --pwc-msdl-action-bg: transparent;
+  --pwc-msdl-action-hover-bg: rgba(0, 0, 0, 0.06);
+  --pwc-msdl-action-border: 1px solid rgba(0, 0, 0, 0.2);
+  --pwc-msdl-action-radius: 3px;
+
+  display: block;
+  width: var(--pwc-msdl-width);
+}
+
+.pwc-msdl-container {
+  display: flex;
+  gap: var(--pwc-msdl-gap);
+}
+
+.pwc-msdl-selected,
+.pwc-msdl-available {
+  flex: 1;
+  min-width: 0;
+  background: var(--pwc-msdl-bg);
+  border: var(--pwc-msdl-border);
+  border-radius: var(--pwc-msdl-border-radius);
+  padding: var(--pwc-msdl-padding);
+}
+
+.pwc-msdl-header {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.pwc-msdl-filter {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 8px;
+  margin-bottom: 6px;
+  border: var(--pwc-msdl-border);
+  border-radius: var(--pwc-msdl-border-radius);
+  font: inherit;
+  font-size: 0.9em;
+}
+
+.pwc-msdl-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: var(--pwc-msdl-list-max-height);
+  overflow-y: auto;
+}
+
+.pwc-msdl-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--pwc-msdl-item-padding);
+  background: var(--pwc-msdl-item-bg);
+  border-bottom: 1px solid var(--pwc-msdl-separator);
+}
+
+.pwc-msdl-item:last-child {
+  border-bottom: none;
+}
+
+.pwc-msdl-item:hover {
+  background: var(--pwc-msdl-item-hover-bg);
+}
+
+.pwc-msdl-item--selected {
+  background: var(--pwc-msdl-item-selected-bg);
+  color: var(--pwc-msdl-item-selected-color);
+}
+
+.pwc-msdl-item--disabled {
+  color: var(--pwc-msdl-item-disabled-color);
+  cursor: default;
+}
+
+.pwc-msdl-action {
+  appearance: none;
+  border: var(--pwc-msdl-action-border);
+  background: var(--pwc-msdl-action-bg);
+  padding: 2px 8px;
+  border-radius: var(--pwc-msdl-action-radius);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85em;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.pwc-msdl-action:hover {
+  background: var(--pwc-msdl-action-hover-bg);
+}
+
+pwc-multiselect-dual-list[hide-selected] .pwc-msdl-item--selected {
+  display: none;
+}

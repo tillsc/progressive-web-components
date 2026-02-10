@@ -6,7 +6,11 @@ const entryPoints = {
   "dialog-opener": "src/dialog-opener/index.js",
   "dialog-opener-bs5": "src/dialog-opener/bs5/index.js",
   "modal-dialog": "src/modal-dialog/index.js",
-  "modal-dialog-bs5": "src/modal-dialog/bs5/index.js"
+  "modal-dialog-bs5": "src/modal-dialog/bs5/index.js",
+  "multiselect-dual-list": "src/multiselect-dual-list/index.js",
+  "multiselect-dual-list-bs5": "src/multiselect-dual-list/bs5/index.js",
+  "all": "src/index.js",
+  "all-bs5": "src/index-bs5.js",
 };
 
 const config = {
