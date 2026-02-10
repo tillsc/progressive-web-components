@@ -1,6 +1,6 @@
 {
   "name": "@tillsc/progressive-web-components",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Server-first web components.",
   "type": "module",
   "license": "MIT",
@@ -11,6 +11,8 @@
     "./all-bs5": "./dist/all-bs5.js",
     "./dialog-opener": "./dist/dialog-opener.js",
     "./dialog-opener-bs5": "./dist/dialog-opener-bs5.js",
+    "./filter": "./dist/filter.js",
+    "./filter-bs5": "./dist/filter-bs5.js",
     "./modal-dialog": "./dist/modal-dialog.js",
     "./modal-dialog-bs5": "./dist/modal-dialog-bs5.js",
     "./multiselect-dual-list": "./dist/multiselect-dual-list.js",
