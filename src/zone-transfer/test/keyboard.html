@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>zone-transfer: keyboard (3 zones)</title>
+    <script type="module" src="../../../dist/zone-transfer.js"></script>
+</head>
+
+<body>
+<pwc-zone-transfer id="zt">
+    <pwc-zone-transfer-zone name="a" data-pwc-zone-key="1">
+        <pwc-zone-transfer-item id="a1">A1</pwc-zone-transfer-item>
+        <pwc-zone-transfer-item id="a2">A2</pwc-zone-transfer-item>
+        <pwc-zone-transfer-item id="a3">A3</pwc-zone-transfer-item>
+    </pwc-zone-transfer-zone>
+
+    <pwc-zone-transfer-zone name="b" data-pwc-zone-key="2">
+        <pwc-zone-transfer-item id="b1">B1</pwc-zone-transfer-item>
+    </pwc-zone-transfer-zone>
+
+    <pwc-zone-transfer-zone name="c" data-pwc-zone-key="3">
+        <!-- empty -->
+    </pwc-zone-transfer-zone>
+</pwc-zone-transfer>
+
+<style>
+    pwc-zone-transfer-zone {
+        display: block;
+        border: 1px solid #999;
+        padding: 0.4rem;
+        margin: 0.8rem;
+        min-height: 2rem;
+    }
+    pwc-zone-transfer-item {
+        display: block;
+        padding: 0.2rem 0.3rem;
+        border: 1px solid #ddd;
+        margin: 0.2rem 0;
+    }
+</style>
+
+<script type="module">
+  import { run } from "../../../static/test-harness.js";
+
+  function key(el, k, opts = {}) {
+    el.dispatchEvent(new KeyboardEvent("keydown", {
+      key: k,
+      bubbles: true,
+      cancelable: true,
+      ctrlKey: Boolean(opts.ctrlKey),
+      metaKey: Boolean(opts.metaKey)
+    }));
+  }
+
+  run(async ({ assert, equal, waitFor, log, nextTick }) => {
+    log("checking element definition");
+    assert(customElements.get("pwc-zone-transfer"), "pwc-zone-transfer not defined");
+
+    const el = document.getElementById("zt");
+    assert(el, "missing <pwc-zone-transfer>");
+
+    const zoneA = el.querySelector('pwc-zone-transfer-zone[name="a"]');
+    const zoneB = el.querySelector('pwc-zone-transfer-zone[name="b"]');
+    const zoneC = el.querySelector('pwc-zone-transfer-zone[name="c"]');
+    assert(zoneA && zoneB && zoneC, "missing zones");
+
+    const a2 = zoneA.querySelector("#a2");
+    assert(a2, "missing a2");
+
+    log("focus a2 (roving tabindex)");
+    a2.tabIndex = 0;
+    a2.focus();
+    await nextTick("after focus");
+    equal(document.activeElement, a2, "a2 should be focused");
+
+    log("keyboard reorder within zone: Ctrl+ArrowDown moves a2 below a3");
+    key(a2, "ArrowDown", { ctrlKey: true });
+    await nextTick("after reorder");
+
+    {
+      const ids = Array.from(zoneA.querySelectorAll("pwc-zone-transfer-item")).map((n) => n.id);
+      equal(ids[0], "a1", "a1 stays first");
+      equal(ids[1], "a3", "a3 becomes second");
+      equal(ids[2], "a2", "a2 becomes third");
+    }
+
+    log("keyboard move to zone via hotkey: '2' moves focused item to zone b");
+    zoneA.querySelector("#a2").focus();
+    await nextTick("after refocus");
+
+    key(document.activeElement, "2");
+    await nextTick("after hotkey move");
+
+    await waitFor(() => zoneB.querySelector("#a2"), { label: "a2 moved to zone b" });
+    equal(Boolean(zoneA.querySelector("#a2")), false, "a2 removed from zone a");
+
+    log("keyboard move to empty zone via hotkey: '3' moves focused item to zone c");
+    zoneB.querySelector("#a2").focus();
+    await nextTick("after focus in b");
+
+    key(document.activeElement, "3");
+    await nextTick("after hotkey move 2");
+
+    await waitFor(() => zoneC.querySelector("#a2"), { label: "a2 moved to zone c" });
+    equal(Boolean(zoneB.querySelector("#a2")), false, "a2 removed from zone b");
+
+    log("done");
+  });
+</script>
+</body>
+</html>

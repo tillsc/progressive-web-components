@@ -14,7 +14,8 @@
     "./modal-dialog": "./dist/modal-dialog.js",
     "./modal-dialog-bs5": "./dist/modal-dialog-bs5.js",
     "./multiselect-dual-list": "./dist/multiselect-dual-list.js",
-    "./multiselect-dual-list-bs5": "./dist/multiselect-dual-list-bs5.js"
+    "./multiselect-dual-list-bs5": "./dist/multiselect-dual-list-bs5.js",
+    "./zone-transfer": "./dist/zone-transfer.js"
   },
   "scripts": {
     "clean": "rm -rf dist",

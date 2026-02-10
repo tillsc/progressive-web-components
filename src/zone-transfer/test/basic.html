@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>zone-transfer: move between zones</title>
+    <script type="module" src="../../../dist/zone-transfer.js"></script>
+</head>
+
+<body>
+<pwc-zone-transfer id="zt">
+    <pwc-zone-transfer-zone name="available">
+        <div data-pwc-item="a">Alice</div>
+        <div data-pwc-item="b">Bob</div>
+    </pwc-zone-transfer-zone>
+
+    <pwc-zone-transfer-zone name="selected">
+        <!-- empty -->
+    </pwc-zone-transfer-zone>
+</pwc-zone-transfer>
+
+<style>
+    pwc-zone-transfer-zone {
+        display: block;
+        border: 1px solid red;
+        padding: 0.4rem;
+        margin: 0.8rem;
+        min-height: 2rem;
+    }
+    pwc-zone-transfer-zone[name="selected"] {
+        border-color: blue;
+    }
+</style>
+
+<script type="module">
+  import { run } from "../../../static/test-harness.js";
+
+  run(async ({ assert, equal, waitFor, log, nextTick }) => {
+    log("checking element definition");
+    assert(customElements.get("pwc-zone-transfer"), "pwc-zone-transfer not defined");
+
+    const el = document.getElementById("zt");
+    assert(el, "missing <pwc-zone-transfer>");
+
+    const zoneAvailable = el.querySelector('pwc-zone-transfer-zone[name="available"]');
+    const zoneSelected = el.querySelector('pwc-zone-transfer-zone[name="selected"]');
+    assert(zoneAvailable, "missing available zone");
+    assert(zoneSelected, "missing selected zone");
+
+    const alice = zoneAvailable.querySelector('[data-pwc-item="a"]');
+    assert(alice, "missing item a");
+
+    log("precondition: item is in available zone");
+    equal(zoneAvailable.querySelectorAll("[data-pwc-item]").length, 2, "expected 2 items in available");
+    equal(zoneSelected.querySelectorAll("[data-pwc-item]").length, 0, "expected 0 items in selected");
+
+    log("simulating drag&drop: Alice -> selected");
+
+    alice.dispatchEvent(new DragEvent("dragstart", { bubbles: true, cancelable: true }));
+    zoneSelected.dispatchEvent(new DragEvent("dragover", { bubbles: true, cancelable: true, clientY: 0 }));
+    zoneSelected.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true }));
+    alice.dispatchEvent(new DragEvent("dragend", { bubbles: true, cancelable: true }));
+
+    await nextTick("after drop");
+
+    log("waiting for DOM move to complete");
+    await waitFor(() => {
+      return zoneSelected.querySelector('[data-pwc-item="a"]') && !zoneAvailable.querySelector('[data-pwc-item="a"]');
+    }, { label: "alice moved to selected" });
+
+    log("asserting final counts");
+    equal(zoneAvailable.querySelectorAll("[data-pwc-item]").length, 1, "expected 1 item remaining in available");
+    equal(zoneSelected.querySelectorAll("[data-pwc-item]").length, 1, "expected 1 item in selected");
+
+    log("done");
+  });
+</script>
+</body>
+</html>

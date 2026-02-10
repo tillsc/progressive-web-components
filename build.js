@@ -9,6 +9,7 @@ const entryPoints = {
   "modal-dialog-bs5": "src/modal-dialog/bs5/index.js",
   "multiselect-dual-list": "src/multiselect-dual-list/index.js",
   "multiselect-dual-list-bs5": "src/multiselect-dual-list/bs5/index.js",
+  "zone-transfer": "src/zone-transfer/index.js",
   "all": "src/index.js",
   "all-bs5": "src/index-bs5.js",
 };

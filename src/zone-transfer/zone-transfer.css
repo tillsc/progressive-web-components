@@ -1,0 +1,12 @@
+pwc-zone-transfer [draggable="true"] {
+    cursor: grab;
+}
+
+pwc-zone-transfer .pwc-zone-transfer-dragging {
+    cursor: grabbing;
+    opacity: 0.6;
+}
+
+pwc-zone-transfer .pwc-zone-transfer-placeholder {
+    opacity: 0.3;
+}
