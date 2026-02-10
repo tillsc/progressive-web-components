@@ -62,6 +62,104 @@ var PwcElement = class extends HTMLElement {
   }
 };
 
+// src/core/pwc-simple-init-element.js
+var PwcSimpleInitElement = class extends PwcElement {
+  connectedCallback() {
+    if (this._connected) return;
+    super.connectedCallback();
+    queueMicrotask(() => {
+      if (!this._connected) return;
+      this.onConnect();
+    });
+  }
+  /**
+   * Hook for subclasses.
+   * Called once per connection, after microtask deferral.
+   */
+  onConnect() {
+  }
+};
+
+// src/filter/base.js
+var BaseFilter = class extends PwcSimpleInitElement {
+  static defaultRowSelector = "pwc-filter-row, [data-pwc-filter-row]";
+  onConnect() {
+    const { wrapper, input } = this._createInput();
+    this._input = input;
+    const debounceTimeout = Number(this.getAttribute("debounce"));
+    input.addEventListener(
+      "keyup",
+      this._debounce(
+        this._applyFilter,
+        Number.isFinite(debounceTimeout) ? debounceTimeout : 300
+      )
+    );
+    this.prepend(wrapper);
+  }
+  _createInput() {
+    const input = document.createElement("input");
+    input.type = "search";
+    input.placeholder = this.getAttribute("placeholder") || "Search\u2026";
+    return { wrapper: input, input };
+  }
+  _debounce(fn, timeout) {
+    if (timeout === 0) {
+      return (...args) => fn.apply(this, args);
+    }
+    return (...args) => {
+      clearTimeout(this._debounceTimer);
+      this._debounceTimer = setTimeout(() => fn.apply(this, args), timeout);
+    };
+  }
+  _rowSelector() {
+    return this.getAttribute("row-selector") || this.constructor.defaultRowSelector;
+  }
+  _rows() {
+    return Array.from(this.querySelectorAll(this._rowSelector()));
+  }
+  _applyFilter() {
+    const tokens = this._input.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const rows = this._rows();
+    if (!tokens.length) {
+      for (const r of rows) r.hidden = false;
+      return;
+    }
+    for (const r of rows) r.hidden = true;
+    const matches = tokens.map((t) => this._rowsForToken(t));
+    const keep = matches.reduce((a, b) => a.filter((x) => b.includes(x)));
+    for (const r of keep) r.hidden = false;
+  }
+  _rowsForToken(token) {
+    const safe = token.replace(/"/g, '\\"');
+    const expr = `.//*[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),"${safe}")]`;
+    const snap = document.evaluate(
+      expr,
+      this,
+      null,
+      XPathResult.ORDERED_NODE_SNAPSHOT_TYPE
+    );
+    const rows = [];
+    for (let i = 0; i < snap.snapshotLength; i++) {
+      const r = snap.snapshotItem(i)?.closest(this._rowSelector());
+      if (r && !rows.includes(r)) rows.push(r);
+    }
+    return rows;
+  }
+};
+
+// src/filter/filter.js
+var PwcFilter = class extends BaseFilter {
+};
+function define() {
+  defineOnce("pwc-filter", PwcFilter);
+}
+
+// src/filter/index.js
+function register() {
+  define();
+}
+register();
+
 // src/dialog-opener/base.js
 var BaseDialogOpener = class extends PwcElement {
   static events = ["click"];
@@ -264,30 +362,12 @@ var PwcDialogOpener = class extends BaseDialogOpener {
     };
   }
 };
-function define() {
+function define2() {
   defineOnce("pwc-dialog-opener", PwcDialogOpener);
 }
 
 // src/dialog-opener/dialog-opener.css
 var dialog_opener_default = "/* Footer actions container (used by move-out) */\n.pwc-dialog-opener-footer {\n  display: flex;\n  justify-content: flex-end;\n  gap: 8px;\n}\n\n/* Close button */\n.pwc-dialog-opener-close {\n  appearance: none;\n  border: 1px solid rgba(0, 0, 0, 0.25);\n  background: transparent;\n  font: inherit;\n  padding: 6px 12px;\n  border-radius: 4px;\n  cursor: pointer;\n}\n\n.pwc-dialog-opener-close:hover {\n  background: rgba(0, 0, 0, 0.06);\n}\n";
-
-// src/core/pwc-simple-init-element.js
-var PwcSimpleInitElement = class extends PwcElement {
-  connectedCallback() {
-    if (this._connected) return;
-    super.connectedCallback();
-    queueMicrotask(() => {
-      if (!this._connected) return;
-      this.onConnect();
-    });
-  }
-  /**
-   * Hook for subclasses.
-   * Called once per connection, after microtask deferral.
-   */
-  onConnect() {
-  }
-};
 
 // src/modal-dialog/base.js
 var ModalDialogBase = class extends PwcSimpleInitElement {
@@ -444,24 +524,24 @@ var PwcModalDialog = class extends ModalDialogBase {
     };
   }
 };
-var define2 = () => defineOnce("pwc-modal-dialog", PwcModalDialog);
+var define3 = () => defineOnce("pwc-modal-dialog", PwcModalDialog);
 
 // src/modal-dialog/modal-dialog.css
 var modal_dialog_default = "pwc-modal-dialog {\n  /* sizing */\n  --pwc-modal-max-width: 720px;\n  --pwc-modal-width: 92vw;\n\n  /* spacing */\n  --pwc-modal-padding-header: 12px 16px;\n  --pwc-modal-padding-body: 16px;\n  --pwc-modal-padding-footer: 12px 16px;\n  --pwc-modal-gap-footer: 8px;\n\n  /* visuals */\n  --pwc-modal-bg: #fff;\n  --pwc-modal-backdrop: rgba(0, 0, 0, 0.45);\n  --pwc-modal-border-radius: 6px;\n  --pwc-modal-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);\n  --pwc-modal-separator: rgba(0, 0, 0, 0.08);\n\n  /* controls */\n  --pwc-modal-close-radius: 4px;\n  --pwc-modal-close-hover-bg: rgba(0, 0, 0, 0.06);\n}\n\npwc-modal-dialog dialog.pwc-modal-dialog {\n  border: none;\n  padding: 0;\n  max-width: min(var(--pwc-modal-max-width), var(--pwc-modal-width));\n  width: var(--pwc-modal-width);\n}\n\npwc-modal-dialog dialog.pwc-modal-dialog::backdrop {\n  background: var(--pwc-modal-backdrop);\n}\n\npwc-modal-dialog .pwc-modal-dialog-surface {\n  background: var(--pwc-modal-bg);\n  border-radius: var(--pwc-modal-border-radius);\n  box-shadow: var(--pwc-modal-shadow);\n  overflow: hidden;\n}\n\n/* Header */\n\npwc-modal-dialog .pwc-modal-dialog-header {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: var(--pwc-modal-padding-header);\n  border-bottom: 1px solid var(--pwc-modal-separator);\n}\n\npwc-modal-dialog .pwc-modal-dialog-title {\n  margin: 0;\n  font-size: 1.1rem;\n  font-weight: 600;\n}\n\n/* Close button */\n\npwc-modal-dialog .pwc-modal-dialog-x {\n  appearance: none;\n  border: none;\n  background: transparent;\n  font: inherit;\n  font-size: 1.25rem;\n  line-height: 1;\n  padding: 4px 6px;\n  cursor: pointer;\n  border-radius: var(--pwc-modal-close-radius);\n}\n\npwc-modal-dialog .pwc-modal-dialog-x:hover {\n  background: var(--pwc-modal-close-hover-bg);\n}\n\n/* Body */\n\npwc-modal-dialog .pwc-modal-dialog-body {\n  padding: var(--pwc-modal-padding-body);\n}\n\n/* Footer */\n\npwc-modal-dialog .pwc-modal-dialog-footer {\n  display: flex;\n  justify-content: flex-end;\n  gap: var(--pwc-modal-gap-footer);\n  padding: var(--pwc-modal-padding-footer);\n  border-top: 1px solid var(--pwc-modal-separator);\n}\n\npwc-modal-dialog .pwc-modal-dialog-close {\n  appearance: none;\n  border: 1px solid rgba(0, 0, 0, 0.25);\n  background: transparent;\n  padding: 6px 12px;\n  border-radius: var(--pwc-modal-close-radius);\n  cursor: pointer;\n}\n\npwc-modal-dialog .pwc-modal-dialog-close:hover {\n  background: var(--pwc-modal-close-hover-bg);\n}";
 
 // src/modal-dialog/index.js
-function register() {
-  PwcModalDialog.registerCss(modal_dialog_default);
-  define2();
-}
-register();
-
-// src/dialog-opener/index.js
 function register2() {
-  PwcDialogOpener.registerCss(dialog_opener_default);
-  define();
+  PwcModalDialog.registerCss(modal_dialog_default);
+  define3();
 }
 register2();
+
+// src/dialog-opener/index.js
+function register3() {
+  PwcDialogOpener.registerCss(dialog_opener_default);
+  define2();
+}
+register3();
 
 // src/core/pwc-children-observer-element.js
 var PwcChildrenObserverElement = class extends PwcElement {
@@ -750,17 +830,17 @@ var PwcMultiselectDualList = class extends MultiselectDualListBase {
     return { matchCount, totalCount };
   }
 };
-var define3 = () => defineOnce("pwc-multiselect-dual-list", PwcMultiselectDualList);
+var define4 = () => defineOnce("pwc-multiselect-dual-list", PwcMultiselectDualList);
 
 // src/multiselect-dual-list/multiselect-dual-list.css
 var multiselect_dual_list_default = "pwc-multiselect-dual-list {\n  /* sizing */\n  --pwc-msdl-width: 100%;\n\n  /* spacing */\n  --pwc-msdl-gap: 12px;\n  --pwc-msdl-padding: 8px;\n  --pwc-msdl-item-padding: 6px 10px;\n  --pwc-msdl-indent: 1.5em;\n\n  /* list */\n  --pwc-msdl-list-max-height: 20em;\n\n  /* visuals */\n  --pwc-msdl-bg: #fff;\n  --pwc-msdl-border: 1px solid rgba(0, 0, 0, 0.15);\n  --pwc-msdl-border-radius: 4px;\n  --pwc-msdl-separator: rgba(0, 0, 0, 0.08);\n\n  /* item */\n  --pwc-msdl-item-bg: #f8f8f8;\n  --pwc-msdl-item-hover-bg: #f0f0f0;\n  --pwc-msdl-item-selected-bg: #e8e8e8;\n  --pwc-msdl-item-selected-color: #999;\n  --pwc-msdl-item-disabled-color: #bbb;\n\n  /* button */\n  --pwc-msdl-action-bg: transparent;\n  --pwc-msdl-action-hover-bg: rgba(0, 0, 0, 0.06);\n  --pwc-msdl-action-border: 1px solid rgba(0, 0, 0, 0.2);\n  --pwc-msdl-action-radius: 3px;\n\n  display: block;\n  width: var(--pwc-msdl-width);\n}\n\n.pwc-msdl-container {\n  display: flex;\n  gap: var(--pwc-msdl-gap);\n}\n\n.pwc-msdl-selected,\n.pwc-msdl-available {\n  flex: 1;\n  min-width: 0;\n  background: var(--pwc-msdl-bg);\n  border: var(--pwc-msdl-border);\n  border-radius: var(--pwc-msdl-border-radius);\n  padding: var(--pwc-msdl-padding);\n}\n\n.pwc-msdl-header {\n  font-weight: 600;\n  margin-bottom: 6px;\n}\n\n.pwc-msdl-filter {\n  display: block;\n  width: 100%;\n  box-sizing: border-box;\n  padding: 4px 8px;\n  margin-bottom: 6px;\n  border: var(--pwc-msdl-border);\n  border-radius: var(--pwc-msdl-border-radius);\n  font: inherit;\n  font-size: 0.9em;\n}\n\n.pwc-msdl-list {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  max-height: var(--pwc-msdl-list-max-height);\n  overflow-y: auto;\n}\n\n.pwc-msdl-item {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: var(--pwc-msdl-item-padding);\n  background: var(--pwc-msdl-item-bg);\n  border-bottom: 1px solid var(--pwc-msdl-separator);\n}\n\n.pwc-msdl-item:last-child {\n  border-bottom: none;\n}\n\n.pwc-msdl-item:hover {\n  background: var(--pwc-msdl-item-hover-bg);\n}\n\n.pwc-msdl-item--selected {\n  background: var(--pwc-msdl-item-selected-bg);\n  color: var(--pwc-msdl-item-selected-color);\n}\n\n.pwc-msdl-item--disabled {\n  color: var(--pwc-msdl-item-disabled-color);\n  cursor: default;\n}\n\n.pwc-msdl-action {\n  appearance: none;\n  border: var(--pwc-msdl-action-border);\n  background: var(--pwc-msdl-action-bg);\n  padding: 2px 8px;\n  border-radius: var(--pwc-msdl-action-radius);\n  cursor: pointer;\n  font: inherit;\n  font-size: 0.85em;\n  flex-shrink: 0;\n  margin-left: 8px;\n}\n\n.pwc-msdl-action:hover {\n  background: var(--pwc-msdl-action-hover-bg);\n}\n\npwc-multiselect-dual-list[hide-selected] .pwc-msdl-item--selected {\n  display: none;\n}\n";
 
 // src/multiselect-dual-list/index.js
-function register3() {
+function register4() {
   PwcMultiselectDualList.registerCss(multiselect_dual_list_default);
-  define3();
+  define4();
 }
-register3();
+register4();
 
 // src/zone-transfer/zone-transfer.js
 var PwcZoneTransfer = class extends PwcChildrenObserverElement {
@@ -960,7 +1040,7 @@ var PwcZoneTransfer = class extends PwcChildrenObserverElement {
     return Math.max(0, this._items(zoneEl).indexOf(itemEl));
   }
 };
-function define4() {
+function define5() {
   defineOnce("pwc-zone-transfer", PwcZoneTransfer);
 }
 
@@ -968,8 +1048,8 @@ function define4() {
 var zone_transfer_default = 'pwc-zone-transfer [draggable="true"] {\n    cursor: grab;\n}\n\npwc-zone-transfer .pwc-zone-transfer-dragging {\n    cursor: grabbing;\n    opacity: 0.6;\n}\n\npwc-zone-transfer .pwc-zone-transfer-placeholder {\n    opacity: 0.3;\n}';
 
 // src/zone-transfer/index.js
-function register4() {
+function register5() {
   PwcZoneTransfer.registerCss(zone_transfer_default);
-  define4();
+  define5();
 }
-register4();
+register5();

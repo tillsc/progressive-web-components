@@ -3,6 +3,8 @@ import esbuild from "esbuild";
 const watch = process.argv.includes("--watch");
 
 const entryPoints = {
+  "filter": "src/filter/index.js",
+  "filter-bs5": "src/filter/bs5/index.js",
   "dialog-opener": "src/dialog-opener/index.js",
   "dialog-opener-bs5": "src/dialog-opener/bs5/index.js",
   "modal-dialog": "src/modal-dialog/index.js",

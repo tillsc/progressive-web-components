@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>pwc-filter: basic</title>
+    <script type="module" src="../../../dist/filter.js"></script>
+</head>
+
+<body>
+<pwc-filter id="filter" debounce="0">
+    <table>
+        <tr data-pwc-filter-row><td>Alice</td><td>Anderson</td></tr>
+        <tr data-pwc-filter-row><td>Bob</td><td>Brown</td></tr>
+        <tr data-pwc-filter-row><td>Charlie</td><td>Chaplin</td></tr>
+    </table>
+</pwc-filter>
+
+<script type="module">
+  import { run } from "../../../static/test-harness.js";
+
+  run(async ({ assert, equal, waitFor, log, nextTick }) => {
+    log("checking element definition");
+    assert(customElements.get("pwc-filter"), "pwc-filter not defined");
+
+    const el = document.getElementById("filter");
+    assert(el, "missing <pwc-filter>");
+
+    const rows = Array.from(el.querySelectorAll("[data-pwc-filter-row]"));
+    equal(rows.length, 3, "expected 3 rows");
+
+    const input = el.querySelector("input[type=search]");
+    assert(input, "search input not created");
+
+    log("precondition: all rows visible");
+    equal(rows.filter((r) => !r.hidden).length, 3, "expected all rows visible");
+
+    log("filtering for 'bob'");
+    input.value = "bob";
+    input.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
+
+    await waitFor(() => rows.filter((r) => !r.hidden).length === 1, { label: "bob filtered" });
+    equal(rows.find((r) => !r.hidden)?.textContent.trim(), "BobBrown", "expected Bob Brown to remain visible");
+
+    log("clearing filter");
+    input.value = "";
+    input.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
+
+    await waitFor(() => rows.filter((r) => !r.hidden).length === 3, { label: "filter removed again" });
+    log("done");
+  });
+</script>
+</body>
+</html>

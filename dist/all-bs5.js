@@ -1,9 +1,3 @@
-// src/core/utils.js
-function defineOnce(name, classDef) {
-  if (customElements.get(name)) return;
-  customElements.define(name, classDef);
-}
-
 // src/core/pwc-element.js
 var PwcElement = class extends HTMLElement {
   /**
@@ -61,6 +55,120 @@ var PwcElement = class extends HTMLElement {
   handleEvent(_event) {
   }
 };
+
+// src/core/pwc-simple-init-element.js
+var PwcSimpleInitElement = class extends PwcElement {
+  connectedCallback() {
+    if (this._connected) return;
+    super.connectedCallback();
+    queueMicrotask(() => {
+      if (!this._connected) return;
+      this.onConnect();
+    });
+  }
+  /**
+   * Hook for subclasses.
+   * Called once per connection, after microtask deferral.
+   */
+  onConnect() {
+  }
+};
+
+// src/filter/base.js
+var BaseFilter = class extends PwcSimpleInitElement {
+  static defaultRowSelector = "pwc-filter-row, [data-pwc-filter-row]";
+  onConnect() {
+    const { wrapper, input } = this._createInput();
+    this._input = input;
+    const debounceTimeout = Number(this.getAttribute("debounce"));
+    input.addEventListener(
+      "keyup",
+      this._debounce(
+        this._applyFilter,
+        Number.isFinite(debounceTimeout) ? debounceTimeout : 300
+      )
+    );
+    this.prepend(wrapper);
+  }
+  _createInput() {
+    const input = document.createElement("input");
+    input.type = "search";
+    input.placeholder = this.getAttribute("placeholder") || "Search\u2026";
+    return { wrapper: input, input };
+  }
+  _debounce(fn, timeout) {
+    if (timeout === 0) {
+      return (...args) => fn.apply(this, args);
+    }
+    return (...args) => {
+      clearTimeout(this._debounceTimer);
+      this._debounceTimer = setTimeout(() => fn.apply(this, args), timeout);
+    };
+  }
+  _rowSelector() {
+    return this.getAttribute("row-selector") || this.constructor.defaultRowSelector;
+  }
+  _rows() {
+    return Array.from(this.querySelectorAll(this._rowSelector()));
+  }
+  _applyFilter() {
+    const tokens = this._input.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const rows = this._rows();
+    if (!tokens.length) {
+      for (const r of rows) r.hidden = false;
+      return;
+    }
+    for (const r of rows) r.hidden = true;
+    const matches = tokens.map((t) => this._rowsForToken(t));
+    const keep = matches.reduce((a, b) => a.filter((x) => b.includes(x)));
+    for (const r of keep) r.hidden = false;
+  }
+  _rowsForToken(token) {
+    const safe = token.replace(/"/g, '\\"');
+    const expr = `.//*[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),"${safe}")]`;
+    const snap = document.evaluate(
+      expr,
+      this,
+      null,
+      XPathResult.ORDERED_NODE_SNAPSHOT_TYPE
+    );
+    const rows = [];
+    for (let i = 0; i < snap.snapshotLength; i++) {
+      const r = snap.snapshotItem(i)?.closest(this._rowSelector());
+      if (r && !rows.includes(r)) rows.push(r);
+    }
+    return rows;
+  }
+};
+
+// src/core/utils.js
+function defineOnce(name, classDef) {
+  if (customElements.get(name)) return;
+  customElements.define(name, classDef);
+}
+
+// src/filter/bs5/filter.js
+var PwcFilterBs5 = class extends BaseFilter {
+  _createInput() {
+    const input = document.createElement("input");
+    input.type = "search";
+    input.placeholder = this.getAttribute("placeholder") || "Search\u2026";
+    input.classList.add("form-control");
+    const wrapper = document.createElement("div");
+    wrapper.className = "mb-2";
+    wrapper.appendChild(input);
+    return { wrapper, input };
+  }
+};
+function define() {
+  defineOnce("pwc-filter-bs5", PwcFilterBs5);
+}
+
+// src/filter/bs5/index.js
+function register() {
+  define();
+}
+register();
 
 // src/dialog-opener/base.js
 var BaseDialogOpener = class extends PwcElement {
@@ -277,27 +385,9 @@ var PwcDialogOpenerBs5 = class extends BaseDialogOpener {
     return selector;
   }
 };
-function define() {
+function define2() {
   defineOnce("pwc-dialog-opener-bs5", PwcDialogOpenerBs5);
 }
-
-// src/core/pwc-simple-init-element.js
-var PwcSimpleInitElement = class extends PwcElement {
-  connectedCallback() {
-    if (this._connected) return;
-    super.connectedCallback();
-    queueMicrotask(() => {
-      if (!this._connected) return;
-      this.onConnect();
-    });
-  }
-  /**
-   * Hook for subclasses.
-   * Called once per connection, after microtask deferral.
-   */
-  onConnect() {
-  }
-};
 
 // src/modal-dialog/base.js
 var ModalDialogBase = class extends PwcSimpleInitElement {
@@ -466,19 +556,19 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
     super.handleEvent(e);
   }
 };
-var define2 = () => defineOnce("pwc-modal-dialog-bs5", PwcModalDialogBs5);
+var define3 = () => defineOnce("pwc-modal-dialog-bs5", PwcModalDialogBs5);
 
 // src/modal-dialog/bs5/index.js
-function register() {
-  define2();
-}
-register();
-
-// src/dialog-opener/bs5/index.js
 function register2() {
-  define();
+  define3();
 }
 register2();
+
+// src/dialog-opener/bs5/index.js
+function register3() {
+  define2();
+}
+register3();
 
 // src/core/pwc-children-observer-element.js
 var PwcChildrenObserverElement = class extends PwcElement {
@@ -771,16 +861,16 @@ var PwcMultiselectDualListBs5 = class extends MultiselectDualListBase {
     return { matchCount, totalCount };
   }
 };
-var define3 = () => defineOnce("pwc-multiselect-dual-list-bs5", PwcMultiselectDualListBs5);
+var define4 = () => defineOnce("pwc-multiselect-dual-list-bs5", PwcMultiselectDualListBs5);
 
 // src/multiselect-dual-list/bs5/index.js
-function register3() {
+function register4() {
   PwcMultiselectDualListBs5.registerCss(
     "pwc-multiselect-dual-list-bs5[hide-selected] .list-group-item-secondary { display: none; }"
   );
-  define3();
+  define4();
 }
-register3();
+register4();
 
 // src/zone-transfer/zone-transfer.js
 var PwcZoneTransfer = class extends PwcChildrenObserverElement {
@@ -980,7 +1070,7 @@ var PwcZoneTransfer = class extends PwcChildrenObserverElement {
     return Math.max(0, this._items(zoneEl).indexOf(itemEl));
   }
 };
-function define4() {
+function define5() {
   defineOnce("pwc-zone-transfer", PwcZoneTransfer);
 }
 
@@ -988,8 +1078,8 @@ function define4() {
 var zone_transfer_default = 'pwc-zone-transfer [draggable="true"] {\n    cursor: grab;\n}\n\npwc-zone-transfer .pwc-zone-transfer-dragging {\n    cursor: grabbing;\n    opacity: 0.6;\n}\n\npwc-zone-transfer .pwc-zone-transfer-placeholder {\n    opacity: 0.3;\n}';
 
 // src/zone-transfer/index.js
-function register4() {
+function register5() {
   PwcZoneTransfer.registerCss(zone_transfer_default);
-  define4();
+  define5();
 }
-register4();
+register5();
