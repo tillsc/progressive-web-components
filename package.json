@@ -1,13 +1,11 @@
 {
   "name": "@tillsc/progressive-web-components",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Server-first web components.",
   "type": "module",
   "license": "MIT",
   "publishConfig": { "access": "public" },
-  "files": [
-    "dist"
-  ],
+  "files": [ "dist", "src"],
   "exports": {
     "./all": "./dist/all.js",
     "./all-bs5": "./dist/all-bs5.js",
