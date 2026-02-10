@@ -52,8 +52,8 @@ export async function startServer({ port = 0 } = {}) {
     const indexFile = path.join(testDir, "index.html");
     if (!isDir(testDir) || !isFile(indexFile)) continue;
 
-    // Static test assets for this component
-    app.use(`/src/${c}/test`, express.static(testDir, staticOpts));
+    // Static assets for this component (serves test/ and .md files)
+    app.use(`/src/${c}`, express.static(path.join(srcRoot, c), staticOpts));
 
     // Optional dynamic routes for this component
     const routesFile = path.join(testDir, "routes.mjs");
