@@ -35,6 +35,9 @@ When a second modal opens while the first is visible:
 - When the second modal closes, `_onFinalClose()` restores the first via `_restore()`
 - The restore happens in a `queueMicrotask` to avoid event ordering issues
 
+The BS5 variant's `_getOpenSibling()` queries `.modal.show` (not just pwc elements),
+so it can suspend and restore regular Bootstrap modals that happen to be open.
+
 ## Close detection
 
 The tricky part is distinguishing a **final close** (user dismissed the dialog) from a
@@ -50,6 +53,6 @@ Only a final close triggers teardown and parent restoration.
 Handled in `ModalDialogBase.handleEvent()`:
 
 - Click on `[data-pwc-action="close"]` → `close()`
-- Click directly on `ui.rootEl` (backdrop) → `close()`
+- Click directly on `ui.rootEl` (backdrop) → `close()` (vanilla only; BS5 delegates backdrop clicks to Bootstrap)
 
 `close()` sets `dataset.closeReason = "final"` and calls `_hide()`.

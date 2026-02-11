@@ -2,11 +2,11 @@ import { ModalDialogBase } from "./base.js";
 import { defineOnce } from "../core/utils.js";
 
 export class PwcModalDialog extends ModalDialogBase {
-  isOpen() {
+  get isOpen() {
     return Boolean(this._ui?.rootEl?.open);
   }
 
-  _render({ title, size, closeText, showClose = true }) {
+  _render({ title, size, closeText, showCloseButton = true }) {
     const dlg = document.createElement("dialog");
     dlg.className = `pwc-modal-dialog pwc-modal-dialog--${size}`;
 
@@ -22,7 +22,7 @@ export class PwcModalDialog extends ModalDialogBase {
 
     dlg.querySelector(".pwc-modal-dialog-title").textContent = title;
 
-    if (showClose) {
+    if (showCloseButton) {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "pwc-modal-dialog-x";
@@ -55,7 +55,7 @@ export class PwcModalDialog extends ModalDialogBase {
 
   _suspend(hostEl) {
     // hostEl is <pwc-modal-dialog>
-    if (hostEl.isOpen()) hostEl.rootEl.close();
+    if (hostEl.isOpen) hostEl.rootEl.close();
   }
 
   _restore(hostEl) {

@@ -79,6 +79,11 @@ pwc-modal-dialog .pwc-modal-dialog-body {
   padding: var(--pwc-modal-padding-body);
 }
 
+/* Sizes */
+
+pwc-modal-dialog dialog.pwc-modal-dialog--sm { --pwc-modal-max-width: 400px; }
+pwc-modal-dialog dialog.pwc-modal-dialog--xl { --pwc-modal-max-width: 1000px; }
+
 /* Footer */
 
 pwc-modal-dialog .pwc-modal-dialog-footer {
@@ -89,15 +94,3 @@ pwc-modal-dialog .pwc-modal-dialog-footer {
   border-top: 1px solid var(--pwc-modal-separator);
 }
 
-pwc-modal-dialog .pwc-modal-dialog-close {
-  appearance: none;
-  border: 1px solid rgba(0, 0, 0, 0.25);
-  background: transparent;
-  padding: 6px 12px;
-  border-radius: var(--pwc-modal-close-radius);
-  cursor: pointer;
-}
-
-pwc-modal-dialog .pwc-modal-dialog-close:hover {
-  background: var(--pwc-modal-close-hover-bg);
-}

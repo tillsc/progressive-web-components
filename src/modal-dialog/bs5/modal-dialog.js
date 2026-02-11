@@ -10,7 +10,7 @@ export class PwcModalDialogBs5 extends ModalDialogBase {
     this.setAttribute("aria-hidden", "true");
   }
 
-  isOpen() {
+  get isOpen() {
     return this.classList.contains("show");
   }
 
@@ -20,7 +20,7 @@ export class PwcModalDialogBs5 extends ModalDialogBase {
     return BsModal;
   }
 
-  _render({ title, size, closeText, showClose = true }) {
+  _render({ title, size, closeText, showCloseButton = true }) {
     this.innerHTML = `
       <div class="modal-dialog modal-dialog-centered modal-${size}">
         <div class="modal-content">
@@ -35,7 +35,7 @@ export class PwcModalDialogBs5 extends ModalDialogBase {
 
     this.querySelector(".modal-title").textContent = title;
 
-    if (showClose) {
+    if (showCloseButton) {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "btn-close";
@@ -101,6 +101,9 @@ export class PwcModalDialogBs5 extends ModalDialogBase {
       if (typeof fn === "function") fn();
       return;
     }
+
+    // Skip backdrop click — Bootstrap handles it via hidden.bs.modal
+    if (e.type === "click" && e.target === this) return;
 
     super.handleEvent(e);
   }

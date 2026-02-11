@@ -412,7 +412,7 @@ var ModalDialogBase = class extends PwcSimpleInitElement {
   get footerEl() {
     return this.ui.footerEl;
   }
-  isOpen() {
+  get isOpen() {
     return false;
   }
   open({ title = "", size = "lg", closeText = "Close", ...options }) {
@@ -479,7 +479,7 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
     this.tabIndex = -1;
     this.setAttribute("aria-hidden", "true");
   }
-  isOpen() {
+  get isOpen() {
     return this.classList.contains("show");
   }
   requireBsModal() {
@@ -487,7 +487,7 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
     if (!BsModal) throw new Error("Bootstrap Modal required (globalThis.bootstrap.Modal)");
     return BsModal;
   }
-  _render({ title, size, closeText, showClose = true }) {
+  _render({ title, size, closeText, showCloseButton = true }) {
     this.innerHTML = `
       <div class="modal-dialog modal-dialog-centered modal-${size}">
         <div class="modal-content">
@@ -500,7 +500,7 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
       </div>
     `;
     this.querySelector(".modal-title").textContent = title;
-    if (showClose) {
+    if (showCloseButton) {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "btn-close";
@@ -554,6 +554,7 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
       if (typeof fn === "function") fn();
       return;
     }
+    if (e.type === "click" && e.target === this) return;
     super.handleEvent(e);
   }
 };

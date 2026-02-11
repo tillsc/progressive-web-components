@@ -36,7 +36,7 @@ export class ModalDialogBase extends PwcSimpleInitElement {
   get headerEl() { return this.ui.headerEl; } 
   get footerEl() { return this.ui.footerEl; }
 
-  isOpen() {
+  get isOpen() {
     return false;
   }
 
