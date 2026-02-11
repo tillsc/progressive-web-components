@@ -125,7 +125,7 @@ var BaseFilter = class extends PwcSimpleInitElement {
   }
   _rowsForToken(token) {
     const safe = token.replace(/"/g, '\\"');
-    const expr = `.//*[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),"${safe}")]`;
+    const expr = `.//*[contains(translate(normalize-space(string(.)), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),"${safe}")]`;
     const snap = document.evaluate(
       expr,
       this,
