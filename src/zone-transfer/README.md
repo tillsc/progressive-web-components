@@ -100,13 +100,13 @@ Example:
 Assign a key to a zone:
 
 ```html
-<pwc-zone-transfer-zone name="selected" data-pwc-zone-key="2"></pwc-zone-transfer-zone>
+<pwc-zone-transfer-zone name="selected" data-pwc-zone-hotkey="2"></pwc-zone-transfer-zone>
 ```
 
 Pressing that key moves the focused item into that zone.
 
 Note:
-- Keyboard-based zone moves are only active if **at least one** zone defines `data-pwc-zone-key`.
+- Keyboard-based zone moves are only active if **at least one** zone defines `data-pwc-zone-hotkey`.
 
 ---
 
@@ -131,7 +131,7 @@ Payload (`e.detail`):
 - `fromZone`: string
 - `toZone`: string
 - `index`: number (position in the target zone after the move)
-- `method`: `"before"` or `"append"`
+- `trigger`: `"drag"` or `"keyboard"`
 
 ---
 

@@ -24,7 +24,6 @@ The component keeps only the minimum transient state in `this._drag`:
 
 - `item`: the element being moved
 - `fromZone`: origin zone (element reference)
-- `overMethod`: last computed method (`before` vs `append`), used for event metadata only
 
 Everything else (zone membership, ordering) is derived from the current DOM when needed.
 

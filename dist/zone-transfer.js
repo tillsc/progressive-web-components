@@ -156,15 +156,13 @@ var PwcZoneTransfer = class extends PwcChildrenObserverElement {
     this._ensurePlaceholder(this._drag.item);
     const beforeEl = this._beforeFromPointer(zone, e, this._drag.item);
     this._movePlaceholder(zone, beforeEl);
-    this._drag.overZone = zone;
-    this._drag.overMethod = beforeEl ? "before" : "append";
   }
   _onDrop(e) {
     if (!this._drag?.item) return;
     const zone = this._closestZone(e.target);
     if (!zone) return;
     e.preventDefault();
-    this._applyMove(this._drag.item, this._drag.fromZone, zone, this._drag.overMethod || "append");
+    this._applyMove(this._drag.item, this._drag.fromZone, zone, "drag");
     this._clearPlaceholder();
   }
   _onDragEnd() {
@@ -199,7 +197,7 @@ var PwcZoneTransfer = class extends PwcChildrenObserverElement {
     zone.insertBefore(item, dir > 0 ? items[j].nextElementSibling : items[j]);
     for (const it of this._items()) it.tabIndex = it === item ? 0 : -1;
     item.focus();
-    this._emitChange(item, zone, zone, this._indexInZone(item, zone), "before");
+    this._emitChange(item, zone, zone, this._indexInZone(item, zone), "keyboard");
   }
   _keyboardMoveToZone(item, zone) {
     const fromZone = this._closestZone(item);
@@ -207,14 +205,14 @@ var PwcZoneTransfer = class extends PwcChildrenObserverElement {
     zone.appendChild(item);
     for (const it of this._items()) it.tabIndex = it === item ? 0 : -1;
     item.focus();
-    this._emitChange(item, fromZone, zone, this._indexInZone(item, zone), "append");
+    this._emitChange(item, fromZone, zone, this._indexInZone(item, zone), "keyboard");
   }
   _zoneByHotkey(key) {
     const zones = this._zones();
-    if (!zones.some((z) => z.hasAttribute("data-pwc-zone-key"))) return null;
-    return zones.find((z) => z.getAttribute("data-pwc-zone-key") === key) || null;
+    if (!zones.some((z) => z.hasAttribute("data-pwc-zone-hotkey"))) return null;
+    return zones.find((z) => z.getAttribute("data-pwc-zone-hotkey") === key) || null;
   }
-  _emitChange(item, fromZone, toZone, index, method) {
+  _emitChange(item, fromZone, toZone, index, trigger) {
     this.dispatchEvent(
       new CustomEvent("pwc-zone-transfer:change", {
         bubbles: true,
@@ -223,16 +221,16 @@ var PwcZoneTransfer = class extends PwcChildrenObserverElement {
           fromZone: this._zoneName(fromZone),
           toZone: this._zoneName(toZone),
           index,
-          method
+          trigger
         }
       })
     );
   }
-  _applyMove(item, fromZone, toZone, method) {
+  _applyMove(item, fromZone, toZone, trigger) {
     if (this._placeholder?.parentNode === toZone) toZone.insertBefore(item, this._placeholder);
     else toZone.appendChild(item);
     for (const it of this._items()) it.tabIndex = it === item ? 0 : -1;
-    this._emitChange(item, fromZone, toZone, this._indexInZone(item, toZone), method);
+    this._emitChange(item, fromZone, toZone, this._indexInZone(item, toZone), trigger);
   }
   _focusSibling(item, dir) {
     const zone = this._closestZone(item);

@@ -12,7 +12,7 @@ import { defineOnce } from "../core/utils.js";
  * - Handle: pwc-zone-transfer-handle, [data-pwc-handle]
  *
  * Zone hotkeys (optional):
- * - data-pwc-zone-key="Enter" on a zone element
+ * - data-pwc-zone-hotkey="Enter" on a zone element
  *   Pressing that key moves the focused item to that zone.
  *
  * Keyboard:
@@ -21,7 +21,7 @@ import { defineOnce } from "../core/utils.js";
  * - Zone hotkey: move focused item to that zone (only if any zone hotkeys are defined)
  *
  * Events:
- * - pwc-zone-transfer:change { itemId, fromZone, toZone, index, method }
+ * - pwc-zone-transfer:change { itemId, fromZone, toZone, index, trigger }
  */
 export class PwcZoneTransfer extends PwcChildrenObserverElement {
   static events = ["dragstart", "dragover", "drop", "dragend", "keydown"];
@@ -100,9 +100,6 @@ export class PwcZoneTransfer extends PwcChildrenObserverElement {
 
     const beforeEl = this._beforeFromPointer(zone, e, this._drag.item);
     this._movePlaceholder(zone, beforeEl);
-
-    this._drag.overZone = zone;
-    this._drag.overMethod = beforeEl ? "before" : "append";
   }
 
   _onDrop(e) {
@@ -113,7 +110,7 @@ export class PwcZoneTransfer extends PwcChildrenObserverElement {
 
     e.preventDefault();
 
-    this._applyMove(this._drag.item, this._drag.fromZone, zone, this._drag.overMethod || "append");
+    this._applyMove(this._drag.item, this._drag.fromZone, zone, "drag");
     this._clearPlaceholder();
   }
 
@@ -160,7 +157,7 @@ export class PwcZoneTransfer extends PwcChildrenObserverElement {
     for (const it of this._items()) it.tabIndex = it === item ? 0 : -1;
     item.focus();
 
-    this._emitChange(item, zone, zone, this._indexInZone(item, zone), "before");
+    this._emitChange(item, zone, zone, this._indexInZone(item, zone), "keyboard");
   }
 
   _keyboardMoveToZone(item, zone) {
@@ -172,16 +169,16 @@ export class PwcZoneTransfer extends PwcChildrenObserverElement {
     for (const it of this._items()) it.tabIndex = it === item ? 0 : -1;
     item.focus();
 
-    this._emitChange(item, fromZone, zone, this._indexInZone(item, zone), "append");
+    this._emitChange(item, fromZone, zone, this._indexInZone(item, zone), "keyboard");
   }
 
   _zoneByHotkey(key) {
     const zones = this._zones();
-    if (!zones.some((z) => z.hasAttribute("data-pwc-zone-key"))) return null;
-    return zones.find((z) => z.getAttribute("data-pwc-zone-key") === key) || null;
+    if (!zones.some((z) => z.hasAttribute("data-pwc-zone-hotkey"))) return null;
+    return zones.find((z) => z.getAttribute("data-pwc-zone-hotkey") === key) || null;
   }
 
-  _emitChange(item, fromZone, toZone, index, method) {
+  _emitChange(item, fromZone, toZone, index, trigger) {
     this.dispatchEvent(
       new CustomEvent("pwc-zone-transfer:change", {
         bubbles: true,
@@ -190,19 +187,19 @@ export class PwcZoneTransfer extends PwcChildrenObserverElement {
           fromZone: this._zoneName(fromZone),
           toZone: this._zoneName(toZone),
           index,
-          method
+          trigger
         }
       })
     );
   }
 
-  _applyMove(item, fromZone, toZone, method) {
+  _applyMove(item, fromZone, toZone, trigger) {
     if (this._placeholder?.parentNode === toZone) toZone.insertBefore(item, this._placeholder);
     else toZone.appendChild(item);
 
     for (const it of this._items()) it.tabIndex = it === item ? 0 : -1;
 
-    this._emitChange(item, fromZone, toZone, this._indexInZone(item, toZone), method);
+    this._emitChange(item, fromZone, toZone, this._indexInZone(item, toZone), trigger);
   }
 
   _focusSibling(item, dir) {
