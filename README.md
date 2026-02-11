@@ -1,5 +1,9 @@
 # progressive-web-components
 
+[![npm version](https://img.shields.io/npm/v/@tillsc/progressive-web-components)](https://www.npmjs.com/package/@tillsc/progressive-web-components)
+[![Tests](https://github.com/tillsc/progressive-web-components/actions/workflows/tests.yml/badge.svg)](https://github.com/tillsc/progressive-web-components/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 Server-first web components.
 
 A collection of Custom Elements designed to work with server-rendered HTML and progressive enhancement.
