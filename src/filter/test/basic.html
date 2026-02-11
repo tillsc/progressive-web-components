@@ -36,16 +36,33 @@
 
     log("filtering for 'bob'");
     input.value = "bob";
-    input.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
+    input.dispatchEvent(new Event("input", { bubbles: true }));
 
     await waitFor(() => rows.filter((r) => !r.hidden).length === 1, { label: "bob filtered" });
     equal(rows.find((r) => !r.hidden)?.textContent.trim(), "BobBrown", "expected Bob Brown to remain visible");
 
     log("clearing filter");
     input.value = "";
-    input.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
+    input.dispatchEvent(new Event("input", { bubbles: true }));
 
     await waitFor(() => rows.filter((r) => !r.hidden).length === 3, { label: "filter removed again" });
+
+    log("filtering via filterText setter");
+    el.filterText = "charlie";
+    equal(rows.filter((r) => !r.hidden).length, 1, "expected 1 row for charlie");
+    equal(rows.find((r) => !r.hidden)?.textContent.trim(), "CharlieChaplin", "expected Charlie Chaplin");
+
+    log("pwc-filter:change event");
+    let lastEvent = null;
+    el.addEventListener("pwc-filter:change", (e) => (lastEvent = e));
+    el.filterText = "bob";
+    assert(lastEvent, "expected pwc-filter:change event");
+    equal(lastEvent.detail.matchCount, 1, "matchCount should be 1");
+    equal(lastEvent.detail.totalCount, 3, "totalCount should be 3");
+
+    log("clearing via filterText");
+    el.filterText = "";
+    equal(rows.filter((r) => !r.hidden).length, 3, "all rows visible after clearing");
     log("done");
   });
 </script>

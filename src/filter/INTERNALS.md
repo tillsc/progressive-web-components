@@ -12,18 +12,13 @@ logic. It defines a **subclass contract**:
 The vanilla variant returns a plain `<input type="search">`.
 The BS5 variant wraps it in a `<div class="mb-2">` with `form-control` class.
 
-## XPath-based matching
+## Text matching
 
-XPath was chosen deliberately over query selectors or manual text traversal:
+Each row's `textContent` is normalized (collapse whitespace, lowercase) and checked
+against every token via `String.prototype.includes()`. This gives full Unicode
+case-insensitive matching through the native `toLowerCase()` implementation.
 
-- Matches rendered text content across arbitrary nested markup
-- No custom indexing or preprocessing needed
-- `translate()` is used for case-insensitive matching (avoids regex compilation per row)
-- Evaluation is scoped to the component root via `document.evaluate(expr, this, ...)`
+## Token logic
 
-## Token intersection algorithm
-
-The filter splits input into whitespace-separated tokens and resolves each independently
-via XPath. Results are then intersected (logical AND) — only rows present in **all** token
-result sets remain visible. This keeps the implementation simple without building a
-per-row text index.
+The filter splits input into whitespace-separated tokens. A row is visible only if
+**all** tokens appear in its normalized text content (logical AND).

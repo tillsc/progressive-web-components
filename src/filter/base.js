@@ -2,6 +2,7 @@ import { PwcSimpleInitElement } from "../core/pwc-simple-init-element.js";
 
 export class BaseFilter extends PwcSimpleInitElement {
   static defaultRowSelector = "pwc-filter-row, [data-pwc-filter-row]";
+  static events = ["input"];
 
   onConnect() {
     const { wrapper, input } = this._createInput();
@@ -9,15 +10,31 @@ export class BaseFilter extends PwcSimpleInitElement {
     this._input = input;
 
     const debounceTimeout = Number(this.getAttribute("debounce"));
-    input.addEventListener(
-      "keyup",
-      this._debounce(
-        this._applyFilter,
-        Number.isFinite(debounceTimeout) ? debounceTimeout : 300
-      )
+    this._debouncedFilter = this._debounce(
+      () => this._applyFilter(),
+      Number.isFinite(debounceTimeout) ? debounceTimeout : 300
     );
 
     this.prepend(wrapper);
+  }
+
+  onDisconnect() {
+    clearTimeout(this._debounceTimer);
+  }
+
+  handleEvent(e) {
+    if (e.type === "input" && e.target === this._input) {
+      this._debouncedFilter();
+    }
+  }
+
+  get filterText() {
+    return this._input?.value ?? "";
+  }
+
+  set filterText(text) {
+    if (this._input) this._input.value = text;
+    this._applyFilter();
   }
 
   _createInput() {
@@ -29,13 +46,11 @@ export class BaseFilter extends PwcSimpleInitElement {
   }
 
   _debounce(fn, timeout) {
-    if (timeout === 0) {
-      return (...args) => fn.apply(this, args);
-    }
+    if (timeout === 0) return fn;
 
-    return (...args) => {
+    return () => {
       clearTimeout(this._debounceTimer);
-      this._debounceTimer = setTimeout(() => fn.apply(this, args), timeout);
+      this._debounceTimer = setTimeout(fn, timeout);
     };
   }
 
@@ -56,38 +71,20 @@ export class BaseFilter extends PwcSimpleInitElement {
 
     const rows = this._rows();
 
-    if (!tokens.length) {
-      for (const r of rows) r.hidden = false;
-      return;
+    for (const row of rows) {
+      const text = row.textContent.replace(/\s+/g, " ").toLowerCase();
+      row.hidden = tokens.length > 0 && !tokens.every((t) => text.includes(t));
     }
 
-    for (const r of rows) r.hidden = true;
-
-    const matches = tokens.map((t) => this._rowsForToken(t));
-    const keep = matches.reduce((a, b) => a.filter((x) => b.includes(x)));
-
-    for (const r of keep) r.hidden = false;
-  }
-
-  _rowsForToken(token) {
-    const safe = token.replace(/"/g, '\\"');
-    const expr =
-      `.//*[contains(` +
-      `translate(normalize-space(string(.)), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),` +
-      `"${safe}")]`;
-
-    const snap = document.evaluate(
-      expr,
-      this,
-      null,
-      XPathResult.ORDERED_NODE_SNAPSHOT_TYPE
+    this.dispatchEvent(
+      new CustomEvent("pwc-filter:change", {
+        bubbles: true,
+        detail: {
+          filterText: this._input.value,
+          matchCount: rows.filter((r) => !r.hidden).length,
+          totalCount: rows.length,
+        },
+      })
     );
-
-    const rows = [];
-    for (let i = 0; i < snap.snapshotLength; i++) {
-      const r = snap.snapshotItem(i)?.closest(this._rowSelector());
-      if (r && !rows.includes(r)) rows.push(r);
-    }
-    return rows;
   }
 }

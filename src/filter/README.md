@@ -3,8 +3,7 @@
 Lightweight text filter web component.
 
 `<pwc-filter>` adds a search input and filters arbitrary markup based on free-text input.
-It is designed to work with **tables, lists, or any structured DOM** and relies on XPath
-for matching text content.
+It is designed to work with **tables, lists, or any structured DOM**.
 
 The component does **not** use Shadow DOM and relies on regular DOM structure.
 
@@ -33,7 +32,7 @@ as the user types.
 ## How filtering works
 
 - The input value is split into whitespace-separated tokens
-- Each token is matched case-insensitively against **text nodes** using XPath
+- Each token is matched case-insensitively against the row's `textContent`
 - Only rows matching **all tokens** remain visible
 - Rows are hidden using the standard `hidden` attribute
 
@@ -76,7 +75,7 @@ Sets the placeholder text of the generated search input.
 
 ### `debounce`
 
-Debounce delay in milliseconds for the keyup handler.
+Debounce delay in milliseconds for the input handler. Default: `300`.
 
 ```html
 <pwc-filter debounce="300">
@@ -105,6 +104,33 @@ Style the generated input using regular CSS:
 pwc-filter input[type="search"] {
   margin-bottom: 0.5rem;
 }
+```
+
+---
+
+## Programmatic API
+
+### `filterText` property
+
+Get or set the current filter text programmatically.
+
+```js
+const filter = document.querySelector("pwc-filter");
+filter.filterText = "alice";   // apply filter
+console.log(filter.filterText); // "alice"
+filter.filterText = "";         // clear filter
+```
+
+### `pwc-filter:change` event
+
+Dispatched on every filter update (including programmatic changes). Bubbles.
+
+```js
+filter.addEventListener("pwc-filter:change", (e) => {
+  e.detail.filterText;  // current filter string
+  e.detail.matchCount;  // number of visible rows
+  e.detail.totalCount;  // total number of rows
+});
 ```
 
 ---
