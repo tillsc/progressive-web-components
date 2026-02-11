@@ -80,8 +80,8 @@ var BaseDialogOpener = class extends PwcElement {
   }
   open(href) {
     const src = this.prepareIFrameLink(href);
-    this.findOrCreateDialog(src);
-    this.enhanceIFrame().then(() => this.modal.show());
+    this.dialog = this.findOrCreateDialog(src);
+    this.enhanceIFrame();
   }
   prepareIFrameLink(src) {
     const s = new URL(src, document.location.href);
@@ -90,15 +90,19 @@ var BaseDialogOpener = class extends PwcElement {
       return null;
     }).filter((item) => item !== null);
     if (defaultValues.length > 0) {
-      s.searchParams.set("default", defaultValues.join(","));
+      s.searchParams.set("pwc_default", defaultValues.join(","));
     }
-    s.searchParams.set("_layout", false);
+    s.searchParams.set("pwc_embedded", true);
     return s.toString();
   }
-  // Variant hook: must set this.dialog and this.modal
+  // Variant hook: must return a DOM element containing the iframe
   // eslint-disable-next-line no-unused-vars
   findOrCreateDialog(_src) {
     throw new Error("BaseDialogOpener: findOrCreateDialog(src) must be implemented by a variant");
+  }
+  // Variant hook: close the dialog
+  closeDialog() {
+    throw new Error("BaseDialogOpener: closeDialog() must be implemented by a variant");
   }
   createIFrame(src) {
     const iframe = document.createElement("iframe");
@@ -110,10 +114,10 @@ var BaseDialogOpener = class extends PwcElement {
   }
   enhanceIFrame() {
     this.iframe = this.dialog.querySelector("iframe");
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.iframe.addEventListener(
         "load",
-        (e) => this.iFrameLoad(e).then(resolve)
+        (e) => this.iFrameLoad(e).then(resolve, reject)
       );
     });
   }
@@ -124,10 +128,10 @@ var BaseDialogOpener = class extends PwcElement {
     } catch (e) {
       throw new Error(`<pwc-dialog-opener> cannot access iframe location (cross-origin?): ${e.message}`);
     }
-    if (uri.searchParams.has("dialog_finished_with")) {
-      this.modal.hide();
-      uri.searchParams.delete("_layout");
-      uri.searchParams.set("dummy", Math.floor(Math.random() * 1e5));
+    if (uri.searchParams.has("pwc_done_with")) {
+      this.closeDialog();
+      uri.searchParams.delete("pwc_embedded");
+      uri.searchParams.set("pwc_cb", Math.floor(Math.random() * 1e5));
       const localReloadWorked = await this.tryLocalReload(uri);
       if (!localReloadWorked) {
         window.location.href = uri.toString();
@@ -198,7 +202,7 @@ var BaseDialogOpener = class extends PwcElement {
     }
   }
   moveElementsToOuterActions() {
-    if (!this.getAttribute("move-out")) return;
+    if (!this.getAttribute("hoist-actions")) return;
     const iframeDoc = this.iframe.contentWindow.document;
     if (!iframeDoc) return;
     let buttonContainer = this.dialog.querySelector("dialog-opener-buttons");
@@ -221,12 +225,11 @@ var BaseDialogOpener = class extends PwcElement {
         btn.click();
       });
       buttonContainer.append(outerBtn);
-      btn.style.visibility = "hidden";
       btn.style.display = "none";
     }
   }
   _moveOutSelector() {
-    let selector = this.getAttribute("move-out");
+    let selector = this.getAttribute("hoist-actions");
     if (selector === "submit") {
       selector = "button[type=submit], input[type=submit]";
     }
@@ -241,35 +244,28 @@ var PwcDialogOpener = class extends BaseDialogOpener {
       this.modalDialog = document.createElement("pwc-modal-dialog");
       document.body.appendChild(this.modalDialog);
     }
-    const closeText = this.getAttribute("close") || "Close";
+    const closeText = this.getAttribute("close-text") || "Close";
     this.modalDialog.open({
       closeText,
       showClose: false
     });
+    this.modalDialog.footerEl.classList.add("pwc-dialog-opener-actions");
     this.modalDialog.footerEl.innerHTML = `
-  <div class="pwc-dialog-opener-actions pwc-dialog-opener-footer">
-    <button type="button" class="pwc-dialog-opener-close" data-pwc-action="close" aria-label="${closeText}">
-      ${closeText}
-    </button>
-  </div>
-`;
+      <button type="button" class="pwc-dialog-opener-close" data-pwc-action="close" aria-label="${closeText}">
+        ${closeText}
+      </button>
+    `;
     const iframe = this.createIFrame(src);
     this.modalDialog.bodyEl.replaceChildren(iframe);
-    this.dialog = this.modalDialog.ui.rootEl;
-    this.modal = {
-      show: () => {
-      },
-      // modal-dialog is already shown by open()
-      hide: () => this.modalDialog.close()
-    };
+    return this.modalDialog.ui.rootEl;
+  }
+  closeDialog() {
+    this.modalDialog.close();
   }
 };
 function define() {
   defineOnce("pwc-dialog-opener", PwcDialogOpener);
 }
-
-// src/dialog-opener/dialog-opener.css
-var dialog_opener_default = "/* Footer actions container (used by move-out) */\n.pwc-dialog-opener-footer {\n  display: flex;\n  justify-content: flex-end;\n  gap: 8px;\n}\n\n/* Close button */\n.pwc-dialog-opener-close {\n  appearance: none;\n  border: 1px solid rgba(0, 0, 0, 0.25);\n  background: transparent;\n  font: inherit;\n  padding: 6px 12px;\n  border-radius: 4px;\n  cursor: pointer;\n}\n\n.pwc-dialog-opener-close:hover {\n  background: rgba(0, 0, 0, 0.06);\n}\n";
 
 // src/core/pwc-simple-init-element.js
 var PwcSimpleInitElement = class extends PwcElement {
@@ -457,11 +453,4 @@ function register() {
 register();
 
 // src/dialog-opener/index.js
-function register2() {
-  PwcDialogOpener.registerCss(dialog_opener_default);
-  define();
-}
-register2();
-export {
-  register2 as register
-};
+define();

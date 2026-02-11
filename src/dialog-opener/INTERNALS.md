@@ -7,29 +7,31 @@ to iframe-based dialog. It defines a **subclass contract**:
 
 | Hook | Responsibility |
 |------|---------------|
-| `findOrCreateDialog(src)` | Create/reuse a `<pwc-modal-dialog>`, open it, place the iframe, set `this.dialog` and `this.modal` |
-| `_moveOutSelector()` | Return CSS selector for buttons to move out (can extend, e.g. BS5 adds `"primary"` magic value) |
+| `findOrCreateDialog(src)` | Create/reuse a `<pwc-modal-dialog>`, open it, place the iframe, return the dialog element |
+| `closeDialog()` | Close the dialog |
+| `_moveOutSelector()` | Return CSS selector for elements to hoist (can extend, e.g. BS5 adds `"primary"` magic value) |
 
-The base class never touches DOM rendering directly. Variants own the dialog creation and
-provide a uniform adapter interface (`this.modal.show()` / `this.modal.hide()`).
+The base class never touches DOM rendering directly. Variants own the dialog creation.
 
 ## Flow: link click to dialog
 
 1. Click on an `<a>` inside the component is intercepted (`handleEvent`)
 2. `prepareIFrameLink()` builds the iframe URL:
-   - collects `input` values as `default` query param
-   - appends `_layout=false`
+   - collects `input` values as `pwc_default` query param
+   - appends `pwc_embedded=true`
 3. `findOrCreateDialog(src)` (variant hook) creates the modal and iframe
 4. `enhanceIFrame()` waits for the iframe `load` event, then calls `iFrameLoad()`
 5. `iFrameLoad()` checks the iframe URL:
-   - If `dialog_finished_with` is present → close dialog, trigger reload or navigation
+   - If `pwc_done_with` is present → close dialog, trigger reload or navigation
    - Otherwise → run `moveElementsToOuterActions()`, show iframe
 
-## Move-out mechanism
+## Hoist-actions mechanism
 
-When `move-out` is set, buttons are **cloned** from the iframe document into the dialog footer.
-The original buttons are hidden. Clicking a cloned button triggers `click()` on the original
-inside the iframe, then hides the iframe (to show a loading state while the form submits).
+When `hoist-actions` is set, elements are **recreated** from the iframe document into the
+dialog footer (new elements with copied tag, attributes, and innerHTML — not `cloneNode`,
+since that doesn't work across documents). The original elements are hidden. Clicking a
+recreated element triggers `click()` on the original inside the iframe, then hides the
+iframe (to show a loading state while the form submits).
 
 ## Local reload
 
@@ -44,9 +46,3 @@ When the dialog completes and `local-reload` is set:
 7. A `pwc-dialog-opener:local-reload` custom event is dispatched
 
 If any step fails, it falls back to full page navigation.
-
-## Modal adapter pattern
-
-The base class expects `this.modal` with `.show()` and `.hide()`. Since both variants use
-`<pwc-modal-dialog>` (which is already open by the time `findOrCreateDialog` returns),
-`show()` is a no-op and `hide()` delegates to `modalDialog.close()`.

@@ -25,7 +25,7 @@
   
   <script type="module">
     const url = new URL(window.location.href);
-    const defaultData = url.searchParams.get("default");
+    const defaultData = url.searchParams.get("pwc_default");
     if (defaultData) {
       try {
         const data = JSON.parse(defaultData);

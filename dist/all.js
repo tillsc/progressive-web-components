@@ -179,8 +179,8 @@ var BaseDialogOpener = class extends PwcElement {
   }
   open(href) {
     const src = this.prepareIFrameLink(href);
-    this.findOrCreateDialog(src);
-    this.enhanceIFrame().then(() => this.modal.show());
+    this.dialog = this.findOrCreateDialog(src);
+    this.enhanceIFrame();
   }
   prepareIFrameLink(src) {
     const s = new URL(src, document.location.href);
@@ -189,15 +189,19 @@ var BaseDialogOpener = class extends PwcElement {
       return null;
     }).filter((item) => item !== null);
     if (defaultValues.length > 0) {
-      s.searchParams.set("default", defaultValues.join(","));
+      s.searchParams.set("pwc_default", defaultValues.join(","));
     }
-    s.searchParams.set("_layout", false);
+    s.searchParams.set("pwc_embedded", true);
     return s.toString();
   }
-  // Variant hook: must set this.dialog and this.modal
+  // Variant hook: must return a DOM element containing the iframe
   // eslint-disable-next-line no-unused-vars
   findOrCreateDialog(_src) {
     throw new Error("BaseDialogOpener: findOrCreateDialog(src) must be implemented by a variant");
+  }
+  // Variant hook: close the dialog
+  closeDialog() {
+    throw new Error("BaseDialogOpener: closeDialog() must be implemented by a variant");
   }
   createIFrame(src) {
     const iframe = document.createElement("iframe");
@@ -209,10 +213,10 @@ var BaseDialogOpener = class extends PwcElement {
   }
   enhanceIFrame() {
     this.iframe = this.dialog.querySelector("iframe");
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.iframe.addEventListener(
         "load",
-        (e) => this.iFrameLoad(e).then(resolve)
+        (e) => this.iFrameLoad(e).then(resolve, reject)
       );
     });
   }
@@ -223,10 +227,10 @@ var BaseDialogOpener = class extends PwcElement {
     } catch (e) {
       throw new Error(`<pwc-dialog-opener> cannot access iframe location (cross-origin?): ${e.message}`);
     }
-    if (uri.searchParams.has("dialog_finished_with")) {
-      this.modal.hide();
-      uri.searchParams.delete("_layout");
-      uri.searchParams.set("dummy", Math.floor(Math.random() * 1e5));
+    if (uri.searchParams.has("pwc_done_with")) {
+      this.closeDialog();
+      uri.searchParams.delete("pwc_embedded");
+      uri.searchParams.set("pwc_cb", Math.floor(Math.random() * 1e5));
       const localReloadWorked = await this.tryLocalReload(uri);
       if (!localReloadWorked) {
         window.location.href = uri.toString();
@@ -297,7 +301,7 @@ var BaseDialogOpener = class extends PwcElement {
     }
   }
   moveElementsToOuterActions() {
-    if (!this.getAttribute("move-out")) return;
+    if (!this.getAttribute("hoist-actions")) return;
     const iframeDoc = this.iframe.contentWindow.document;
     if (!iframeDoc) return;
     let buttonContainer = this.dialog.querySelector("dialog-opener-buttons");
@@ -320,12 +324,11 @@ var BaseDialogOpener = class extends PwcElement {
         btn.click();
       });
       buttonContainer.append(outerBtn);
-      btn.style.visibility = "hidden";
       btn.style.display = "none";
     }
   }
   _moveOutSelector() {
-    let selector = this.getAttribute("move-out");
+    let selector = this.getAttribute("hoist-actions");
     if (selector === "submit") {
       selector = "button[type=submit], input[type=submit]";
     }
@@ -340,35 +343,28 @@ var PwcDialogOpener = class extends BaseDialogOpener {
       this.modalDialog = document.createElement("pwc-modal-dialog");
       document.body.appendChild(this.modalDialog);
     }
-    const closeText = this.getAttribute("close") || "Close";
+    const closeText = this.getAttribute("close-text") || "Close";
     this.modalDialog.open({
       closeText,
       showClose: false
     });
+    this.modalDialog.footerEl.classList.add("pwc-dialog-opener-actions");
     this.modalDialog.footerEl.innerHTML = `
-  <div class="pwc-dialog-opener-actions pwc-dialog-opener-footer">
-    <button type="button" class="pwc-dialog-opener-close" data-pwc-action="close" aria-label="${closeText}">
-      ${closeText}
-    </button>
-  </div>
-`;
+      <button type="button" class="pwc-dialog-opener-close" data-pwc-action="close" aria-label="${closeText}">
+        ${closeText}
+      </button>
+    `;
     const iframe = this.createIFrame(src);
     this.modalDialog.bodyEl.replaceChildren(iframe);
-    this.dialog = this.modalDialog.ui.rootEl;
-    this.modal = {
-      show: () => {
-      },
-      // modal-dialog is already shown by open()
-      hide: () => this.modalDialog.close()
-    };
+    return this.modalDialog.ui.rootEl;
+  }
+  closeDialog() {
+    this.modalDialog.close();
   }
 };
 function define2() {
   defineOnce("pwc-dialog-opener", PwcDialogOpener);
 }
-
-// src/dialog-opener/dialog-opener.css
-var dialog_opener_default = "/* Footer actions container (used by move-out) */\n.pwc-dialog-opener-footer {\n  display: flex;\n  justify-content: flex-end;\n  gap: 8px;\n}\n\n/* Close button */\n.pwc-dialog-opener-close {\n  appearance: none;\n  border: 1px solid rgba(0, 0, 0, 0.25);\n  background: transparent;\n  font: inherit;\n  padding: 6px 12px;\n  border-radius: 4px;\n  cursor: pointer;\n}\n\n.pwc-dialog-opener-close:hover {\n  background: rgba(0, 0, 0, 0.06);\n}\n";
 
 // src/modal-dialog/base.js
 var ModalDialogBase = class extends PwcSimpleInitElement {
@@ -538,11 +534,7 @@ function register2() {
 register2();
 
 // src/dialog-opener/index.js
-function register3() {
-  PwcDialogOpener.registerCss(dialog_opener_default);
-  define2();
-}
-register3();
+define2();
 
 // src/core/pwc-children-observer-element.js
 var PwcChildrenObserverElement = class extends PwcElement {
@@ -837,11 +829,11 @@ var define4 = () => defineOnce("pwc-multiselect-dual-list", PwcMultiselectDualLi
 var multiselect_dual_list_default = "pwc-multiselect-dual-list {\n  /* sizing */\n  --pwc-msdl-width: 100%;\n\n  /* spacing */\n  --pwc-msdl-gap: 12px;\n  --pwc-msdl-padding: 8px;\n  --pwc-msdl-item-padding: 6px 10px;\n  --pwc-msdl-indent: 1.5em;\n\n  /* list */\n  --pwc-msdl-list-max-height: 20em;\n\n  /* visuals */\n  --pwc-msdl-bg: #fff;\n  --pwc-msdl-border: 1px solid rgba(0, 0, 0, 0.15);\n  --pwc-msdl-border-radius: 4px;\n  --pwc-msdl-separator: rgba(0, 0, 0, 0.08);\n\n  /* item */\n  --pwc-msdl-item-bg: #f8f8f8;\n  --pwc-msdl-item-hover-bg: #f0f0f0;\n  --pwc-msdl-item-selected-bg: #e8e8e8;\n  --pwc-msdl-item-selected-color: #999;\n  --pwc-msdl-item-disabled-color: #bbb;\n\n  /* button */\n  --pwc-msdl-action-bg: transparent;\n  --pwc-msdl-action-hover-bg: rgba(0, 0, 0, 0.06);\n  --pwc-msdl-action-border: 1px solid rgba(0, 0, 0, 0.2);\n  --pwc-msdl-action-radius: 3px;\n\n  display: block;\n  width: var(--pwc-msdl-width);\n}\n\n.pwc-msdl-container {\n  display: flex;\n  gap: var(--pwc-msdl-gap);\n}\n\n.pwc-msdl-selected,\n.pwc-msdl-available {\n  flex: 1;\n  min-width: 0;\n  background: var(--pwc-msdl-bg);\n  border: var(--pwc-msdl-border);\n  border-radius: var(--pwc-msdl-border-radius);\n  padding: var(--pwc-msdl-padding);\n}\n\n.pwc-msdl-header {\n  font-weight: 600;\n  margin-bottom: 6px;\n}\n\n.pwc-msdl-filter {\n  display: block;\n  width: 100%;\n  box-sizing: border-box;\n  padding: 4px 8px;\n  margin-bottom: 6px;\n  border: var(--pwc-msdl-border);\n  border-radius: var(--pwc-msdl-border-radius);\n  font: inherit;\n  font-size: 0.9em;\n}\n\n.pwc-msdl-list {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  max-height: var(--pwc-msdl-list-max-height);\n  overflow-y: auto;\n}\n\n.pwc-msdl-item {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: var(--pwc-msdl-item-padding);\n  background: var(--pwc-msdl-item-bg);\n  border-bottom: 1px solid var(--pwc-msdl-separator);\n}\n\n.pwc-msdl-item:last-child {\n  border-bottom: none;\n}\n\n.pwc-msdl-item:hover {\n  background: var(--pwc-msdl-item-hover-bg);\n}\n\n.pwc-msdl-item--selected {\n  background: var(--pwc-msdl-item-selected-bg);\n  color: var(--pwc-msdl-item-selected-color);\n}\n\n.pwc-msdl-item--disabled {\n  color: var(--pwc-msdl-item-disabled-color);\n  cursor: default;\n}\n\n.pwc-msdl-action {\n  appearance: none;\n  border: var(--pwc-msdl-action-border);\n  background: var(--pwc-msdl-action-bg);\n  padding: 2px 8px;\n  border-radius: var(--pwc-msdl-action-radius);\n  cursor: pointer;\n  font: inherit;\n  font-size: 0.85em;\n  flex-shrink: 0;\n  margin-left: 8px;\n}\n\n.pwc-msdl-action:hover {\n  background: var(--pwc-msdl-action-hover-bg);\n}\n\npwc-multiselect-dual-list[hide-selected] .pwc-msdl-item--selected {\n  display: none;\n}\n";
 
 // src/multiselect-dual-list/index.js
-function register4() {
+function register3() {
   PwcMultiselectDualList.registerCss(multiselect_dual_list_default);
   define4();
 }
-register4();
+register3();
 
 // src/zone-transfer/zone-transfer.js
 var PwcZoneTransfer = class extends PwcChildrenObserverElement {
@@ -1047,8 +1039,8 @@ function define5() {
 var zone_transfer_default = 'pwc-zone-transfer [draggable="true"] {\n    cursor: grab;\n}\n\npwc-zone-transfer .pwc-zone-transfer-dragging {\n    cursor: grabbing;\n    opacity: 0.6;\n}\n\npwc-zone-transfer .pwc-zone-transfer-placeholder {\n    opacity: 0.3;\n}';
 
 // src/zone-transfer/index.js
-function register5() {
+function register4() {
   PwcZoneTransfer.registerCss(zone_transfer_default);
   define5();
 }
-register5();
+register4();

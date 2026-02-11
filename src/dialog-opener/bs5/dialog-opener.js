@@ -15,48 +15,44 @@ export class PwcDialogOpenerBs5 extends BaseDialogOpener {
     const tag = "pwc-modal-dialog-bs5";
 
     // Prefer one modal socket per opener instance.
-    if (!this.dialog) {
+    if (!this.modalDialog) {
       // Use existing child socket if provided, otherwise create one.
-      this.dialog = this.querySelector(tag) || document.createElement(tag);
+      this.modalDialog = this.querySelector(tag) || document.createElement(tag);
 
       // If caller didn't place it into the DOM, keep it associated with this component.
       // ModalDialogBase will auto-append itself to <body> on open() if not connected.
-      if (!this.dialog.isConnected) {
-        this.appendChild(this.dialog);
+      if (!this.modalDialog.isConnected) {
+        this.appendChild(this.modalDialog);
       }
     }
 
+    const closeText = this.getAttribute("close-text") || "Close";
+
     // Open modal and get access to the body/footer containers.
-    this.dialog.open({
+    this.modalDialog.open({
       title: this.getAttribute("title") || "",
       size: this.getAttribute("size") || "lg",
-      closeText: this.getAttribute("close") || "Close",
+      closeText,
       showClose: false,
       backdrop: true,
       keyboard: true,
       focus: true
     });
 
-    const closeText = this.getAttribute("close") || "Close";
-    this.dialog.footerEl.innerHTML = `
-      <div class="pwc-dialog-opener-actions">
-        <button type="button" class="btn btn-secondary" data-pwc-action="close" aria-label="${closeText}">
-          ${closeText}
-        </button>
-      </div>
+    this.modalDialog.footerEl.classList.add("pwc-dialog-opener-actions");
+    this.modalDialog.footerEl.innerHTML = `
+      <button type="button" class="btn btn-secondary" data-pwc-action="close" aria-label="${closeText}">
+        ${closeText}
+      </button>
     `;
 
-    const body = this.dialog.bodyEl;
-    body.replaceChildren(this.createIFrame(src));
+    this.modalDialog.bodyEl.replaceChildren(this.createIFrame(src));
 
-    // BaseDialogOpener expects this.modal.show()/hide()
-    // Map those to the modal-dialog component API.
-    this.modal = {
-      show: () => {
-        // already shown by open(); no-op for compatibility
-      },
-      hide: () => this.dialog.close()
-    };
+    return this.modalDialog;
+  }
+
+  closeDialog() {
+    this.modalDialog.close();
   }
 
   _moveOutSelector() {

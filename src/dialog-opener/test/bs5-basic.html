@@ -35,12 +35,12 @@
     const u = new URL(window.location.href);
     if (u.searchParams.has("commit")) {
       // IFrame subission mode
-      if (u.searchParams.has("commit") && !u.searchParams.has("dialog_finished_with")) {
+      if (u.searchParams.has("commit") && !u.searchParams.has("pwc_done_with")) {
         // Ensure the iframe URL contains the marker param your component expects.
         // This runs inside the iframe page.
         // This would usually be done by the server handling the form submission, 
         // but we can simulate it here for testing.
-        u.searchParams.set("dialog_finished_with", "ok");
+        u.searchParams.set("pwc_done_with", "ok");
         window.location.replace(u.toString());
       }
     }

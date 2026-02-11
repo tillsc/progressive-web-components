@@ -9,7 +9,7 @@
 </head>
 
 <body>
-  <pwc-dialog-opener id="dialog-opener-demo" move-out="submit" local-reload="with-scripts replace-url">
+  <pwc-dialog-opener id="dialog-opener-demo" hoist-actions="submit" local-reload="with-scripts replace-url">
     <a href="./iframe-target.html">Open</a><br>
     Hello <span id="first_name"></span> <span id="last_name"></span>
     <input type="hidden" name="default_for_iframe_target">
@@ -29,12 +29,12 @@
     const u = new URL(window.location.href);
     if (u.searchParams.has("commit")) {
       // IFrame subission mode
-      if (u.searchParams.has("commit") && !u.searchParams.has("dialog_finished_with")) {
+      if (u.searchParams.has("commit") && !u.searchParams.has("pwc_done_with")) {
         // Ensure the iframe URL contains the marker param your component expects.
         // This runs inside the iframe page.
         // This would usually be done by the server handling the form submission, 
         // but we can simulate it here for testing.
-        u.searchParams.set("dialog_finished_with", "ok");
+        u.searchParams.set("pwc_done_with", "ok");
         window.location.replace(u.toString());
       }
     }
@@ -80,7 +80,7 @@
           const raw = iframe.getAttribute("src") || "";
           const u = new URL(raw, window.location.href);
           assert(u.pathname.endsWith("/src/dialog-opener/test/iframe-target.html"), `unexpected iframe pathname: ${u.pathname}`);
-          assert(u.searchParams.get("_layout") === "false", `missing or wrong _layout param: ${u.search}`);
+          assert(u.searchParams.get("pwc_embedded") === "true", `missing or wrong pwc_embedded param: ${u.search}`);
         }
 
         log("waiting for moved-out OK button");

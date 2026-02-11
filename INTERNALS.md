@@ -49,6 +49,16 @@ Example: `<dialog-opener>` component
 - CSS is installed once at define time
 - No per-instance style registration
 
+## Trust model for attributes
+
+Attribute values are trusted and may be inserted via `innerHTML` without escaping.
+Attributes are authored by the page developer, not by end users. If an attacker can
+modify HTML attributes, they already have full control over the page and can inject
+scripts directly. Escaping attribute-sourced values would be security theater.
+
+Child content (e.g. iframe responses, user input) is a different story and must be
+handled with care.
+
 ## Testing
 
 - Tests are written as HTML pages

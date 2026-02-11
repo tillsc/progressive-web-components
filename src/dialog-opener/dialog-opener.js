@@ -8,31 +8,25 @@ export class PwcDialogOpener extends BaseDialogOpener {
       document.body.appendChild(this.modalDialog);
     }
 
-    const closeText = this.getAttribute("close") || "Close";
+    const closeText = this.getAttribute("close-text") || "Close";
     this.modalDialog.open({
       closeText,
       showClose: false
     });
-this.modalDialog.footerEl.innerHTML = `
-  <div class="pwc-dialog-opener-actions pwc-dialog-opener-footer">
-    <button type="button" class="pwc-dialog-opener-close" data-pwc-action="close" aria-label="${closeText}">
-      ${closeText}
-    </button>
-  </div>
-`;
+    this.modalDialog.footerEl.classList.add("pwc-dialog-opener-actions");
+    this.modalDialog.footerEl.innerHTML = `
+      <button type="button" class="pwc-dialog-opener-close" data-pwc-action="close" aria-label="${closeText}">
+        ${closeText}
+      </button>
+    `;
     const iframe = this.createIFrame(src);
     this.modalDialog.bodyEl.replaceChildren(iframe);
 
-    // Contract for BaseDialogOpener.enhanceIFrame():
-    // it queries this.dialog for "iframe".
-    this.dialog = this.modalDialog.ui.rootEl;
+    return this.modalDialog.ui.rootEl;
+  }
 
-    // Contract for BaseDialogOpener.open():
-    // it calls this.modal.show()/hide().
-    this.modal = {
-      show: () => {}, // modal-dialog is already shown by open()
-      hide: () => this.modalDialog.close()
-    };
+  closeDialog() {
+    this.modalDialog.close();
   }
 }
 
