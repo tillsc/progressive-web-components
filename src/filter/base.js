@@ -11,7 +11,7 @@ export class BaseFilter extends PwcSimpleInitElement {
 
     const debounceTimeout = Number(this.getAttribute("debounce"));
     this._debouncedFilter = this._debounce(
-      () => this._applyFilter(),
+      () => this.applyFilter(),
       Number.isFinite(debounceTimeout) ? debounceTimeout : 300
     );
 
@@ -34,7 +34,7 @@ export class BaseFilter extends PwcSimpleInitElement {
 
   set filterText(text) {
     if (this._input) this._input.value = text;
-    this._applyFilter();
+    this.applyFilter();
   }
 
   _createInput() {
@@ -62,7 +62,9 @@ export class BaseFilter extends PwcSimpleInitElement {
     return Array.from(this.querySelectorAll(this._rowSelector()));
   }
 
-  _applyFilter() {
+  applyFilter() {
+    if (!this._input) return;
+
     const tokens = this._input.value
       .trim()
       .toLowerCase()

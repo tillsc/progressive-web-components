@@ -63,6 +63,15 @@
     log("clearing via filterText");
     el.filterText = "";
     equal(rows.filter((r) => !r.hidden).length, 3, "all rows visible after clearing");
+
+    log("applyFilter() re-evaluates after content change");
+    el.filterText = "alice";
+    equal(rows.filter((r) => !r.hidden).length, 1, "1 row for alice");
+    // Change Bob's content to include "alice"
+    rows[1].querySelector("td").textContent = "Alice-Bob";
+    el.applyFilter();
+    equal(rows.filter((r) => !r.hidden).length, 2, "2 rows match after content change and applyFilter()");
+
     log("done");
   });
 </script>

@@ -121,6 +121,17 @@ console.log(filter.filterText); // "alice"
 filter.filterText = "";         // clear filter
 ```
 
+### `applyFilter()` method
+
+Re-evaluates the filter against current row content. Call this after dynamically
+adding, removing, or modifying rows so the filter state stays in sync.
+
+```js
+const filter = document.querySelector("pwc-filter");
+// … modify rows …
+filter.applyFilter();
+```
+
 ### `pwc-filter:change` event
 
 Dispatched on every filter update (including programmatic changes). Bubbles.

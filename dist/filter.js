@@ -89,7 +89,7 @@ var BaseFilter = class extends PwcSimpleInitElement {
     this._input = input;
     const debounceTimeout = Number(this.getAttribute("debounce"));
     this._debouncedFilter = this._debounce(
-      () => this._applyFilter(),
+      () => this.applyFilter(),
       Number.isFinite(debounceTimeout) ? debounceTimeout : 300
     );
     this.prepend(wrapper);
@@ -107,7 +107,7 @@ var BaseFilter = class extends PwcSimpleInitElement {
   }
   set filterText(text) {
     if (this._input) this._input.value = text;
-    this._applyFilter();
+    this.applyFilter();
   }
   _createInput() {
     const input = document.createElement("input");
@@ -128,7 +128,8 @@ var BaseFilter = class extends PwcSimpleInitElement {
   _rows() {
     return Array.from(this.querySelectorAll(this._rowSelector()));
   }
-  _applyFilter() {
+  applyFilter() {
+    if (!this._input) return;
     const tokens = this._input.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
     const rows = this._rows();
     for (const row of rows) {
