@@ -11,8 +11,9 @@ export class PwcMultiselectDualList extends MultiselectDualListBase {
       </div>
       <div class="pwc-msdl-available">
         <div class="pwc-msdl-header">${this.availableLabel}</div>
-        <input type="search" class="pwc-msdl-filter" placeholder="Filter…" aria-label="Filter ${this.availableLabel}" />
-        <ul class="pwc-msdl-list" role="listbox" aria-label="${this.availableLabel}"></ul>
+        <pwc-filter row-selector="[data-value]">
+          <ul class="pwc-msdl-list" role="listbox" aria-label="${this.availableLabel}"></ul>
+        </pwc-filter>
       </div>
     `;
     container.className = "pwc-msdl-container";
@@ -22,7 +23,6 @@ export class PwcMultiselectDualList extends MultiselectDualListBase {
     return {
       selectedList: container.querySelector(".pwc-msdl-selected .pwc-msdl-list"),
       availableList: container.querySelector(".pwc-msdl-available .pwc-msdl-list"),
-      filterInput: container.querySelector(".pwc-msdl-filter"),
     };
   }
 
@@ -77,24 +77,6 @@ export class PwcMultiselectDualList extends MultiselectDualListBase {
     return li;
   }
 
-  _filterAvailable(text) {
-    const items = this._availableList.querySelectorAll("[data-value]");
-    const totalCount = items.length;
-    const regex = this._buildFilterRegex(text);
-
-    if (!regex) {
-      for (const el of items) el.style.display = "";
-      return { matchCount: totalCount, totalCount };
-    }
-
-    let matchCount = 0;
-    for (const el of items) {
-      const match = regex.test(el.textContent);
-      el.style.display = match ? "" : "none";
-      if (match) matchCount++;
-    }
-    return { matchCount, totalCount };
-  }
 }
 
 export const define = () => defineOnce("pwc-multiselect-dual-list", PwcMultiselectDualList);

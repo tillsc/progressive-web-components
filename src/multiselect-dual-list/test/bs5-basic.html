@@ -69,36 +69,6 @@
       );
       equal(select.querySelector("option[value='3']").selected, false, "option 3 deselected");
 
-      // Test filter
-      log("testing filter");
-      const filterInput = availableCol.querySelector("input[type='search']");
-      assert(filterInput, "filter input exists");
-
-      filterInput.value = "Root";
-      filterInput.dispatchEvent(new Event("input", { bubbles: true }));
-
-      await waitFor(
-        () => {
-          const visible = Array.from(availableCol.querySelectorAll(".list-group [data-value]"))
-            .filter((el) => !el.classList.contains("d-none"));
-          return visible.length === 1; // Root A
-        },
-        { label: "filter shows only matching items" }
-      );
-
-      // Clear filter
-      filterInput.value = "";
-      filterInput.dispatchEvent(new Event("input", { bubbles: true }));
-
-      await waitFor(
-        () => {
-          const visible = Array.from(availableCol.querySelectorAll(".list-group [data-value]"))
-            .filter((el) => !el.classList.contains("d-none"));
-          return visible.length === 4;
-        },
-        { label: "clearing filter shows all items" }
-      );
-
       log("done");
     });
   </script>

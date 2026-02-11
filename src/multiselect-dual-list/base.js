@@ -8,15 +8,14 @@ import { PwcChildrenObserverElement } from "../core/pwc-children-observer-elemen
  * Hierarchy from data-parent on <option> is shown as indentation.
  *
  * Subclass contract:
- * - _buildUI() → { availableList, selectedList, filterInput }
+ * - _buildUI() → { availableList, selectedList }
  * - _createAvailableEntry(item) → DOM element for available list
  * - _createSelectedEntry(item) → DOM element for selected list
  * - get _selectedClass → CSS class toggled on available entries when selected
- * - _filterAvailable(text) → show/hide available entries, return { matchCount, totalCount }
  */
 export class MultiselectDualListBase extends PwcChildrenObserverElement {
   static observeMode = "tree";
-  static events = ["click", "input"];
+  static events = ["click"];
 
   get _selectedClass() { return "pwc-msdl-item--selected"; }
 
@@ -35,14 +34,12 @@ export class MultiselectDualListBase extends PwcChildrenObserverElement {
         const ui = this._buildUI();
         this._availableList = ui.availableList;
         this._selectedList = ui.selectedList;
-        this._filterInput = ui.filterInput;
       }
 
       this._populateLists(items);
       select.style.display = "none";
 
-      const filterText = this._filterInput?.value;
-      if (filterText) this._applyFilter(filterText);
+      this.filter?.applyFilter?.();
     });
   }
 
@@ -104,13 +101,6 @@ export class MultiselectDualListBase extends PwcChildrenObserverElement {
 
       if (action === "add") this._addItem(value);
       else if (action === "remove") this._removeItem(value);
-      return;
-    }
-
-    if (e.type === "input") {
-      if (this._filterInput && e.target === this._filterInput) {
-        this._applyFilter(this._filterInput.value);
-      }
     }
   }
 
@@ -171,6 +161,8 @@ export class MultiselectDualListBase extends PwcChildrenObserverElement {
 
   get select() { return this._select; }
 
+  get filter() { return this.querySelector("pwc-filter, pwc-filter-bs5"); }
+
   get selectedLabel() {
     return this.getAttribute("selected-label") || "Selected";
   }
@@ -187,29 +179,4 @@ export class MultiselectDualListBase extends PwcChildrenObserverElement {
     return this.getAttribute("remove-label") || "\u00d7";
   }
 
-  get filterText() {
-    return this._filterInput?.value ?? "";
-  }
-
-  set filterText(text) {
-    if (this._filterInput) this._filterInput.value = text;
-    this._applyFilter(text);
-  }
-
-  _applyFilter(text) {
-    const { matchCount, totalCount } = this._filterAvailable(text);
-    this.dispatchEvent(new CustomEvent("pwc-multiselect-dual-list:filter", {
-      bubbles: true,
-      detail: { filterText: text, matchCount, totalCount }
-    }));
-  }
-
-  _buildFilterRegex(text) {
-    if (!text) return null;
-    try {
-      return new RegExp(text, "i");
-    } catch {
-      return new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-    }
-  }
 }

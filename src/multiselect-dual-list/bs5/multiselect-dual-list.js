@@ -13,8 +13,9 @@ export class PwcMultiselectDualListBs5 extends MultiselectDualListBase {
       </div>
       <div class="col">
         <h6>${this.availableLabel}</h6>
-        <input type="search" class="form-control form-control-sm mb-2" placeholder="Filter…" aria-label="Filter ${this.availableLabel}" />
-        <div class="list-group" style="max-height:20em;overflow-y:auto" role="listbox" aria-label="${this.availableLabel}" data-role="available"></div>
+        <pwc-filter-bs5 row-selector="[data-value]">
+          <div class="list-group" style="max-height:20em;overflow-y:auto" role="listbox" aria-label="${this.availableLabel}" data-role="available"></div>
+        </pwc-filter-bs5>
       </div>
     `;
     container.className = "row g-3";
@@ -24,7 +25,6 @@ export class PwcMultiselectDualListBs5 extends MultiselectDualListBase {
     return {
       selectedList: container.querySelector("[data-role='selected']"),
       availableList: container.querySelector("[data-role='available']"),
-      filterInput: container.querySelector("input[type='search']"),
     };
   }
 
@@ -79,25 +79,6 @@ export class PwcMultiselectDualListBs5 extends MultiselectDualListBase {
     return el;
   }
 
-  _filterAvailable(text) {
-    const items = this._availableList.querySelectorAll("[data-value]");
-    const totalCount = items.length;
-    const regex = this._buildFilterRegex(text);
-
-    if (!regex) {
-      for (const el of items) el.classList.remove("d-none");
-      return { matchCount: totalCount, totalCount };
-    }
-
-    let matchCount = 0;
-    for (const el of items) {
-      const label = el.querySelector("span")?.textContent || "";
-      const match = regex.test(label);
-      el.classList.toggle("d-none", !match);
-      if (match) matchCount++;
-    }
-    return { matchCount, totalCount };
-  }
 }
 
 export const define = () => defineOnce("pwc-multiselect-dual-list-bs5", PwcMultiselectDualListBs5);

@@ -2,7 +2,8 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>multiselect-dual-list: filter API</title>
+  <title>multiselect-dual-list: filter API (pwc-filter composition)</title>
+  <script type="module" src="../../../dist/filter.js"></script>
   <script type="module" src="../../../dist/multiselect-dual-list.js"></script>
 </head>
 <body>
@@ -22,34 +23,35 @@
       const host = document.getElementById("demo");
       await waitFor(() => host.querySelector(".pwc-msdl-container"), { label: "container rendered" });
 
+      assert(host.filter, "host.filter returns pwc-filter element");
+
       let lastEvent = null;
-      host.addEventListener("pwc-multiselect-dual-list:filter", (e) => { lastEvent = e; });
+      host.addEventListener("pwc-filter:change", (e) => { lastEvent = e; });
 
       // --- filterText getter/setter + event ---
-      log("filterText property");
-      equal(host.filterText, "", "filterText is empty initially");
+      log("filterText property on pwc-filter");
+      equal(host.filter.filterText, "", "filterText is empty initially");
 
-      host.filterText = "alpha";
-      equal(host.filterText, "alpha", "getter returns set value");
-      assert(lastEvent, "event dispatched on set");
+      host.filter.filterText = "alpha";
+      equal(host.filter.filterText, "alpha", "getter returns set value");
+      assert(lastEvent, "pwc-filter:change event dispatched");
       equal(lastEvent.detail.filterText, "alpha", "detail.filterText");
       equal(lastEvent.detail.matchCount, 1, "matchCount 1");
       equal(lastEvent.detail.totalCount, 4, "totalCount 4");
 
       // --- matchCount = 0 ---
       log("no-match case");
-      host.filterText = "zzz-no-match";
+      host.filter.filterText = "zzz-no-match";
       equal(lastEvent.detail.matchCount, 0, "matchCount 0 for no-match");
 
       // --- Filter re-applied after dynamic option change ---
       log("filter persistence across rebuild");
-      host.filterText = "alpha";
+      host.filter.filterText = "alpha";
 
-      const select = host.querySelector("select");
       const opt = document.createElement("option");
       opt.value = "5";
       opt.textContent = "Alpha Two";
-      select.appendChild(opt);
+      host.select.appendChild(opt);
 
       await waitFor(
         () => host.querySelectorAll(".pwc-msdl-available [data-value]").length === 5,

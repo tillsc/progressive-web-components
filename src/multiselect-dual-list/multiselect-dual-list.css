@@ -54,18 +54,6 @@ pwc-multiselect-dual-list {
   margin-bottom: 6px;
 }
 
-.pwc-msdl-filter {
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 4px 8px;
-  margin-bottom: 6px;
-  border: var(--pwc-msdl-border);
-  border-radius: var(--pwc-msdl-border-radius);
-  font: inherit;
-  font-size: 0.9em;
-}
-
 .pwc-msdl-list {
   list-style: none;
   margin: 0;

@@ -94,45 +94,37 @@ The component supports both `<select multiple>` and single `<select>`:
 
 ---
 
-## Filter
+## Filter (progressive enhancement)
 
-A search input is rendered above the available items list. It filters items by label
-using a case-insensitive regular expression. If the input is not a valid regex, it is
-treated as a literal string.
+Filtering is provided by composing `<pwc-filter>` (or `<pwc-filter-bs5>`) inside the
+dual-list. When the filter component is loaded, a search input appears above the
+available items. When it is **not** loaded, the dual-list works normally without a
+filter — true progressive enhancement.
 
-### `filterText` property
+To enable filtering, load the filter component alongside the dual-list:
 
-Read or write the current filter value programmatically:
-
-```js
-const host = document.querySelector("pwc-multiselect-dual-list");
-
-// Read
-console.log(host.filterText);
-
-// Write — applies the filter and dispatches the event
-host.filterText = "search term";
+```html
+<script type="module" src="dist/filter.js"></script>
+<script type="module" src="dist/multiselect-dual-list.js"></script>
 ```
 
-### `pwc-multiselect-dual-list:filter` event
-
-Dispatched whenever the filter changes (user input or programmatic). The event bubbles
-and carries a `detail` object:
+The filter uses `<pwc-filter>`'s API. Access it via:
 
 ```js
-host.addEventListener("pwc-multiselect-dual-list:filter", (e) => {
+const filter = host.querySelector("pwc-filter");
+filter.filterText = "search";   // apply filter
+filter.filterText = "";          // clear filter
+```
+
+Listen for filter changes via the `pwc-filter:change` event:
+
+```js
+host.addEventListener("pwc-filter:change", (e) => {
   const { filterText, matchCount, totalCount } = e.detail;
-  if (filterText && matchCount === 0) {
-    // No matches — e.g. show a "Create new" button
-  }
 });
 ```
 
-| `detail` field | Type | Description |
-|----------------|------|-------------|
-| `filterText` | `string` | The current filter value |
-| `matchCount` | `number` | Number of visible (matching) available items |
-| `totalCount` | `number` | Total number of available items |
+See the [`<pwc-filter>` documentation](../filter/README.md) for full API details.
 
 ---
 
@@ -149,7 +141,6 @@ Key CSS hooks:
 - `.pwc-msdl-item--selected` — available item that is currently selected
 - `.pwc-msdl-item--disabled` — disabled item
 - `.pwc-msdl-action` — add/remove buttons
-- `.pwc-msdl-filter` — search input
 
 Custom properties on the host element:
 

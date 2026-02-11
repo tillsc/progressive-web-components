@@ -8,11 +8,10 @@ It defines a **subclass contract** — a set of hooks that variants must impleme
 
 | Hook | Responsibility |
 |------|---------------|
-| `_buildUI()` | Build DOM, return `{ availableList, selectedList, filterInput }` |
+| `_buildUI()` | Build DOM, return `{ availableList, selectedList }` |
 | `_createAvailableEntry(item)` | Create a DOM element for an available list entry |
 | `_createSelectedEntry(item)` | Create a DOM element for a selected list entry |
 | `get _selectedClass` | CSS class toggled on available entries when selected |
-| `_filterAvailable(text)` | Show/hide available entries, return `{ matchCount, totalCount }` |
 
 The vanilla variant uses plain HTML (`<ul>/<li>`) with custom CSS classes.
 The BS5 variant uses Bootstrap `list-group` markup (`<div>` with Bootstrap classes).
@@ -54,38 +53,24 @@ The only variant-specific part is the CSS class name, provided by `get _selected
 - Vanilla: `pwc-msdl-item--selected` (default in base)
 - BS5: `list-group-item-secondary` (override)
 
-## Filter logic
+## Filter composition
 
-### `_buildFilterRegex(text)` (base)
+Filtering is delegated to `<pwc-filter>` / `<pwc-filter-bs5>` via composition.
+Each variant's `_buildUI()` wraps the available list in a filter element. If the
+filter component is not loaded, the element is treated as an unknown HTML element
+and the dual-list works without filtering (progressive enhancement).
 
-Shared helper that compiles a filter string into a case-insensitive `RegExp`.
-Returns `null` when `text` is empty. Falls back to an escaped literal if the input
-is not valid regex syntax.
-
-### `_filterAvailable(text)` (variants)
-
-Implemented by each variant because the show/hide mechanism differs:
-- Vanilla: `el.style.display = "none"`
-- BS5: `el.classList.toggle("d-none", ...)`
-
-Both use `_buildFilterRegex()` and return `{ matchCount, totalCount }`.
-
-### `_applyFilter(text)` (base)
-
-Orchestration method: calls `_filterAvailable(text)`, then dispatches a
-`pwc-multiselect-dual-list:filter` CustomEvent with
-`{ filterText, matchCount, totalCount }`. Called from `handleEvent` (on user input),
-the `filterText` setter, and after `_populateLists()` in `onChildrenChanged()`
-when a filter is active.
+After `_populateLists()` rebuilds the available entries (e.g. on dynamic option
+changes), `onChildrenChanged()` calls `applyFilter()` on the filter element to
+re-evaluate the current filter text against the new content.
 
 ## Event handling
 
-The base class registers `click` and `input` listeners via `static events` (from
+The base class registers a `click` listener via `static events` (from
 `PwcChildrenObserverElement`). `handleEvent()` dispatches to:
 
 - `click` on `[data-action="add"]` → `_addItem(value)`
 - `click` on `[data-action="remove"]` → `_removeItem(value)`
-- `input` on the filter input → `_filterAvailable(text)`
 
 ## Observer suppression
 

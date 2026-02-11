@@ -80,34 +80,6 @@
       );
       equal(select.querySelector("option[value='4']").selected, false, "option 4 is deselected in native select");
 
-      // Test filter
-      log("testing filter");
-      const filterInput = container.querySelector(".pwc-msdl-filter");
-      filterInput.value = "Root";
-      filterInput.dispatchEvent(new Event("input", { bubbles: true }));
-
-      await waitFor(
-        () => {
-          const visible = Array.from(container.querySelectorAll(".pwc-msdl-available [data-value]"))
-            .filter((el) => el.style.display !== "none");
-          return visible.length === 2; // Root A + Root B
-        },
-        { label: "filter shows only matching items" }
-      );
-
-      // Clear filter
-      filterInput.value = "";
-      filterInput.dispatchEvent(new Event("input", { bubbles: true }));
-
-      await waitFor(
-        () => {
-          const visible = Array.from(container.querySelectorAll(".pwc-msdl-available [data-value]"))
-            .filter((el) => el.style.display !== "none");
-          return visible.length === 6;
-        },
-        { label: "clearing filter shows all items" }
-      );
-
       log("done");
     });
   </script>
