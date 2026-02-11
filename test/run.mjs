@@ -11,33 +11,155 @@ function fail(msg) {
   process.exitCode = 1;
 }
 
-async function pool(items, worker, concurrency) {
-  const results = new Array(items.length);
-  let i = 0;
+async function processPage(browser, url) {
+  const p = await browser.newPage();
+  const perr = [];
 
-  const runners = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
-    while (true) {
-      const idx = i++;
-      if (idx >= items.length) return;
-      results[idx] = await worker(items[idx], idx);
-    }
+  p.on("pageerror", (err) => perr.push(err));
+  p.on("console", (msg) => {
+    if (msg.type() === "error") perr.push(new Error(msg.text()));
   });
 
-  await Promise.all(runners);
+  try {
+    await p.goto(url, { waitUntil: "load", timeout: TIMEOUT_MS });
+
+    // Wait for zero-md to render (if present)
+    await p.waitForFunction(() => {
+      const els = Array.from(document.querySelectorAll("zero-md"));
+      if (els.length === 0) return true;
+
+      return els.every((el) => {
+        const sr = el.shadowRoot;
+        if (!sr) return false;
+        const root = sr.querySelector(".markdown-body");
+        if (!root) return false;
+        return (root.textContent || "").trim().length > 0;
+      });
+    }, { timeout: TIMEOUT_MS });
+
+    // Scan for data-test-page links in Light DOM + zero-md Shadow DOM
+    const links = await p.evaluate(() => {
+      const result = [];
+
+      // Light DOM
+      for (const a of document.querySelectorAll("a[data-test-page][href]")) result.push(a.href);
+
+      // Shadow DOM of zero-md
+      for (const z of document.querySelectorAll("zero-md")) {
+        const sr = z.shadowRoot;
+        if (!sr) continue;
+        for (const a of sr.querySelectorAll("a[data-test-page][href]")) result.push(a.href);
+      }
+
+      return result.filter(Boolean);
+    });
+
+    // Check if this page has test results
+    let testResult = null;
+    const hasTests = await p.evaluate(() => typeof window.__TEST_RESULTS__ !== "undefined");
+
+    if (hasTests) {
+      await p.waitForFunction(() => {
+        return window.__TEST_RESULTS__ && window.__TEST_RESULTS__.done === true;
+      }, { timeout: TIMEOUT_MS });
+
+      const results = await p.evaluate(() => window.__TEST_RESULTS__);
+      const assertions = typeof results?.assertions === "number" ? results.assertions : 0;
+      const ms = typeof results?.ms === "number" ? results.ms : null;
+      const rel = new URL(url).pathname;
+
+      testResult = {
+        rel,
+        ok: results?.ok === true && perr.length === 0,
+        results,
+        perr,
+        assertions,
+        ms
+      };
+    }
+
+    if (!hasTests && perr.length > 0) {
+      const rel = new URL(url).pathname;
+      fail(`  [${rel}] console/page errors:\n${perr.map((e) => "  " + e.message).join("\n")}`);
+    }
+
+    return { links, testResult };
+  } catch (e) {
+    const rel = new URL(url).pathname;
+    const hasTests = await p.evaluate(() => typeof window.__TEST_RESULTS__ !== "undefined").catch(() => false);
+
+    if (hasTests) {
+      return {
+        links: [],
+        testResult: { rel, ok: false, results: { message: e.message }, perr, assertions: 0, ms: null }
+      };
+    }
+
+    fail(`  [${rel}] error: ${e.message}`);
+    return { links: [], testResult: null };
+  } finally {
+    await p.close();
+  }
+}
+
+async function crawl(browser, startUrl, concurrency) {
+  const seen = new Set([startUrl]);
+  const queue = [startUrl];
+  const results = [];
+  let active = 0;
+
+  let wakeup;
+  let signal = new Promise((r) => { wakeup = r; });
+
+  function notify() {
+    wakeup();
+    signal = new Promise((r) => { wakeup = r; });
+  }
+
+  function rel(url) {
+    return url.startsWith(startUrl) ? url.slice(startUrl.length - 1) : url;
+  }
+
+  function enqueue(url, from) {
+    if (seen.has(url)) return;
+    seen.add(url);
+    queue.push(url);
+    console.log(`  + ${rel(url)}${VERBOSE ? ` (from ${rel(from)})` : ""}`);
+    notify();
+  }
+
+  async function worker() {
+    while (true) {
+      while (queue.length === 0) {
+        if (active === 0) return;
+        await signal;
+      }
+
+      const url = queue.shift();
+      active++;
+      try {
+        if (VERBOSE) console.log(`  > ${rel(url)} ...`);
+        const { links, testResult } = await processPage(browser, url);
+        for (const link of links) enqueue(link, url);
+        if (testResult) results.push(testResult);
+        if (VERBOSE) {
+          const parts = [];
+          if (links.length) parts.push(`${links.length} links`);
+          if (testResult) parts.push(testResult.ok ? "test OK" : "test FAIL");
+          if (parts.length) console.log(`    ${parts.join(", ")}`);
+        }
+      } finally {
+        active--;
+        notify();
+      }
+    }
+  }
+
+  await Promise.all(Array.from({ length: concurrency }, () => worker()));
   return results;
 }
 
-function uniq(arr) {
-  return Array.from(new Set(arr));
-}
-
-const { baseUrl, components, close } = await startServer({ port: 0 });
-
-if (!components || components.length === 0) {
-  console.log("No component tests found. Expected src/<component>/index.html");
-  await close();
-  process.exit(0);
-}
+const { baseUrl, close } = await startServer({ port: 0 });
 
 const browser = await chromium.launch({ headless: true });
 
@@ -46,146 +168,22 @@ let totalAssertions = 0;
 let totalFailed = 0;
 
 try {
-  // 1) Collect pages in parallel (one index.html per component)
-  const collectOne = async (component) => {
-    const indexPath = `/src/${component}/index.html`;
-    const indexUrl = `${baseUrl}${indexPath}`;
+  console.log(`Crawling from / (concurrency=${CONCURRENCY})...`);
+  const results = await crawl(browser, baseUrl + "/", CONCURRENCY);
 
-    const p = await browser.newPage();
-    const perr = [];
+  totalPages = results.length;
 
-    p.on("pageerror", (err) => perr.push(err));
-    p.on("console", (msg) => {
-      if (msg.type() === "error") perr.push(new Error(msg.text()));
-    });
-
-    try {
-      await p.goto(indexUrl, { waitUntil: "load", timeout: TIMEOUT_MS });
-
-      // Wait for zero-md to render (if present)
-      await p.waitForFunction(() => {
-        const els = Array.from(document.querySelectorAll("zero-md"));
-        if (els.length === 0) return true;
-
-        return els.every((el) => {
-          const sr = el.shadowRoot;
-          if (!sr) return false;
-          const root = sr.querySelector(".markdown-body, article, main, div");
-          if (!root) return false;
-          return (root.textContent || "").trim().length > 0;
-        });
-      }, { timeout: TIMEOUT_MS });
-
-      const linksAbs = await p.evaluate(() => {
-        const links = [];
-
-        // Light DOM
-        for (const a of document.querySelectorAll("a[data-test-page][href]")) links.push(a.href);
-
-        // Shadow DOM of zero-md (optional but often needed)
-        for (const z of document.querySelectorAll("zero-md")) {
-          const sr = z.shadowRoot;
-          if (!sr) continue;
-          for (const a of sr.querySelectorAll("a[data-test-page][href]")) links.push(a.href);
-        }
-
-        return links.filter(Boolean);
-      });
-
-      if (perr.length) {
-        return { component, ok: false, indexPath, error: `console/page errors:\n${perr.map((e) => "  " + e.message).join("\n")}`, pages: [] };
-      }
-
-      if (linksAbs.length === 0) {
-        return { component, ok: false, indexPath, error: "no links with [data-test-page] found", pages: [] };
-      }
-
-      const allowedPrefix = `${baseUrl}/src/${component}/test/`;
-      const pagesToRun = uniq(
-        linksAbs
-          .map((u) => u.trim())
-          .filter((u) => u.startsWith(allowedPrefix))
-      ).sort();
-
-      if (pagesToRun.length === 0) {
-        return {
-          component,
-          ok: false,
-          indexPath,
-          error: `no runnable test pages under ${allowedPrefix.replace(baseUrl, "")}`,
-          pages: []
-        };
-      }
-
-      return {
-        component,
-        ok: true,
-        indexPath,
-        error: null,
-        pages: pagesToRun.map((url) => ({ url, rel: url.replace(baseUrl, ""), component }))
-      };
-    } catch (e) {
-      return { component, ok: false, indexPath, error: e.message, pages: [] };
-    } finally {
-      await p.close();
-    }
-  };
-
-  const collected = await pool(components, collectOne, CONCURRENCY);
-
-  const pages = [];
-  for (const c of collected) {
-    if (!c.ok) {
-      fail(`  [${c.component}] FAIL: index ${c.indexPath} -> ${c.error}`);
-      continue;
-    }
-
-    totalPages += c.pages.length;
-    for (const pg of c.pages) pages.push(pg);
-  }
-
-  if (pages.length === 0) {
-    fail("No runnable test pages found.");
+  if (totalPages === 0) {
+    fail("No test pages found.");
   } else {
-    console.log(`\nFound ${pages.length} pages. Running tests with concurrency=${CONCURRENCY}...`);
+    console.log(`\nFound ${totalPages} test pages. Running with concurrency=${CONCURRENCY}...\n`);
   }
 
-  // 2) Run pages in parallel
-  const runOne = async ({ url, rel }) => {
-    const p = await browser.newPage();
-    const perr = [];
-
-    p.on("pageerror", (err) => perr.push(err));
-    p.on("console", (msg) => {
-      if (msg.type() === "error") perr.push(new Error(msg.text()));
-    });
-
-    try {
-      await p.goto(url, { waitUntil: "load", timeout: TIMEOUT_MS });
-
-      await p.waitForFunction(() => {
-        return window.__TEST_RESULTS__ && window.__TEST_RESULTS__.done === true;
-      }, { timeout: TIMEOUT_MS });
-
-      const results = await p.evaluate(() => window.__TEST_RESULTS__);
-      const assertions = typeof results?.assertions === "number" ? results.assertions : 0;
-      const ms = typeof results?.ms === "number" ? results.ms : null;
-
-      return { rel, ok: results?.ok === true && perr.length === 0, results, perr, assertions, ms };
-    } catch (e) {
-      return { rel, ok: false, results: { message: e.message }, perr, assertions: 0, ms: null };
-    } finally {
-      await p.close();
-    }
-  };
-
-  const outcomes = await pool(pages, runOne, CONCURRENCY);
-
-  // 3) Simple reporting per page
-  for (const o of outcomes) {
+  // Reporting
+  for (const o of results) {
     totalAssertions += o.assertions;
 
-    console.log(`\n- ${o.rel}`);
+    console.log(`- ${o.rel}`);
     if (o.ok) {
       console.log(`  OK${o.ms != null ? ` (${o.ms} ms)` : ""} | ${o.assertions || 0} assertions`);
 

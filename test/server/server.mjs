@@ -23,9 +23,7 @@ export async function startServer({ port = 0 } = {}) {
   const repoRoot = path.resolve(__dirname, "../..");
   const srcRoot = path.join(repoRoot, "src");
 
-  // Discover components with an index.html and load optional dynamic routes
-  const componentsWithTests = [];
-
+  // Load optional dynamic routes from component test directories
   const components = fs
     .readdirSync(srcRoot, { withFileTypes: true })
     .filter((e) => e.isDirectory())
@@ -33,9 +31,6 @@ export async function startServer({ port = 0 } = {}) {
     .sort();
 
   for (const c of components) {
-    const indexFile = path.join(srcRoot, c, "index.html");
-    if (!isFile(indexFile)) continue;
-
     const routesFile = path.join(srcRoot, c, "test", "routes.mjs");
     if (isFile(routesFile)) {
       const mod = await import(pathToFileURL(routesFile).href);
@@ -45,8 +40,6 @@ export async function startServer({ port = 0 } = {}) {
         console.warn(`[routes] ${c}: routes.mjs has no default export function`);
       }
     }
-
-    componentsWithTests.push(c);
   }
 
   app.get("/favicon.ico", (_req, res) => {
@@ -65,7 +58,6 @@ export async function startServer({ port = 0 } = {}) {
 
   return {
     baseUrl: `http://127.0.0.1:${actualPort}`,
-    components: componentsWithTests,
     close: () => new Promise((resolve) => server.close(resolve))
   };
 }
