@@ -49,14 +49,6 @@ Example: `<dialog-opener>` component
 - CSS is installed once at define time
 - No per-instance style registration
 
-## Distribution
-
-- `dist/` contains JavaScript files only
-- One file per component variant
-- Base implementations are not published
-- Components may be bundled or code-split
-- No required build step for consumers
-
 ## Testing
 
 - Tests are written as HTML pages

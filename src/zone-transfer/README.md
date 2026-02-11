@@ -2,12 +2,11 @@
 
 Minimal zone-based drag & drop plus sorting between containers ("zones").
 
-This component is **server-first** and **markup-driven**:
-- no Shadow DOM
-- no external drag-and-drop library
-- uses the native HTML5 DnD events
+`<pwc-zone-transfer>` is a server-first, markup-driven component that uses the native
+HTML5 Drag and Drop API without external libraries. It moves elements between zones and
+emits a single change event.
 
-It is intentionally small: it moves elements between zones and emits a single change event.
+The component does **not** use Shadow DOM and relies on regular DOM structure and data attributes.
 
 ---
 

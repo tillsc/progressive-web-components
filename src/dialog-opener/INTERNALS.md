@@ -2,8 +2,13 @@
 
 ## Architecture
 
-- `findOrCreateDialog(src)` — creates/reuses a `<pwc-modal-dialog>` (or `-bs5`), opens it,
-  places the iframe, and wires up the `this.dialog` / `this.modal` adapter.
+`BaseDialogOpener` (`base.js`) extends `PwcElement` and provides the flow from link click
+to iframe-based dialog. It defines a **subclass contract**:
+
+| Hook | Responsibility |
+|------|---------------|
+| `findOrCreateDialog(src)` | Create/reuse a `<pwc-modal-dialog>`, open it, place the iframe, set `this.dialog` and `this.modal` |
+| `_moveOutSelector()` | Return CSS selector for buttons to move out (can extend, e.g. BS5 adds `"primary"` magic value) |
 
 The base class never touches DOM rendering directly. Variants own the dialog creation and
 provide a uniform adapter interface (`this.modal.show()` / `this.modal.hide()`).

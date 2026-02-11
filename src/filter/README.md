@@ -6,6 +6,8 @@ Lightweight text filter web component.
 It is designed to work with **tables, lists, or any structured DOM** and relies on XPath
 for matching text content.
 
+The component does **not** use Shadow DOM and relies on regular DOM structure.
+
 ---
 
 ## Basic usage
@@ -104,3 +106,20 @@ pwc-filter input[type="search"] {
   margin-bottom: 0.5rem;
 }
 ```
+
+---
+
+## Bootstrap 5 variant
+
+A Bootstrap 5 styled variant is provided with the same API:
+
+```html
+<pwc-filter-bs5 placeholder="Search users…">
+  <table>…</table>
+</pwc-filter-bs5>
+```
+
+Notes:
+- Same attributes and behavior as the vanilla component
+- Uses Bootstrap `form-control` class on the input
+- Requires Bootstrap 5 CSS to be present

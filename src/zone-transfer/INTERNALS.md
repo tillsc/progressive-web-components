@@ -54,12 +54,6 @@ This keeps ordering intuitive and avoids expensive heuristics.
 
 ## Keyboard model
 
-Keyboard behavior is intentionally conservative:
-
-- Focus movement is roving-tabindex within the current zone.
-- Reorder within a zone is a pure DOM reorder (insert before/after neighbor).
-- Moving across zones only happens if zones declare hotkeys; otherwise there is no “teleport” key.
-
 Implementation notes:
 - The handler bails out early for typing contexts (`input`, `textarea`, `select`, `button`, `[contenteditable]`).
 - The keyboard path uses the same `_emitChange(...)` payload generation as drag-and-drop, so consumers
