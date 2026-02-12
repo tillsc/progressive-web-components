@@ -64,6 +64,25 @@ Supported tokens (space-separated):
 
 The element **must have an `id`** for `local-reload` to work.
 
+### `iframe-additional-events`
+
+Registers additional events inside the iframe document that should trigger a 
+dialog state check.
+
+Use this when the iframe content uses client-side navigation (e.g. 
+[Turbo](https://turbo.hotwired.dev/reference/events#turbo%3Aload)) and no full 
+iframe `load` event is triggered.
+
+Without this, the dialog may not detect `pwc_done_with`.
+
+```html
+<pwc-dialog-opener iframe-additional-events="turbo:load">
+  <a href="/path/to/page">Open</a>
+</pwc-dialog-opener>
+```
+
+Value: space-separated list of event names dispatched inside the iframe document.
+
 ---
 
 ## Accessibility
@@ -72,8 +91,8 @@ The element **must have an `id`** for `local-reload` to work.
 Sets the `title` attribute on the iframe so screen readers can identify it.
 
 ```html
-<pwc-dialog-opener iframe-title="Neuen Eintrag anlegen">
-  <a href="/entries/new">+ Neu</a>
+<pwc-dialog-opener iframe-title="Create new entry">
+  <a href="/entries/new">New entry</a>
 </pwc-dialog-opener>
 ```
 
@@ -134,15 +153,15 @@ Current behavior:
 
 ```html
 <pwc-dialog-opener>
-  <input name="search" value="bar">
-  <a href="/teams/new">Open</a>
+  <input name="search" value="John Doe">
+  <a href="/contacts/new">New Contact</a>
 </pwc-dialog-opener>
 ```
 
 The iframe will be opened with:
 
 ```
-/teams/new?pwc_default=bar&pwc_embedded=true
+/contacts/new?pwc_default=John+Doe&pwc_embedded=true
 ```
 
 ---

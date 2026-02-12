@@ -200,6 +200,12 @@ register();
 // src/dialog-opener/base.js
 var BaseDialogOpener = class extends PwcElement {
   static events = ["click"];
+  constructor() {
+    super();
+    this._iframeLoadHandler = (e) => {
+      this._onIFrameLoad(e).catch(console.error);
+    };
+  }
   handleEvent(e) {
     if (e.type !== "click") return;
     if (e.defaultPrevented) return;
@@ -213,24 +219,7 @@ var BaseDialogOpener = class extends PwcElement {
     if (!href) return;
     const label = link.getAttribute("aria-label") || link.textContent.trim();
     const iframeTitle = this.getAttribute("iframe-title") || (label ? `Dialog: ${label}` : "");
-    this.open(href, { iframeTitle });
-  }
-  open(href, iframeTitle) {
-    const src = this.prepareIFrameLink(href);
-    this.dialog = this.findOrCreateDialog(src);
-    this.enhanceIFrame(iframeTitle);
-  }
-  prepareIFrameLink(src) {
-    const s = new URL(src, document.location.href);
-    const defaultValues = [...this.querySelectorAll("input")].map((input) => {
-      if (input.value) return input.value;
-      return null;
-    }).filter((item) => item !== null);
-    if (defaultValues.length > 0) {
-      s.searchParams.set("pwc_default", defaultValues.join(","));
-    }
-    s.searchParams.set("pwc_embedded", true);
-    return s.toString();
+    this._openDialogWith(href, iframeTitle);
   }
   // Variant hook: must return a DOM element containing the iframe
   // eslint-disable-next-line no-unused-vars
@@ -249,17 +238,42 @@ var BaseDialogOpener = class extends PwcElement {
     iframe.style.display = "none";
     return iframe;
   }
-  enhanceIFrame(iframeTitle) {
+  _openDialogWith(href, iframeTitle) {
+    const src = this._prepareIFrameLink(href);
+    this.dialog = this.findOrCreateDialog(src);
+    this._enhanceIFrame(iframeTitle);
+  }
+  _prepareIFrameLink(src) {
+    const s = new URL(src, document.location.href);
+    const defaultValues = [...this.querySelectorAll("input")].map((input) => {
+      if (input.value) return input.value;
+      return null;
+    }).filter((item) => item !== null);
+    if (defaultValues.length > 0) {
+      s.searchParams.set("pwc_default", defaultValues.join(","));
+    }
+    s.searchParams.set("pwc_embedded", true);
+    return s.toString();
+  }
+  _enhanceIFrame(iframeTitle) {
     this.iframe = this.dialog.querySelector("iframe");
     this.iframe.title = iframeTitle;
-    return new Promise((resolve, reject) => {
-      this.iframe.addEventListener(
-        "load",
-        (e) => this.iFrameLoad(e).then(resolve, reject)
-      );
-    });
+    this.iframe.removeEventListener("load", this._iframeLoadHandler);
+    this.iframe.addEventListener("load", this._iframeLoadHandler);
   }
-  async iFrameLoad(_e) {
+  _installIFrameAdditionalEventTriggers() {
+    const additionalEvents = (this.getAttribute("iframe-additional-events") || "").trim().split(/\s+/).filter(Boolean);
+    if (!additionalEvents.length) return;
+    const doc = this.iframe?.contentWindow?.document;
+    if (!doc) return;
+    this._hookedDocs ||= /* @__PURE__ */ new WeakSet();
+    if (this._hookedDocs.has(doc)) return;
+    this._hookedDocs.add(doc);
+    for (const ev of additionalEvents) {
+      doc.addEventListener(ev, this._iframeLoadHandler);
+    }
+  }
+  async _onIFrameLoad(_e) {
     let uri;
     try {
       uri = new URL(this.iframe.contentWindow.location);
@@ -270,16 +284,17 @@ var BaseDialogOpener = class extends PwcElement {
       this.closeDialog();
       uri.searchParams.delete("pwc_embedded");
       uri.searchParams.set("pwc_cb", Math.floor(Math.random() * 1e5));
-      const localReloadWorked = await this.tryLocalReload(uri);
+      const localReloadWorked = await this._tryLocalReload(uri);
       if (!localReloadWorked) {
         window.location.href = uri.toString();
       }
       return;
     }
-    this.moveElementsToOuterActions();
+    this._installIFrameAdditionalEventTriggers();
+    this._moveElementsToOuterActions();
     this.iframe.style.display = "unset";
   }
-  async tryLocalReload(newUri) {
+  async _tryLocalReload(newUri) {
     const currentUri = new URL(window.location.href);
     if (currentUri.hostname !== newUri.hostname || currentUri.pathname !== newUri.pathname || currentUri.protocol !== newUri.protocol) {
       console.log(`<dialog-opener> Warning: local-reload got different base uri (${newUri.toString()}) then window has (${currentUri.toString()}). This might lead to problems, but we'll try it anyway.`);
@@ -308,7 +323,7 @@ var BaseDialogOpener = class extends PwcElement {
             }
           }
           if (localReloadOptions.withScripts) {
-            this.executeInlineScripts(this);
+            this._executeInlineScripts(this);
           }
           this.dispatchEvent(
             new CustomEvent("pwc-dialog-opener:local-reload", {
@@ -323,7 +338,7 @@ var BaseDialogOpener = class extends PwcElement {
     }
     return false;
   }
-  executeInlineScripts(root) {
+  _executeInlineScripts(root) {
     console.log("Executing inline scripts in local-reload fragment", root);
     const scripts = Array.from(root.querySelectorAll("script"));
     for (const old of scripts) {
@@ -339,7 +354,7 @@ var BaseDialogOpener = class extends PwcElement {
       old.replaceWith(s);
     }
   }
-  moveElementsToOuterActions() {
+  _moveElementsToOuterActions() {
     if (!this.getAttribute("hoist-actions")) return;
     const iframeDoc = this.iframe.contentWindow.document;
     if (!iframeDoc) return;

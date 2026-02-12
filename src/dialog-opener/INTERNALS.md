@@ -17,14 +17,14 @@ The base class never touches DOM rendering directly. Variants own the dialog cre
 
 1. Click on an `<a>` inside the component is intercepted (`handleEvent`).
    The iframe title is resolved: `iframe-title` attribute → link `aria-label` → link text content (the latter two prefixed with "Dialog: ").
-2. `prepareIFrameLink()` builds the iframe URL:
+2. `_prepareIFrameLink()` builds the iframe URL:
    - collects `input` values as `pwc_default` query param
    - appends `pwc_embedded=true`
 3. `findOrCreateDialog(src)` (variant hook) creates the modal and iframe
-4. `enhanceIFrame()` waits for the iframe `load` event, then calls `iFrameLoad()`
-5. `iFrameLoad()` checks the iframe URL:
+4. `_enhanceIFrame()` waits for the iframe `load` event, then calls `_onIFrameLoad()`
+5. `_onIFrameLoad()` checks the iframe URL:
    - If `pwc_done_with` is present → close dialog, trigger reload or navigation
-   - Otherwise → run `moveElementsToOuterActions()`, show iframe
+   - Otherwise → run `_moveElementsToOuterActions()`, show iframe
 
 ## Hoist-actions mechanism
 
