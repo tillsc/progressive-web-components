@@ -1,5 +1,5 @@
 import { ModalDialogBase } from "./base.js";
-import { defineOnce } from "../core/utils.js";
+import { defineOnce, ensureId } from "../core/utils.js";
 
 export class PwcModalDialog extends ModalDialogBase {
   get isOpen() {
@@ -11,7 +11,7 @@ export class PwcModalDialog extends ModalDialogBase {
     dlg.className = `pwc-modal-dialog pwc-modal-dialog--${size}`;
 
     dlg.innerHTML = `
-      <div class="pwc-modal-dialog-surface" role="document">
+      <div class="pwc-modal-dialog-surface">
         <header class="pwc-modal-dialog-header">
           <h3 class="pwc-modal-dialog-title"></h3>
         </header>
@@ -20,7 +20,9 @@ export class PwcModalDialog extends ModalDialogBase {
       </div>
     `;
 
-    dlg.querySelector(".pwc-modal-dialog-title").textContent = title;
+    const titleEl = dlg.querySelector(".pwc-modal-dialog-title");
+    titleEl.textContent = title;
+    dlg.setAttribute("aria-labelledby", ensureId(titleEl, "pwc-mdlg-title"));
 
     if (showCloseButton) {
       const btn = document.createElement("button");

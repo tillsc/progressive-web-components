@@ -156,6 +156,10 @@ var ModalDialogBase = class extends PwcSimpleInitElement {
 };
 
 // src/core/utils.js
+function ensureId(el, prefix = "pwc") {
+  if (!el.id) el.id = `${prefix}-${Math.random().toString(36).slice(2)}`;
+  return el.id;
+}
 function defineOnce(name, classDef) {
   if (customElements.get(name)) return;
   customElements.define(name, classDef);
@@ -170,7 +174,7 @@ var PwcModalDialog = class extends ModalDialogBase {
     const dlg = document.createElement("dialog");
     dlg.className = `pwc-modal-dialog pwc-modal-dialog--${size}`;
     dlg.innerHTML = `
-      <div class="pwc-modal-dialog-surface" role="document">
+      <div class="pwc-modal-dialog-surface">
         <header class="pwc-modal-dialog-header">
           <h3 class="pwc-modal-dialog-title"></h3>
         </header>
@@ -178,7 +182,9 @@ var PwcModalDialog = class extends ModalDialogBase {
         <footer class="pwc-modal-dialog-footer"></footer>
       </div>
     `;
-    dlg.querySelector(".pwc-modal-dialog-title").textContent = title;
+    const titleEl = dlg.querySelector(".pwc-modal-dialog-title");
+    titleEl.textContent = title;
+    dlg.setAttribute("aria-labelledby", ensureId(titleEl, "pwc-mdlg-title"));
     if (showCloseButton) {
       const btn = document.createElement("button");
       btn.type = "button";

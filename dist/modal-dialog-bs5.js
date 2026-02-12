@@ -156,6 +156,10 @@ var ModalDialogBase = class extends PwcSimpleInitElement {
 };
 
 // src/core/utils.js
+function ensureId(el, prefix = "pwc") {
+  if (!el.id) el.id = `${prefix}-${Math.random().toString(36).slice(2)}`;
+  return el.id;
+}
 function defineOnce(name, classDef) {
   if (customElements.get(name)) return;
   customElements.define(name, classDef);
@@ -189,7 +193,9 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
         </div>
       </div>
     `;
-    this.querySelector(".modal-title").textContent = title;
+    const titleEl = this.querySelector(".modal-title");
+    titleEl.textContent = title;
+    this.setAttribute("aria-labelledby", ensureId(titleEl, "pwc-mdlg-bs5-title"));
     if (showCloseButton) {
       const btn = document.createElement("button");
       btn.type = "button";

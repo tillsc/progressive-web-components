@@ -1,5 +1,5 @@
 import { ModalDialogBase } from "../base.js";
-import { defineOnce } from "../../core/utils.js";
+import { defineOnce, ensureId } from "../../core/utils.js";
 
 export class PwcModalDialogBs5 extends ModalDialogBase {
   static events = ["click", "hidden.bs.modal"];
@@ -33,7 +33,9 @@ export class PwcModalDialogBs5 extends ModalDialogBase {
       </div>
     `;
 
-    this.querySelector(".modal-title").textContent = title;
+    const titleEl = this.querySelector(".modal-title");
+    titleEl.textContent = title;
+    this.setAttribute("aria-labelledby", ensureId(titleEl, "pwc-mdlg-bs5-title"));
 
     if (showCloseButton) {
       const btn = document.createElement("button");
