@@ -179,4 +179,12 @@ export class MultiselectDualListBase extends PwcChildrenObserverElement {
     return this.getAttribute("remove-label") || "\u00d7";
   }
 
+  get addAriaLabel() {
+    return this.getAttribute("add-aria-label") || "Add";
+  }
+
+  get removeAriaLabel() {
+    return this.getAttribute("remove-aria-label") || "Remove";
+  }
+
 }

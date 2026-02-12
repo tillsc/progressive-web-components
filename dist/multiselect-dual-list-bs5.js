@@ -232,6 +232,12 @@ var MultiselectDualListBase = class extends PwcChildrenObserverElement {
   get removeLabel() {
     return this.getAttribute("remove-label") || "\xD7";
   }
+  get addAriaLabel() {
+    return this.getAttribute("add-aria-label") || "Add";
+  }
+  get removeAriaLabel() {
+    return this.getAttribute("remove-aria-label") || "Remove";
+  }
 };
 
 // src/core/utils.js
@@ -291,7 +297,7 @@ var PwcMultiselectDualListBs5 = class extends MultiselectDualListBase {
       btn.className = "btn btn-sm btn-outline-primary";
       btn.dataset.action = "add";
       btn.textContent = this.addLabel;
-      btn.setAttribute("aria-label", `${this.addLabel} ${item.label}`);
+      btn.setAttribute("aria-label", `${this.addAriaLabel} ${item.label}`);
       if (item.selected) btn.style.display = "none";
       el.appendChild(btn);
     }
@@ -299,12 +305,13 @@ var PwcMultiselectDualListBs5 = class extends MultiselectDualListBase {
   }
   _createSelectedEntry(item) {
     const el = this._createEntry(item);
+    el.setAttribute("aria-selected", "true");
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "btn btn-sm btn-outline-danger";
     btn.dataset.action = "remove";
     btn.textContent = this.removeLabel;
-    btn.setAttribute("aria-label", `${this.removeLabel} ${item.label}`);
+    btn.setAttribute("aria-label", `${this.removeAriaLabel} ${item.label}`);
     el.appendChild(btn);
     return el;
   }

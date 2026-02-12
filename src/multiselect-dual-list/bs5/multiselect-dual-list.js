@@ -57,7 +57,7 @@ export class PwcMultiselectDualListBs5 extends MultiselectDualListBase {
       btn.className = "btn btn-sm btn-outline-primary";
       btn.dataset.action = "add";
       btn.textContent = this.addLabel;
-      btn.setAttribute("aria-label", `${this.addLabel} ${item.label}`);
+      btn.setAttribute("aria-label", `${this.addAriaLabel} ${item.label}`);
       if (item.selected) btn.style.display = "none";
       el.appendChild(btn);
     }
@@ -67,13 +67,14 @@ export class PwcMultiselectDualListBs5 extends MultiselectDualListBase {
 
   _createSelectedEntry(item) {
     const el = this._createEntry(item);
+    el.setAttribute("aria-selected", "true");
 
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "btn btn-sm btn-outline-danger";
     btn.dataset.action = "remove";
     btn.textContent = this.removeLabel;
-    btn.setAttribute("aria-label", `${this.removeLabel} ${item.label}`);
+    btn.setAttribute("aria-label", `${this.removeAriaLabel} ${item.label}`);
 
     el.appendChild(btn);
     return el;

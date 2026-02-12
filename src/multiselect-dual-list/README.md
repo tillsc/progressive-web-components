@@ -41,6 +41,14 @@ Text for the add button on available items. Default: `"←"`.
 ### `remove-label`
 Text for the remove button on selected items. Default: `"×"`.
 
+### `add-aria-label`
+Accessible label prefix for the add button. Default: `"Add"`.
+The full `aria-label` is `"<add-aria-label> <item label>"`, e.g. `"Add Item A"`.
+
+### `remove-aria-label`
+Accessible label prefix for the remove button. Default: `"Remove"`.
+The full `aria-label` is `"<remove-aria-label> <item label>"`, e.g. `"Remove Item A"`.
+
 ### `hide-selected`
 When present, selected items are hidden in the available list instead of being grayed out.
 

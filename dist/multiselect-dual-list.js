@@ -232,6 +232,12 @@ var MultiselectDualListBase = class extends PwcChildrenObserverElement {
   get removeLabel() {
     return this.getAttribute("remove-label") || "\xD7";
   }
+  get addAriaLabel() {
+    return this.getAttribute("add-aria-label") || "Add";
+  }
+  get removeAriaLabel() {
+    return this.getAttribute("remove-aria-label") || "Remove";
+  }
 };
 
 // src/core/utils.js
@@ -288,7 +294,7 @@ var PwcMultiselectDualList = class extends MultiselectDualListBase {
       btn.className = "pwc-msdl-action";
       btn.dataset.action = "add";
       btn.textContent = this.addLabel;
-      btn.setAttribute("aria-label", `${this.addLabel} ${item.label}`);
+      btn.setAttribute("aria-label", `${this.addAriaLabel} ${item.label}`);
       if (item.selected) btn.style.display = "none";
       li.appendChild(btn);
     }
@@ -296,12 +302,13 @@ var PwcMultiselectDualList = class extends MultiselectDualListBase {
   }
   _createSelectedEntry(item) {
     const li = this._createEntry(item);
+    li.setAttribute("aria-selected", "true");
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "pwc-msdl-action";
     btn.dataset.action = "remove";
     btn.textContent = this.removeLabel;
-    btn.setAttribute("aria-label", `${this.removeLabel} ${item.label}`);
+    btn.setAttribute("aria-label", `${this.removeAriaLabel} ${item.label}`);
     li.appendChild(btn);
     return li;
   }
