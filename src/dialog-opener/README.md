@@ -85,6 +85,32 @@ Value: space-separated list of event names dispatched inside the iframe document
 
 ---
 
+## Hidden in dialog
+
+Elements inside the iframe can be marked to be hidden when rendered inside a 
+dialog.
+
+Supported selectors:
+
+- `<pwc-dialog-opener-hidden>`
+- `[data-pwc-dialog-opener-hidden]`
+
+```html
+<!-- inside the iframe content -->
+<pwc-dialog-opener-hidden>
+  This will not be visible inside the dialog.
+</pwc-dialog-opener-hidden>
+
+<!-- or -->
+<div data-pwc-dialog-opener-hidden>
+  This will not be visible inside the dialog.
+</div>
+```
+
+These elements remain visible when the page is opened directly in the browser.
+
+---
+
 ## Accessibility
 
 ### `iframe-title`

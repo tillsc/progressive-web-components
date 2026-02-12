@@ -210,6 +210,7 @@ register();
 // src/dialog-opener/base.js
 var BaseDialogOpener = class extends PwcElement {
   static events = ["click"];
+  static hiddenInDialogSelector = "pwc-dialog-opener-hidden, [data-pwc-dialog-opener-hidden]";
   constructor() {
     super();
     this._iframeLoadHandler = (e) => {
@@ -301,7 +302,7 @@ var BaseDialogOpener = class extends PwcElement {
       return;
     }
     this._installIFrameAdditionalEventTriggers();
-    this._moveElementsToOuterActions();
+    this._applyIFrameDomTransformations();
     this.iframe.style.display = "unset";
   }
   async _tryLocalReload(newUri) {
@@ -364,32 +365,36 @@ var BaseDialogOpener = class extends PwcElement {
       old.replaceWith(s);
     }
   }
-  _moveElementsToOuterActions() {
-    if (!this.getAttribute("hoist-actions")) return;
-    const iframeDoc = this.iframe.contentWindow.document;
+  _applyIFrameDomTransformations() {
+    const iframeDoc = this.iframe.contentWindow?.document;
     if (!iframeDoc) return;
-    let buttonContainer = this.dialog.querySelector("dialog-opener-buttons");
-    if (!buttonContainer) {
-      buttonContainer = document.createElement("dialog-opener-buttons");
-      this.dialog.querySelector(".pwc-dialog-opener-actions").prepend(buttonContainer);
-    } else {
-      buttonContainer.innerHTML = "";
-    }
-    const elements = iframeDoc.querySelectorAll(this._moveOutSelector());
-    for (let i = 0; i < elements.length; i++) {
-      const btn = elements[i];
-      const outerBtn = document.createElement(btn.tagName);
-      for (const attr of btn.attributes) {
-        outerBtn.setAttribute(attr.name, attr.value);
+    if (this.getAttribute("hoist-actions")) {
+      let buttonContainer = this.dialog.querySelector("dialog-opener-buttons");
+      if (!buttonContainer) {
+        buttonContainer = document.createElement("dialog-opener-buttons");
+        this.dialog.querySelector(".pwc-dialog-opener-actions").prepend(buttonContainer);
+      } else {
+        buttonContainer.innerHTML = "";
       }
-      outerBtn.innerHTML = btn.innerHTML;
-      outerBtn.addEventListener("click", () => {
-        this.iframe.style.display = "none";
-        btn.click();
-      });
-      buttonContainer.append(outerBtn);
-      btn.style.display = "none";
+      const elements = iframeDoc.querySelectorAll(this._moveOutSelector());
+      for (let i = 0; i < elements.length; i++) {
+        const btn = elements[i];
+        const outerBtn = document.createElement(btn.tagName);
+        for (const attr of btn.attributes) {
+          outerBtn.setAttribute(attr.name, attr.value);
+        }
+        outerBtn.innerHTML = btn.innerHTML;
+        outerBtn.addEventListener("click", () => {
+          this.iframe.style.display = "none";
+          btn.click();
+        });
+        buttonContainer.append(outerBtn);
+        btn.style.display = "none";
+      }
     }
+    iframeDoc.querySelectorAll(this.constructor.hiddenInDialogSelector).forEach((el) => {
+      el.style.display = "none";
+    });
   }
   _moveOutSelector() {
     let selector = this.getAttribute("hoist-actions");
