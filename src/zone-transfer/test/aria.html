@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>zone-transfer: aria</title>
+    <script type="module" src="../../../dist/zone-transfer.js"></script>
+</head>
+
+<body>
+<pwc-zone-transfer id="zt">
+    <pwc-zone-transfer-zone name="alpha" data-pwc-zone-hotkey="1">
+        <pwc-zone-transfer-item id="a1">Item A1</pwc-zone-transfer-item>
+        <pwc-zone-transfer-item id="a2">Item A2</pwc-zone-transfer-item>
+        <pwc-zone-transfer-item id="a3">Item A3</pwc-zone-transfer-item>
+    </pwc-zone-transfer-zone>
+
+    <pwc-zone-transfer-zone name="beta" data-pwc-zone-hotkey="2">
+        <pwc-zone-transfer-item id="b1">Item B1</pwc-zone-transfer-item>
+    </pwc-zone-transfer-zone>
+</pwc-zone-transfer>
+
+<style>
+    pwc-zone-transfer-zone {
+        display: block; border: 1px solid #999;
+        padding: 0.4rem; margin: 0.8rem; min-height: 2rem;
+    }
+    pwc-zone-transfer-item {
+        display: block; padding: 0.2rem 0.3rem;
+        border: 1px solid #ddd; margin: 0.2rem 0;
+    }
+    /* Debug: make the visually-hidden live region visible */
+    pwc-zone-transfer [aria-live] {
+        position: static !important;
+        width: auto !important; height: auto !important;
+        padding: 0.3rem 0.6rem !important; margin: 0.8rem !important;
+        overflow: visible !important;
+        clip: unset !important; white-space: normal !important;
+        border: 2px dashed hotpink !important;
+        font-weight: bold !important;
+    }
+    pwc-zone-transfer [aria-live]::before {
+        content: "Live region: ";
+        font-weight: normal; color: hotpink;
+    }
+</style>
+
+<script type="module">
+  import { run } from "../../../static/test-harness.js";
+
+  function key(el, k, opts = {}) {
+    el.dispatchEvent(new KeyboardEvent("keydown", {
+      key: k, bubbles: true, cancelable: true,
+      ctrlKey: Boolean(opts.ctrlKey),
+      metaKey: Boolean(opts.metaKey)
+    }));
+  }
+
+  run(async ({ assert, equal, waitFor, log, nextTick }) => {
+    const el = document.getElementById("zt");
+    assert(el, "missing <pwc-zone-transfer>");
+
+    const zoneA = el.querySelector('[name="alpha"]');
+    const zoneB = el.querySelector('[name="beta"]');
+    assert(zoneA && zoneB, "missing zones");
+
+    // --- Zones: role and aria-label ---
+
+    log("zones have role=listbox");
+    equal(zoneA.getAttribute("role"), "listbox", "zone alpha role");
+    equal(zoneB.getAttribute("role"), "listbox", "zone beta role");
+
+    log("zones have aria-label from name attribute");
+    equal(zoneA.getAttribute("aria-label"), "alpha", "zone alpha aria-label");
+    equal(zoneB.getAttribute("aria-label"), "beta", "zone beta aria-label");
+
+    // --- Items: role ---
+
+    log("items have role=option");
+    const items = el.querySelectorAll("pwc-zone-transfer-item");
+    for (const item of items) {
+      equal(item.getAttribute("role"), "option", `${item.id} has role=option`);
+    }
+
+    // --- Live region: keyboard reorder ---
+
+    const a2 = zoneA.querySelector("#a2");
+    a2.tabIndex = 0;
+    a2.focus();
+    await nextTick("after focus");
+
+    log("keyboard reorder announces position");
+    key(a2, "ArrowDown", { ctrlKey: true });
+    await nextTick("after reorder");
+
+    const liveRegion = el.querySelector("[aria-live]");
+    assert(liveRegion, "live region exists");
+    equal(liveRegion.getAttribute("aria-live"), "assertive", "live region is assertive");
+    equal(liveRegion.getAttribute("aria-atomic"), "true", "live region is atomic");
+    equal(liveRegion.getAttribute("role"), "status", "live region has role=status");
+
+    log("live region shows position number after reorder");
+    // a2 moved from index 1 to index 2 (0-based), so announcement is "3" (1-based)
+    equal(liveRegion.textContent, "3", "position announcement after reorder");
+
+    // --- Live region: keyboard zone move ---
+
+    log("keyboard zone move announces zone name");
+    a2.focus();
+    await nextTick("after refocus");
+
+    key(a2, "2"); // hotkey for zone beta
+    await nextTick("after zone move");
+
+    await waitFor(() => zoneB.querySelector("#a2"), { label: "a2 moved to beta" });
+    equal(liveRegion.textContent, "beta", "zone name announcement after move");
+
+    log("done");
+  });
+</script>
+</body>
+</html>

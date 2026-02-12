@@ -66,6 +66,15 @@ No silent swallowing of unexpected errors:
 
 The only “soft failures” are early returns when resolution fails (e.g., drag start on non-item).
 
+## Live region for keyboard moves
+
+Created in `onChildrenChanged()` so it is available from the start.
+Appended via `_withoutChildrenChangedNotification()` to avoid
+re-triggering the MutationObserver.
+
+The announcement text is intentionally minimal and mostly language-agnostic.
+Subclasses can override `_getOrCreateLiveRegion()` to customize.
+
 ## Testing notes
 
 - DnD tests stub `dataTransfer` because it is not reliably constructible across browsers.

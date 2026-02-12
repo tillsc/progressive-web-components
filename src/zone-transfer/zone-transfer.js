@@ -42,10 +42,16 @@ export class PwcZoneTransfer extends PwcChildrenObserverElement {
     for (const zone of this._zones()) {
       if (!zone.hasAttribute("role")) zone.setAttribute("role", "listbox");
       if (!zone.hasAttribute("tabindex")) zone.tabIndex = -1;
+      if (!zone.hasAttribute("aria-label")) {
+        const name = this._zoneName(zone);
+        if (name) zone.setAttribute("aria-label", name);
+      }
     }
 
     const active = items.find((it) => it.tabIndex === 0) || items[0] || null;
     for (const it of items) it.tabIndex = it === active ? 0 : -1;
+
+    this._getOrCreateLiveRegion();
   }
 
   handleEvent(e) {
@@ -178,7 +184,30 @@ export class PwcZoneTransfer extends PwcChildrenObserverElement {
     return zones.find((z) => z.getAttribute("data-pwc-zone-hotkey") === key) || null;
   }
 
+  _getOrCreateLiveRegion() {
+    if (!this._liveRegion) {
+      this._liveRegion = document.createElement("span");
+      this._liveRegion.setAttribute("role", "status");
+      this._liveRegion.setAttribute("aria-live", "assertive");
+      this._liveRegion.setAttribute("aria-atomic", "true");
+      Object.assign(this._liveRegion.style, {
+        position: "absolute", width: "1px", height: "1px",
+        padding: "0", margin: "-1px", overflow: "hidden",
+        clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: "0",
+      });
+      this._withoutChildrenChangedNotification(() => this.appendChild(this._liveRegion));
+    }
+    return this._liveRegion;
+  }
+
   _emitChange(item, fromZone, toZone, index, trigger) {
+    if (trigger === "keyboard") {
+      const region = this._getOrCreateLiveRegion();
+      region.textContent = fromZone !== toZone
+        ? this._zoneName(toZone)
+        : `${index + 1}`;
+    }
+
     this.dispatchEvent(
       new CustomEvent("pwc-zone-transfer:change", {
         bubbles: true,

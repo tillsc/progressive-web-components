@@ -110,6 +110,18 @@ Note:
 
 ---
 
+## Accessibility
+
+- Zones receive `role="listbox"`. If no `aria-label` is present, it is
+  auto-set from the zone name (`name` attribute or `data-pwc-zone`).
+- Items receive `role="option"` and are part of a roving tabindex group.
+- Keyboard moves are announced via a visually hidden `aria-live="assertive"`
+  region:
+  - Zone change → announces the target zone name
+  - Reorder within zone → announces the new 1-based position
+
+---
+
 ## Events
 
 ### `pwc-zone-transfer:change`
