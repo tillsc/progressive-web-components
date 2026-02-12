@@ -44,7 +44,7 @@ export class PwcSentinelInitElement extends PwcElement {
   onConnect() {}
 
   _hasSentinel() {
-    const selector = this.constructor.sentinelSelector || PwcSentinelInitElement.sentinelSelector;
+    const selector = this.constructor.sentinelSelector;
     return Boolean(this.querySelector(selector));
   }
 

@@ -4,26 +4,63 @@ Developer and maintainer documentation for the project architecture.
 
 ## Source structure
 
-Example: `<dialog-opener>` component
+Example: `<pwc-multiselect-dual-list>` component
 
     src/
         core/
-            css.js
             pwc-element.js
+            pwc-simple-init-element.js
+            pwc-sentinel-init-element.js
+            pwc-children-observer-element.js
+            utils.js
 
-        dialog-opener/
+        multiselect-dual-list/
             base.js
-            dialog-opener.js
-            dialog-opener.css
+            multiselect-dual-list.js
+            multiselect-dual-list.css
             index.js
 
             bs5/
-                dialog-opener.js
+                multiselect-dual-list.js
                 index.js
 
     dist/
-        dialog-opener.js
-        dialog-opener-bs5.js
+        multiselect-dual-list.js
+        multiselect-dual-list-bs5.js
+
+## Base class hierarchy
+
+All components extend one of the init-strategy classes, which in turn extend `PwcElement`.
+
+    PwcElement
+    ├── PwcSimpleInitElement
+    ├── PwcSentinelInitElement
+    └── PwcChildrenObserverElement
+
+**`PwcElement`** — Shared foundation. Idempotent lifecycle via a `_connected` guard,
+declarative event binding through `static events` and the `handleEvent` pattern,
+and a cleanup hook (`onDisconnect()`). No rendering, no templating.
+
+**`PwcSimpleInitElement`** — Calls `onConnect()` once per connection, deferred to a
+microtask. Use this when server-rendered children are available synchronously and a
+single microtask is sufficient to let the parser finish.
+
+**`PwcSentinelInitElement`** — Calls `onConnect()` once a sentinel element
+(`<pwc-sentinel>` or `[data-pwc-sentinel]`) appears in the light DOM. Uses a
+MutationObserver only until the sentinel is found, then disconnects it. Use this
+when the component's children are rendered asynchronously (e.g. streamed partials).
+
+**`PwcChildrenObserverElement`** — Calls `onChildrenChanged()` on connect and on every
+subsequent child mutation. Supports two modes via `static observeMode`: `"children"`
+(direct children only, default) and `"tree"` (full subtree). Provides
+`_withoutChildrenChangedNotification(fn)` to suppress observer callbacks during
+programmatic DOM changes.
+
+### Choosing a base class
+
+- **Children are static after init?** → `PwcSimpleInitElement`
+- **Children arrive asynchronously (streamed HTML)?** → `PwcSentinelInitElement`
+- **Component must react to ongoing child mutations?** → `PwcChildrenObserverElement`
 
 ## Component conventions
 
