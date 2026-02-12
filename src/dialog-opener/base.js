@@ -19,13 +19,15 @@ export class BaseDialogOpener extends PwcElement {
     const href = link.getAttribute("href");
     if (!href) return;
 
-    this.open(href);
+    const label = link.getAttribute("aria-label") || link.textContent.trim();
+    const iframeTitle = this.getAttribute("iframe-title") || (label ? `Dialog: ${label}` : "");
+    this.open(href, { iframeTitle });
   }
 
-  open(href) {
+  open(href, iframeTitle) {
     const src = this.prepareIFrameLink(href);
     this.dialog = this.findOrCreateDialog(src);
-    this.enhanceIFrame();
+    this.enhanceIFrame(iframeTitle);
   }
 
   prepareIFrameLink(src) {
@@ -68,8 +70,9 @@ export class BaseDialogOpener extends PwcElement {
     return iframe;
   }
 
-  enhanceIFrame() {
+  enhanceIFrame(iframeTitle) {
     this.iframe = this.dialog.querySelector("iframe");
+    this.iframe.title = iframeTitle;
     return new Promise((resolve, reject) => {
       this.iframe.addEventListener("load",
         (e) => this.iFrameLoad(e).then(resolve, reject));

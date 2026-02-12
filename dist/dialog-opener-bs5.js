@@ -1,4 +1,8 @@
 // src/core/utils.js
+function ensureId(el, prefix = "pwc") {
+  if (!el.id) el.id = `${prefix}-${Math.random().toString(36).slice(2)}`;
+  return el.id;
+}
 function defineOnce(name, classDef) {
   if (customElements.get(name)) return;
   customElements.define(name, classDef);
@@ -76,12 +80,14 @@ var BaseDialogOpener = class extends PwcElement {
     }
     const href = link.getAttribute("href");
     if (!href) return;
-    this.open(href);
+    const label = link.getAttribute("aria-label") || link.textContent.trim();
+    const iframeTitle = this.getAttribute("iframe-title") || (label ? `Dialog: ${label}` : "");
+    this.open(href, { iframeTitle });
   }
-  open(href) {
+  open(href, iframeTitle) {
     const src = this.prepareIFrameLink(href);
     this.dialog = this.findOrCreateDialog(src);
-    this.enhanceIFrame();
+    this.enhanceIFrame(iframeTitle);
   }
   prepareIFrameLink(src) {
     const s = new URL(src, document.location.href);
@@ -112,8 +118,9 @@ var BaseDialogOpener = class extends PwcElement {
     iframe.style.display = "none";
     return iframe;
   }
-  enhanceIFrame() {
+  enhanceIFrame(iframeTitle) {
     this.iframe = this.dialog.querySelector("iframe");
+    this.iframe.title = iframeTitle;
     return new Promise((resolve, reject) => {
       this.iframe.addEventListener(
         "load",
@@ -408,7 +415,9 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
         </div>
       </div>
     `;
-    this.querySelector(".modal-title").textContent = title;
+    const titleEl = this.querySelector(".modal-title");
+    titleEl.textContent = title;
+    this.setAttribute("aria-labelledby", ensureId(titleEl, "pwc-mdlg-bs5-title"));
     if (showCloseButton) {
       const btn = document.createElement("button");
       btn.type = "button";

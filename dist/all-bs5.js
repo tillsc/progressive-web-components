@@ -77,6 +77,8 @@ var PwcSimpleInitElement = class extends PwcElement {
 // src/filter/base.js
 var BaseFilter = class extends PwcSimpleInitElement {
   static defaultRowSelector = "pwc-filter-row, [data-pwc-filter-row]";
+  static defaultStatusSelector = "pwc-filter-status, [data-pwc-filter-status]";
+  static defaultInputSelector = "pwc-filter-input, [data-pwc-filter-input]";
   static events = ["input"];
   onConnect() {
     const { wrapper, input } = this._createInput();
@@ -86,7 +88,31 @@ var BaseFilter = class extends PwcSimpleInitElement {
       () => this.applyFilter(),
       Number.isFinite(debounceTimeout) ? debounceTimeout : 300
     );
-    this.prepend(wrapper);
+    this._status = this.querySelector(this.constructor.defaultStatusSelector);
+    if (!this._status) {
+      this._status = document.createElement("span");
+      Object.assign(this._status.style, {
+        position: "absolute",
+        width: "1px",
+        height: "1px",
+        padding: "0",
+        margin: "-1px",
+        overflow: "hidden",
+        clip: "rect(0,0,0,0)",
+        whiteSpace: "nowrap",
+        border: "0"
+      });
+      this.append(this._status);
+    }
+    if (!this._status.hasAttribute("role")) this._status.setAttribute("role", "status");
+    if (!this._status.hasAttribute("aria-live")) this._status.setAttribute("aria-live", "polite");
+    if (!this._status.hasAttribute("aria-atomic")) this._status.setAttribute("aria-atomic", "true");
+    const inputTarget = this.querySelector(this.constructor.defaultInputSelector);
+    if (inputTarget) {
+      inputTarget.appendChild(wrapper);
+    } else {
+      this.prepend(wrapper);
+    }
   }
   onDisconnect() {
     clearTimeout(this._debounceTimer);
@@ -107,6 +133,7 @@ var BaseFilter = class extends PwcSimpleInitElement {
     const input = document.createElement("input");
     input.type = "search";
     input.placeholder = this.getAttribute("placeholder") || "Search\u2026";
+    input.setAttribute("aria-label", input.placeholder);
     return { wrapper: input, input };
   }
   _debounce(fn, timeout) {
@@ -130,12 +157,16 @@ var BaseFilter = class extends PwcSimpleInitElement {
       const text = row.textContent.replace(/\s+/g, " ").toLowerCase();
       row.hidden = tokens.length > 0 && !tokens.every((t) => text.includes(t));
     }
+    const matchCount = rows.filter((r) => !r.hidden).length;
+    if (this._status) {
+      this._status.textContent = tokens.length > 0 ? `${matchCount} / ${rows.length}` : "";
+    }
     this.dispatchEvent(
       new CustomEvent("pwc-filter:change", {
         bubbles: true,
         detail: {
           filterText: this._input.value,
-          matchCount: rows.filter((r) => !r.hidden).length,
+          matchCount,
           totalCount: rows.length
         }
       })
@@ -144,6 +175,10 @@ var BaseFilter = class extends PwcSimpleInitElement {
 };
 
 // src/core/utils.js
+function ensureId(el, prefix = "pwc") {
+  if (!el.id) el.id = `${prefix}-${Math.random().toString(36).slice(2)}`;
+  return el.id;
+}
 function defineOnce(name, classDef) {
   if (customElements.get(name)) return;
   customElements.define(name, classDef);
@@ -186,12 +221,14 @@ var BaseDialogOpener = class extends PwcElement {
     }
     const href = link.getAttribute("href");
     if (!href) return;
-    this.open(href);
+    const label = link.getAttribute("aria-label") || link.textContent.trim();
+    const iframeTitle = this.getAttribute("iframe-title") || (label ? `Dialog: ${label}` : "");
+    this.open(href, { iframeTitle });
   }
-  open(href) {
+  open(href, iframeTitle) {
     const src = this.prepareIFrameLink(href);
     this.dialog = this.findOrCreateDialog(src);
-    this.enhanceIFrame();
+    this.enhanceIFrame(iframeTitle);
   }
   prepareIFrameLink(src) {
     const s = new URL(src, document.location.href);
@@ -222,8 +259,9 @@ var BaseDialogOpener = class extends PwcElement {
     iframe.style.display = "none";
     return iframe;
   }
-  enhanceIFrame() {
+  enhanceIFrame(iframeTitle) {
     this.iframe = this.dialog.querySelector("iframe");
+    this.iframe.title = iframeTitle;
     return new Promise((resolve, reject) => {
       this.iframe.addEventListener(
         "load",
@@ -500,7 +538,9 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
         </div>
       </div>
     `;
-    this.querySelector(".modal-title").textContent = title;
+    const titleEl = this.querySelector(".modal-title");
+    titleEl.textContent = title;
+    this.setAttribute("aria-labelledby", ensureId(titleEl, "pwc-mdlg-bs5-title"));
     if (showCloseButton) {
       const btn = document.createElement("button");
       btn.type = "button";
@@ -749,6 +789,12 @@ var MultiselectDualListBase = class extends PwcChildrenObserverElement {
   get removeLabel() {
     return this.getAttribute("remove-label") || "\xD7";
   }
+  get addAriaLabel() {
+    return this.getAttribute("add-aria-label") || "Add";
+  }
+  get removeAriaLabel() {
+    return this.getAttribute("remove-aria-label") || "Remove";
+  }
 };
 
 // src/multiselect-dual-list/bs5/multiselect-dual-list.js
@@ -802,7 +848,7 @@ var PwcMultiselectDualListBs5 = class extends MultiselectDualListBase {
       btn.className = "btn btn-sm btn-outline-primary";
       btn.dataset.action = "add";
       btn.textContent = this.addLabel;
-      btn.setAttribute("aria-label", `${this.addLabel} ${item.label}`);
+      btn.setAttribute("aria-label", `${this.addAriaLabel} ${item.label}`);
       if (item.selected) btn.style.display = "none";
       el.appendChild(btn);
     }
@@ -810,12 +856,13 @@ var PwcMultiselectDualListBs5 = class extends MultiselectDualListBase {
   }
   _createSelectedEntry(item) {
     const el = this._createEntry(item);
+    el.setAttribute("aria-selected", "true");
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "btn btn-sm btn-outline-danger";
     btn.dataset.action = "remove";
     btn.textContent = this.removeLabel;
-    btn.setAttribute("aria-label", `${this.removeLabel} ${item.label}`);
+    btn.setAttribute("aria-label", `${this.removeAriaLabel} ${item.label}`);
     el.appendChild(btn);
     return el;
   }
@@ -848,9 +895,14 @@ var PwcZoneTransfer = class extends PwcChildrenObserverElement {
     for (const zone of this._zones()) {
       if (!zone.hasAttribute("role")) zone.setAttribute("role", "listbox");
       if (!zone.hasAttribute("tabindex")) zone.tabIndex = -1;
+      if (!zone.hasAttribute("aria-label")) {
+        const name = this._zoneName(zone);
+        if (name) zone.setAttribute("aria-label", name);
+      }
     }
     const active = items.find((it) => it.tabIndex === 0) || items[0] || null;
     for (const it of items) it.tabIndex = it === active ? 0 : -1;
+    this._getOrCreateLiveRegion();
   }
   handleEvent(e) {
     if (e.type === "dragstart") return this._onDragStart(e);
@@ -944,7 +996,32 @@ var PwcZoneTransfer = class extends PwcChildrenObserverElement {
     if (!zones.some((z) => z.hasAttribute("data-pwc-zone-hotkey"))) return null;
     return zones.find((z) => z.getAttribute("data-pwc-zone-hotkey") === key) || null;
   }
+  _getOrCreateLiveRegion() {
+    if (!this._liveRegion) {
+      this._liveRegion = document.createElement("span");
+      this._liveRegion.setAttribute("role", "status");
+      this._liveRegion.setAttribute("aria-live", "assertive");
+      this._liveRegion.setAttribute("aria-atomic", "true");
+      Object.assign(this._liveRegion.style, {
+        position: "absolute",
+        width: "1px",
+        height: "1px",
+        padding: "0",
+        margin: "-1px",
+        overflow: "hidden",
+        clip: "rect(0,0,0,0)",
+        whiteSpace: "nowrap",
+        border: "0"
+      });
+      this._withoutChildrenChangedNotification(() => this.appendChild(this._liveRegion));
+    }
+    return this._liveRegion;
+  }
   _emitChange(item, fromZone, toZone, index, trigger) {
+    if (trigger === "keyboard") {
+      const region = this._getOrCreateLiveRegion();
+      region.textContent = fromZone !== toZone ? this._zoneName(toZone) : `${index + 1}`;
+    }
     this.dispatchEvent(
       new CustomEvent("pwc-zone-transfer:change", {
         bubbles: true,

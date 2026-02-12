@@ -15,7 +15,8 @@ The base class never touches DOM rendering directly. Variants own the dialog cre
 
 ## Flow: link click to dialog
 
-1. Click on an `<a>` inside the component is intercepted (`handleEvent`)
+1. Click on an `<a>` inside the component is intercepted (`handleEvent`).
+   The iframe title is resolved: `iframe-title` attribute → link `aria-label` → link text content (the latter two prefixed with "Dialog: ").
 2. `prepareIFrameLink()` builds the iframe URL:
    - collects `input` values as `pwc_default` query param
    - appends `pwc_embedded=true`

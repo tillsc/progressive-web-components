@@ -66,6 +66,25 @@ The element **must have an `id`** for `local-reload` to work.
 
 ---
 
+## Accessibility
+
+### `iframe-title`
+Sets the `title` attribute on the iframe so screen readers can identify it.
+
+```html
+<pwc-dialog-opener iframe-title="Neuen Eintrag anlegen">
+  <a href="/entries/new">+ Neu</a>
+</pwc-dialog-opener>
+```
+
+When omitted, the title is derived automatically with a "Dialog: " prefix:
+1. `aria-label` of the clicked link
+2. text content of the clicked link
+
+- The close button has an `aria-label` set to the `close-text` attribute value.
+
+---
+
 ## Dialog completion protocol
 
 The iframe content is considered "finished" when its URL contains the query parameter:
