@@ -12,13 +12,23 @@ logic. It defines a **subclass contract**:
 The vanilla variant returns a plain `<input type="search">`.
 The BS5 variant wraps it in a `<div class="mb-2">` with `form-control` class.
 
+## Input placement
+
+`defaultInputSelector` is used to find an optional target element. The wrapper
+returned by `_createInput()` is placed inside this target, or prepended to the
+component if none is found.
+
 ## Text matching
 
 Each row's `textContent` is normalized (collapse whitespace, lowercase) and checked
 against every token via `String.prototype.includes()`. This gives full Unicode
 case-insensitive matching through the native `toLowerCase()` implementation.
 
-## Token logic
+## Status element
 
-The filter splits input into whitespace-separated tokens. A row is visible only if
-**all** tokens appear in its normalized text content (logical AND).
+`defaultStatusSelector` is used to find a user-provided status element. If none
+is found, a visually hidden `<span>` is created and appended.
+
+ARIA attributes (`role`, `aria-live`, `aria-atomic`) are only set when the
+attribute is not already present, so authors can override defaults (e.g.
+`aria-live="assertive"`).

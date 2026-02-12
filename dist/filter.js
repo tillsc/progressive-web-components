@@ -83,6 +83,8 @@ var PwcSimpleInitElement = class extends PwcElement {
 // src/filter/base.js
 var BaseFilter = class extends PwcSimpleInitElement {
   static defaultRowSelector = "pwc-filter-row, [data-pwc-filter-row]";
+  static defaultStatusSelector = "pwc-filter-status, [data-pwc-filter-status]";
+  static defaultInputSelector = "pwc-filter-input, [data-pwc-filter-input]";
   static events = ["input"];
   onConnect() {
     const { wrapper, input } = this._createInput();
@@ -92,7 +94,31 @@ var BaseFilter = class extends PwcSimpleInitElement {
       () => this.applyFilter(),
       Number.isFinite(debounceTimeout) ? debounceTimeout : 300
     );
-    this.prepend(wrapper);
+    this._status = this.querySelector(this.constructor.defaultStatusSelector);
+    if (!this._status) {
+      this._status = document.createElement("span");
+      Object.assign(this._status.style, {
+        position: "absolute",
+        width: "1px",
+        height: "1px",
+        padding: "0",
+        margin: "-1px",
+        overflow: "hidden",
+        clip: "rect(0,0,0,0)",
+        whiteSpace: "nowrap",
+        border: "0"
+      });
+      this.append(this._status);
+    }
+    if (!this._status.hasAttribute("role")) this._status.setAttribute("role", "status");
+    if (!this._status.hasAttribute("aria-live")) this._status.setAttribute("aria-live", "polite");
+    if (!this._status.hasAttribute("aria-atomic")) this._status.setAttribute("aria-atomic", "true");
+    const inputTarget = this.querySelector(this.constructor.defaultInputSelector);
+    if (inputTarget) {
+      inputTarget.appendChild(wrapper);
+    } else {
+      this.prepend(wrapper);
+    }
   }
   onDisconnect() {
     clearTimeout(this._debounceTimer);
@@ -113,6 +139,7 @@ var BaseFilter = class extends PwcSimpleInitElement {
     const input = document.createElement("input");
     input.type = "search";
     input.placeholder = this.getAttribute("placeholder") || "Search\u2026";
+    input.setAttribute("aria-label", input.placeholder);
     return { wrapper: input, input };
   }
   _debounce(fn, timeout) {
@@ -136,12 +163,16 @@ var BaseFilter = class extends PwcSimpleInitElement {
       const text = row.textContent.replace(/\s+/g, " ").toLowerCase();
       row.hidden = tokens.length > 0 && !tokens.every((t) => text.includes(t));
     }
+    const matchCount = rows.filter((r) => !r.hidden).length;
+    if (this._status) {
+      this._status.textContent = tokens.length > 0 ? `${matchCount} / ${rows.length}` : "";
+    }
     this.dispatchEvent(
       new CustomEvent("pwc-filter:change", {
         bubbles: true,
         detail: {
           filterText: this._input.value,
-          matchCount: rows.filter((r) => !r.hidden).length,
+          matchCount,
           totalCount: rows.length
         }
       })

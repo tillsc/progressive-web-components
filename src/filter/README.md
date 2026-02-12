@@ -85,12 +85,68 @@ Set to `0` to disable debouncing (recommended for tests).
 
 ---
 
+## Status display
+
+The component tracks how many rows match the current filter. By default, this
+information is announced to screen readers via a visually hidden live region.
+
+To make the count visible to all users, place a status element inside the
+component:
+
+```html
+<pwc-filter>
+  <h3>Items <span data-pwc-filter-status></span></h3>
+  <table>…</table>
+</pwc-filter>
+```
+
+The status element is identified via a selector.
+
+Default:
+```
+pwc-filter-status, [data-pwc-filter-status]
+```
+
+When the user types, the status element's `textContent` is updated to
+`"<matchCount> / <totalCount>"` (e.g. `"3 / 10"`). When the filter is cleared,
+the text is set to `""`.
+
+If no status element is found in the markup, the component creates a visually
+hidden `<span>` automatically so screen readers still receive updates.
+
+The component ensures `role="status"`, `aria-live="polite"`, and
+`aria-atomic="true"` are set on the status element (unless already present).
+
+---
+
+## Input placement
+
+By default the search input is prepended as the **first child** of the component.
+
+To control where the input appears, place a target element inside the component:
+
+```html
+<pwc-filter>
+  <h3>Items <span data-pwc-filter-status></span></h3>
+  <div data-pwc-filter-input></div>
+  <table>…</table>
+</pwc-filter>
+```
+
+The input is appended **inside** the target element, which can double as a
+styling wrapper.
+
+Default selector:
+```
+pwc-filter-input, [data-pwc-filter-input]
+```
+
 ## Generated markup
 
 The component always creates its own search input.
 No input markup needs to be provided by the consumer.
 
-The input is inserted as the **first child** of the component.
+The input receives an `aria-label` matching the `placeholder` text.
 
 ---
 
