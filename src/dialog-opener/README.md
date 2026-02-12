@@ -85,51 +85,6 @@ Value: space-separated list of event names dispatched inside the iframe document
 
 ---
 
-## Hidden in dialog
-
-Elements inside the iframe can be marked to be hidden when rendered inside a 
-dialog.
-
-Supported selectors:
-
-- `<pwc-dialog-opener-hidden>`
-- `[data-pwc-dialog-opener-hidden]`
-
-```html
-<!-- inside the iframe content -->
-<pwc-dialog-opener-hidden>
-  This will not be visible inside the dialog.
-</pwc-dialog-opener-hidden>
-
-<!-- or -->
-<div data-pwc-dialog-opener-hidden>
-  This will not be visible inside the dialog.
-</div>
-```
-
-These elements remain visible when the page is opened directly in the browser.
-
----
-
-## Accessibility
-
-### `iframe-title`
-Sets the `title` attribute on the iframe so screen readers can identify it.
-
-```html
-<pwc-dialog-opener iframe-title="Create new entry">
-  <a href="/entries/new">New entry</a>
-</pwc-dialog-opener>
-```
-
-When omitted, the title is derived automatically with a "Dialog: " prefix:
-1. `aria-label` of the clicked link
-2. text content of the clicked link
-
-- The close button has an `aria-label` set to the `close-text` attribute value.
-
----
-
 ## Dialog completion protocol
 
 The iframe content is considered "finished" when its URL contains the query parameter:
@@ -189,6 +144,51 @@ The iframe will be opened with:
 ```
 /contacts/new?pwc_default=John+Doe&pwc_embedded=true
 ```
+
+---
+
+## Hidden in dialog
+
+Elements inside the iframe can be marked to be hidden when rendered inside a
+dialog.
+
+Supported selectors:
+
+- `<pwc-dialog-opener-hidden>`
+- `[data-pwc-dialog-opener-hidden]`
+
+```html
+<!-- inside the iframe content -->
+<pwc-dialog-opener-hidden>
+  This will not be visible inside the dialog.
+</pwc-dialog-opener-hidden>
+
+<!-- or -->
+<div data-pwc-dialog-opener-hidden>
+  This will not be visible inside the dialog.
+</div>
+```
+
+These elements remain visible when the page is opened directly in the browser.
+
+---
+
+## Accessibility
+
+### `iframe-title`
+Sets the `title` attribute on the iframe so screen readers can identify it.
+
+```html
+<pwc-dialog-opener iframe-title="Create new entry">
+  <a href="/entries/new">New entry</a>
+</pwc-dialog-opener>
+```
+
+When omitted, the title is derived automatically with a "Dialog: " prefix:
+1. `aria-label` of the clicked link
+2. text content of the clicked link
+
+- The close button has an `aria-label` set to the `close-text` attribute value.
 
 ---
 
