@@ -21,6 +21,7 @@ A collection of Custom Elements designed to work with server-rendered HTML and p
 
 | Component                                                                               | Description |
 |-----------------------------------------------------------------------------------------|-------------|
+| <a href="src/conditional-display/" data-test-page>&lt;pwc-shown-if&gt;</a> / <a href="src/conditional-display/">&lt;pwc-hidden-if&gt;</a> / <a href="src/conditional-display/">&lt;pwc-enabled-if&gt;</a> / <a href="src/conditional-display/">&lt;pwc-disabled-if&gt;</a> | Conditionally show/hide or enable/disable DOM sections based on a form input |
 | <a href="src/dialog-opener/" data-test-page>&lt;pwc-dialog-opener&gt;</a>               | Enhances links to open their targets in a modal dialog |
 | <a href="src/filter/" data-test-page>&lt;pwc-filter&gt;</a>                             | Adds a search input to filter arbitrary markup based on free-text input |
 | <a href="src/modal-dialog/" data-test-page>&lt;pwc-modal-dialog&gt;</a>                 | Low-level building block for modal dialogs from JavaScript |
@@ -60,6 +61,7 @@ For more control you can import the unbundled source files directly
 
 `dist/` contains one JavaScript file per component (and variant). No build step is required for consumers.
 
+- `conditional-display.js` (no Bootstrap variant needed)
 - `dialog-opener.js` / `dialog-opener-bs5.js`
 - `filter.js` / `filter-bs5.js`
 - `modal-dialog.js` / `modal-dialog-bs5.js`

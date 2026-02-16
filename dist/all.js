@@ -1,13 +1,3 @@
-// src/core/utils.js
-function ensureId(el, prefix = "pwc") {
-  if (!el.id) el.id = `${prefix}-${Math.random().toString(36).slice(2)}`;
-  return el.id;
-}
-function defineOnce(name, classDef) {
-  if (customElements.get(name)) return;
-  customElements.define(name, classDef);
-}
-
 // src/core/pwc-element.js
 var PwcElement = class extends HTMLElement {
   /**
@@ -65,6 +55,195 @@ var PwcElement = class extends HTMLElement {
   handleEvent(_event) {
   }
 };
+
+// src/core/pwc-children-observer-element.js
+var PwcChildrenObserverElement = class extends PwcElement {
+  static observeMode = "children";
+  // "children" | "tree"
+  connectedCallback() {
+    if (this._connected) return;
+    super.connectedCallback();
+    this._startChildrenObserver();
+  }
+  disconnectedCallback() {
+    this._stopChildrenObserver();
+    super.disconnectedCallback();
+  }
+  onChildrenChanged(_mutations) {
+  }
+  /** Run fn() without triggering onChildrenChanged for the resulting DOM mutations. */
+  _withoutChildrenChangedNotification(fn) {
+    fn();
+    this._childrenObserver?.takeRecords();
+  }
+  _startChildrenObserver() {
+    const mode = this.constructor.observeMode || "children";
+    const subtree = mode === "tree";
+    this._childrenObserver = new MutationObserver((mutations) => {
+      if (!this._connected) return;
+      this.onChildrenChanged(mutations);
+    });
+    this._childrenObserver.observe(this, { childList: true, subtree });
+    this.onChildrenChanged([]);
+  }
+  _stopChildrenObserver() {
+    if (!this._childrenObserver) return;
+    this._childrenObserver.disconnect();
+    this._childrenObserver = null;
+  }
+};
+
+// src/core/utils.js
+function ensureId(el, prefix = "pwc") {
+  if (!el.id) el.id = `${prefix}-${Math.random().toString(36).slice(2)}`;
+  return el.id;
+}
+function defineOnce(name, classDef) {
+  if (customElements.get(name)) return;
+  customElements.define(name, classDef);
+}
+
+// src/conditional-display/conditional-display.js
+var ConditionalDisplayBase = class extends PwcChildrenObserverElement {
+  static observeMode = "tree";
+  static observedAttributes = ["selector", "value"];
+  attributeChangedCallback(name) {
+    switch (name) {
+      case "selector":
+        this._resolveInput();
+        break;
+      case "value": {
+        const value = this.getAttribute("value");
+        this._values = value ? value.split(",") : [];
+        break;
+      }
+      default: {
+        return;
+      }
+    }
+    if (this.isConnected) this._update();
+  }
+  onChildrenChanged() {
+    this._resolveInput();
+    this._update();
+  }
+  onDisconnect() {
+    this._unbindChangeEvent();
+  }
+  _onChange = () => this._update();
+  _unbindChangeEvent() {
+    if (this._changeEventTarget) {
+      this._changeEventTarget.removeEventListener("change", this._onChange);
+      this._changeEventTarget = null;
+    }
+  }
+  _resolveInput() {
+    this._unbindChangeEvent();
+    const selector = this.getAttribute("selector");
+    this._input = selector ? document.querySelector(selector) : null;
+    if (this._input) {
+      this._changeEventTarget = this._input.type === "radio" ? this._input.closest("form") || document : this._input;
+      this._changeEventTarget.addEventListener("change", this._onChange);
+    } else if (selector) {
+      console.warn(`<${this.localName}>: No element matches selector "${selector}"`);
+    }
+  }
+  _getInputValue() {
+    if (!this._input) return void 0;
+    if (this._input.type === "radio") {
+      const name = this._input.name;
+      const form = this._input.closest("form");
+      if (form) return form.elements[name]?.value;
+      const checked = document.querySelector(`input[name="${CSS.escape(name)}"]:checked`);
+      return checked ? checked.value : void 0;
+    }
+    if (this._input.type === "checkbox") {
+      return this._input.checked ? this._input.value : void 0;
+    }
+    return this._input.value;
+  }
+  get _isActive() {
+    if (this._input?.type === "checkbox" && !this._values?.length) {
+      return this._input.checked;
+    }
+    const currentValue = this._getInputValue();
+    return this._values?.includes(currentValue != null ? String(currentValue) : "undefined");
+  }
+  _update() {
+    if (!this._input) return;
+    this._apply(this._isActive);
+  }
+  _setVisible(visible) {
+    if (visible) {
+      this.removeAttribute("hidden");
+      for (const el of this.querySelectorAll("input, select, textarea")) {
+        if (el.hasAttribute("data-pwc-temporarily-disabled")) {
+          el.removeAttribute("data-pwc-temporarily-disabled");
+          el.removeAttribute("disabled");
+        }
+      }
+    } else {
+      this.setAttribute("hidden", "");
+      for (const el of this.querySelectorAll("input, select, textarea")) {
+        if (!el.disabled) {
+          el.setAttribute("disabled", "");
+          el.setAttribute("data-pwc-temporarily-disabled", "");
+        }
+      }
+    }
+  }
+  _setEnabled(enabled) {
+    if (enabled) {
+      for (const el of this.querySelectorAll("input, select, textarea")) {
+        if (el.hasAttribute("data-pwc-temporarily-disabled")) {
+          el.removeAttribute("data-pwc-temporarily-disabled");
+          el.removeAttribute("disabled");
+        }
+      }
+    } else {
+      for (const el of this.querySelectorAll("input, select, textarea")) {
+        if (!el.disabled) {
+          el.setAttribute("disabled", "");
+          el.setAttribute("data-pwc-temporarily-disabled", "");
+        }
+      }
+    }
+  }
+  _apply(_isActive) {
+  }
+};
+var PwcShownIf = class extends ConditionalDisplayBase {
+  _apply(isActive) {
+    this._setVisible(isActive);
+  }
+};
+var PwcHiddenIf = class extends ConditionalDisplayBase {
+  _apply(isActive) {
+    this._setVisible(!isActive);
+  }
+};
+var PwcEnabledIf = class extends ConditionalDisplayBase {
+  _apply(isActive) {
+    this._setEnabled(isActive);
+  }
+};
+var PwcDisabledIf = class extends ConditionalDisplayBase {
+  _apply(isActive) {
+    this._setEnabled(!isActive);
+  }
+};
+function define() {
+  defineOnce("pwc-shown-if", PwcShownIf);
+  defineOnce("pwc-hidden-if", PwcHiddenIf);
+  defineOnce("pwc-enabled-if", PwcEnabledIf);
+  defineOnce("pwc-disabled-if", PwcDisabledIf);
+}
+
+// src/conditional-display/index.js
+function register() {
+  define();
+}
+register();
 
 // src/core/pwc-simple-init-element.js
 var PwcSimpleInitElement = class extends PwcElement {
@@ -187,15 +366,15 @@ var BaseFilter = class extends PwcSimpleInitElement {
 // src/filter/filter.js
 var PwcFilter = class extends BaseFilter {
 };
-function define() {
+function define2() {
   defineOnce("pwc-filter", PwcFilter);
 }
 
 // src/filter/index.js
-function register() {
-  define();
+function register2() {
+  define2();
 }
-register();
+register2();
 
 // src/dialog-opener/base.js
 var BaseDialogOpener = class extends PwcElement {
@@ -421,7 +600,7 @@ var PwcDialogOpener = class extends BaseDialogOpener {
     this.modalDialog.close();
   }
 };
-function define2() {
+function define3() {
   defineOnce("pwc-dialog-opener", PwcDialogOpener);
 }
 
@@ -582,57 +761,20 @@ var PwcModalDialog = class extends ModalDialogBase {
     };
   }
 };
-var define3 = () => defineOnce("pwc-modal-dialog", PwcModalDialog);
+var define4 = () => defineOnce("pwc-modal-dialog", PwcModalDialog);
 
 // src/modal-dialog/modal-dialog.css
 var modal_dialog_default = "pwc-modal-dialog {\n  /* sizing */\n  --pwc-modal-max-width: 720px;\n  --pwc-modal-width: 92vw;\n\n  /* spacing */\n  --pwc-modal-padding-header: 12px 16px;\n  --pwc-modal-padding-body: 16px;\n  --pwc-modal-padding-footer: 12px 16px;\n  --pwc-modal-gap-footer: 8px;\n\n  /* visuals */\n  --pwc-modal-bg: #fff;\n  --pwc-modal-backdrop: rgba(0, 0, 0, 0.45);\n  --pwc-modal-border-radius: 6px;\n  --pwc-modal-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);\n  --pwc-modal-separator: rgba(0, 0, 0, 0.08);\n\n  /* controls */\n  --pwc-modal-close-radius: 4px;\n  --pwc-modal-close-hover-bg: rgba(0, 0, 0, 0.06);\n}\n\npwc-modal-dialog dialog.pwc-modal-dialog {\n  border: none;\n  padding: 0;\n  max-width: min(var(--pwc-modal-max-width), var(--pwc-modal-width));\n  width: var(--pwc-modal-width);\n}\n\npwc-modal-dialog dialog.pwc-modal-dialog::backdrop {\n  background: var(--pwc-modal-backdrop);\n}\n\npwc-modal-dialog .pwc-modal-dialog-surface {\n  background: var(--pwc-modal-bg);\n  border-radius: var(--pwc-modal-border-radius);\n  box-shadow: var(--pwc-modal-shadow);\n  overflow: hidden;\n}\n\n/* Header */\n\npwc-modal-dialog .pwc-modal-dialog-header {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: var(--pwc-modal-padding-header);\n  border-bottom: 1px solid var(--pwc-modal-separator);\n}\n\npwc-modal-dialog .pwc-modal-dialog-title {\n  margin: 0;\n  font-size: 1.1rem;\n  font-weight: 600;\n}\n\n/* Close button */\n\npwc-modal-dialog .pwc-modal-dialog-x {\n  appearance: none;\n  border: none;\n  background: transparent;\n  font: inherit;\n  font-size: 1.25rem;\n  line-height: 1;\n  padding: 4px 6px;\n  cursor: pointer;\n  border-radius: var(--pwc-modal-close-radius);\n}\n\npwc-modal-dialog .pwc-modal-dialog-x:hover {\n  background: var(--pwc-modal-close-hover-bg);\n}\n\n/* Body */\n\npwc-modal-dialog .pwc-modal-dialog-body {\n  padding: var(--pwc-modal-padding-body);\n}\n\n/* Sizes */\n\npwc-modal-dialog dialog.pwc-modal-dialog--sm { --pwc-modal-max-width: 400px; }\npwc-modal-dialog dialog.pwc-modal-dialog--xl { --pwc-modal-max-width: 1000px; }\n\n/* Footer */\n\npwc-modal-dialog .pwc-modal-dialog-footer {\n  display: flex;\n  justify-content: flex-end;\n  gap: var(--pwc-modal-gap-footer);\n  padding: var(--pwc-modal-padding-footer);\n  border-top: 1px solid var(--pwc-modal-separator);\n}\n\n";
 
 // src/modal-dialog/index.js
-function register2() {
+function register3() {
   PwcModalDialog.registerCss(modal_dialog_default);
-  define3();
+  define4();
 }
-register2();
+register3();
 
 // src/dialog-opener/index.js
-define2();
-
-// src/core/pwc-children-observer-element.js
-var PwcChildrenObserverElement = class extends PwcElement {
-  static observeMode = "children";
-  // "children" | "tree"
-  connectedCallback() {
-    if (this._connected) return;
-    super.connectedCallback();
-    this._startChildrenObserver();
-  }
-  disconnectedCallback() {
-    this._stopChildrenObserver();
-    super.disconnectedCallback();
-  }
-  onChildrenChanged(_mutations) {
-  }
-  /** Run fn() without triggering onChildrenChanged for the resulting DOM mutations. */
-  _withoutChildrenChangedNotification(fn) {
-    fn();
-    this._childrenObserver?.takeRecords();
-  }
-  _startChildrenObserver() {
-    const mode = this.constructor.observeMode || "children";
-    const subtree = mode === "tree";
-    this._childrenObserver = new MutationObserver((mutations) => {
-      if (!this._connected) return;
-      this.onChildrenChanged(mutations);
-    });
-    this._childrenObserver.observe(this, { childList: true, subtree });
-    this.onChildrenChanged([]);
-  }
-  _stopChildrenObserver() {
-    if (!this._childrenObserver) return;
-    this._childrenObserver.disconnect();
-    this._childrenObserver = null;
-  }
-};
+define3();
 
 // src/multiselect-dual-list/base.js
 var MultiselectDualListBase = class extends PwcChildrenObserverElement {
@@ -848,17 +990,17 @@ var PwcMultiselectDualList = class extends MultiselectDualListBase {
     return li;
   }
 };
-var define4 = () => defineOnce("pwc-multiselect-dual-list", PwcMultiselectDualList);
+var define5 = () => defineOnce("pwc-multiselect-dual-list", PwcMultiselectDualList);
 
 // src/multiselect-dual-list/multiselect-dual-list.css
 var multiselect_dual_list_default = "pwc-multiselect-dual-list {\n  /* sizing */\n  --pwc-msdl-width: 100%;\n\n  /* spacing */\n  --pwc-msdl-gap: 12px;\n  --pwc-msdl-padding: 8px;\n  --pwc-msdl-item-padding: 6px 10px;\n  --pwc-msdl-indent: 1.5em;\n\n  /* list */\n  --pwc-msdl-list-max-height: 20em;\n\n  /* visuals */\n  --pwc-msdl-bg: #fff;\n  --pwc-msdl-border: 1px solid rgba(0, 0, 0, 0.15);\n  --pwc-msdl-border-radius: 4px;\n  --pwc-msdl-separator: rgba(0, 0, 0, 0.08);\n\n  /* item */\n  --pwc-msdl-item-bg: #f8f8f8;\n  --pwc-msdl-item-hover-bg: #f0f0f0;\n  --pwc-msdl-item-selected-bg: #e8e8e8;\n  --pwc-msdl-item-selected-color: #999;\n  --pwc-msdl-item-disabled-color: #bbb;\n\n  /* button */\n  --pwc-msdl-action-bg: transparent;\n  --pwc-msdl-action-hover-bg: rgba(0, 0, 0, 0.06);\n  --pwc-msdl-action-border: 1px solid rgba(0, 0, 0, 0.2);\n  --pwc-msdl-action-radius: 3px;\n\n  display: block;\n  width: var(--pwc-msdl-width);\n}\n\n.pwc-msdl-container {\n  display: flex;\n  gap: var(--pwc-msdl-gap);\n}\n\n.pwc-msdl-selected,\n.pwc-msdl-available {\n  flex: 1;\n  min-width: 0;\n  background: var(--pwc-msdl-bg);\n  border: var(--pwc-msdl-border);\n  border-radius: var(--pwc-msdl-border-radius);\n  padding: var(--pwc-msdl-padding);\n}\n\n.pwc-msdl-header {\n  font-weight: 600;\n  margin-bottom: 6px;\n}\n\n.pwc-msdl-list {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  max-height: var(--pwc-msdl-list-max-height);\n  overflow-y: auto;\n}\n\n.pwc-msdl-item {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: var(--pwc-msdl-item-padding);\n  background: var(--pwc-msdl-item-bg);\n  border-bottom: 1px solid var(--pwc-msdl-separator);\n}\n\n.pwc-msdl-item:last-child {\n  border-bottom: none;\n}\n\n.pwc-msdl-item:hover {\n  background: var(--pwc-msdl-item-hover-bg);\n}\n\n.pwc-msdl-item--selected {\n  background: var(--pwc-msdl-item-selected-bg);\n  color: var(--pwc-msdl-item-selected-color);\n}\n\n.pwc-msdl-item--disabled {\n  color: var(--pwc-msdl-item-disabled-color);\n  cursor: default;\n}\n\n.pwc-msdl-action {\n  appearance: none;\n  border: var(--pwc-msdl-action-border);\n  background: var(--pwc-msdl-action-bg);\n  padding: 2px 8px;\n  border-radius: var(--pwc-msdl-action-radius);\n  cursor: pointer;\n  font: inherit;\n  font-size: 0.85em;\n  flex-shrink: 0;\n  margin-left: 8px;\n}\n\n.pwc-msdl-action:hover {\n  background: var(--pwc-msdl-action-hover-bg);\n}\n\npwc-multiselect-dual-list[hide-selected] .pwc-msdl-item--selected {\n  display: none;\n}\n";
 
 // src/multiselect-dual-list/index.js
-function register3() {
+function register4() {
   PwcMultiselectDualList.registerCss(multiselect_dual_list_default);
-  define4();
+  define5();
 }
-register3();
+register4();
 
 // src/zone-transfer/zone-transfer.js
 var PwcZoneTransfer = class extends PwcChildrenObserverElement {
@@ -1086,7 +1228,7 @@ var PwcZoneTransfer = class extends PwcChildrenObserverElement {
     return Math.max(0, this._items(zoneEl).indexOf(itemEl));
   }
 };
-function define5() {
+function define6() {
   defineOnce("pwc-zone-transfer", PwcZoneTransfer);
 }
 
@@ -1094,8 +1236,8 @@ function define5() {
 var zone_transfer_default = 'pwc-zone-transfer [draggable="true"] {\n    cursor: grab;\n}\n\npwc-zone-transfer .pwc-zone-transfer-dragging {\n    cursor: grabbing;\n    opacity: 0.6;\n}\n\npwc-zone-transfer .pwc-zone-transfer-placeholder {\n    opacity: 0.3;\n}';
 
 // src/zone-transfer/index.js
-function register4() {
+function register5() {
   PwcZoneTransfer.registerCss(zone_transfer_default);
-  define5();
+  define6();
 }
-register4();
+register5();

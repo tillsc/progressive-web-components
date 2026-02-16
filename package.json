@@ -9,6 +9,7 @@
   "exports": {
     "./all": "./dist/all.js",
     "./all-bs5": "./dist/all-bs5.js",
+    "./conditional-display": "./dist/conditional-display.js",
     "./dialog-opener": "./dist/dialog-opener.js",
     "./dialog-opener-bs5": "./dist/dialog-opener-bs5.js",
     "./filter": "./dist/filter.js",
