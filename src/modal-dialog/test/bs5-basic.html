@@ -45,7 +45,7 @@
         }, { label: `modal shown & stable: ${label}` });
       };
 
-      log("clicking open-parent link");
+      await log("clicking open-parent link");
       document.getElementById("open-parent").click();
 
       await waitFor(
@@ -60,7 +60,7 @@
         "exactly one shown modal (parent)"
       );
 
-      log("clicking open-child link inside parent");
+      await log("clicking open-child link inside parent");
       parent.querySelector("#open-child").click();
 
       await waitFor(() => {
@@ -80,7 +80,7 @@
         "child should be the shown modal"
       );
 
-      log("closing child via close button");
+      await log("closing child via close button");
       child.querySelector('[data-pwc-action="close"]').click();
 
       await waitFor(
@@ -98,7 +98,7 @@
         "parent should be shown again"
       );
 
-      log("closing parent via close button");
+      await log("closing parent via close button");
       parent.querySelector('[data-pwc-action="close"]').click();
 
       await waitFor(
@@ -116,7 +116,7 @@
         { label: "parent removed from DOM" }
       );
 
-      log("done");
+      await log("done");
     });
   </script>
 </body>

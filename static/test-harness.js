@@ -5,7 +5,7 @@
 // - t.equal(actual, expected, message)
 // - t.waitFor(predicate, options)
 // - t.nextTick(label?)
-// - t.log(message)
+// - t.log(message)              — await this for step-through support
 //
 // Runner contract
 // - window.__TEST_RESULTS__ = { done, ok, message?, error?, logs?, ms?, assertions? }
@@ -15,10 +15,13 @@
 // - Auto-starts ONLY in headless automation (Playwright Chromium headless)
 // - Captures window.onerror + unhandledrejection ONLY while the test is running
 // - Counts assertions (assert + equal)
+// - Step mode: pauses at each log() call, user advances via "Next" button
 //
 // Notes
 // - In UI mode, tests do not start automatically.
 // - In UI mode, errors from manual interaction do not fail a test unless you started it.
+
+import { createUi } from "./test-harness-ui.js";
 
 function isAutomatedHeadless() {
   return navigator.webdriver === true;
@@ -43,6 +46,10 @@ export function run(fn, options = {}) {
   const logs = [];
   let assertions = 0;
 
+  // Step-through state
+  let stepMode = false;
+  let stepResolve = null;
+
   function nowMs() {
     if (startedAt == null) return 0;
     return Math.round(performance.now() - startedAt);
@@ -55,6 +62,11 @@ export function run(fn, options = {}) {
 
   function log(message) {
     pushLog(`${nowMs()}ms ${String(message)}`);
+    highlightLine(message);
+    if (stepMode) {
+      render("paused");
+      return new Promise((resolve) => { stepResolve = resolve; });
+    }
   }
 
   function assert(cond, message = "assertion failed") {
@@ -72,7 +84,7 @@ export function run(fn, options = {}) {
   }
 
   async function nextTick(label = "nextTick") {
-    log(label);
+    await log(label);
     await Promise.resolve();
   }
 
@@ -81,7 +93,7 @@ export function run(fn, options = {}) {
     { timeoutMs: tmo = 10_000, intervalMs = 25, message = "waitFor timeout", label } = {}
   ) {
     const start = performance.now();
-    log(`waitFor start${label ? `: ${label}` : ""}`);
+    await log(`waitFor start${label ? `: ${label}` : ""}`);
 
     while (true) {
       try {
@@ -165,15 +177,25 @@ export function run(fn, options = {}) {
     uninstallGlobalErrorHandlers();
   }
 
-  async function start() {
+  function continueStep() {
+    if (stepResolve) {
+      render("stepping");
+      const r = stepResolve;
+      stepResolve = null;
+      r();
+    }
+  }
+
+  async function start(stepping = false) {
     if (started) return;
     started = true;
+    stepMode = stepping;
 
     startedAt = performance.now();
-    render("running");
+    render(stepping ? "stepping" : "running");
 
     installGlobalErrorHandlers();
-    armTimeout();
+    if (!stepping) armTimeout();
 
     try {
       const t = { assert, equal, waitFor, nextTick, log };
@@ -186,73 +208,38 @@ export function run(fn, options = {}) {
     }
   }
 
-  // --- UI (only for non-automation sessions)
-  let panel, statusEl, metaEl, logEl;
+  // --- UI actions ---
 
-  function render(state, message, stack) {
-    if (!panel) return;
-
-    const res = window.__TEST_RESULTS__;
-    const ms = typeof res?.ms === "number" ? res.ms : null;
-    const asrt = typeof res?.assertions === "number" ? res.assertions : assertions;
-
-    if (!started) statusEl.textContent = "Ready";
-    else if (state === "running") statusEl.textContent = "Running…";
-    else if (state === "ok") statusEl.textContent = "OK";
-    else if (state === "fail") statusEl.textContent = `FAIL: ${message || ""}`;
-
-    metaEl.textContent = [
-      started && ms != null ? `${ms} ms` : null,
-      `${asrt} assertions`
-    ].filter(Boolean).join(" | ");
-
-    const text = logs.join("\n");
-    logEl.textContent = text;
-
-    if (state === "fail" && stack) {
-      logEl.textContent = text ? `${text}\n\n${stack}` : stack;
+  function handleRun() {
+    if (!started) {
+      start(false);
+    } else if (stepMode) {
+      // "Continue" — switch from step mode to run mode
+      stepMode = false;
+      render("running");
+      armTimeout();
+      continueStep();
     }
   }
 
+  function handleStep() {
+    if (!started) {
+      start(true);
+    }
+  }
+
+  // --- UI ---
+  let render = () => {};
+  let highlightLine = () => {};
+
   if (showUi) {
-    panel = document.createElement("div");
-    panel.style.cssText =
-      "position:fixed;right:12px;bottom:12px;z-index:99999;" +
-      "font:12px system-ui,sans-serif;color:#111;" +
-      "background:#fff;border:1px solid rgba(0,0,0,.15);" +
-      "border-radius:10px;padding:10px;box-shadow:0 10px 30px rgba(0,0,0,.2);" +
-      "max-width:520px;min-width:320px;";
-
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = "Run tests";
-    button.style.cssText =
-      "padding:6px 10px;border-radius:8px;border:1px solid rgba(0,0,0,.2);" +
-      "background:#f7f7f7;cursor:pointer;";
-
-    statusEl = document.createElement("div");
-    statusEl.style.cssText = "margin-top:8px;font-weight:600;";
-
-    metaEl = document.createElement("div");
-    metaEl.style.cssText = "margin-top:4px;color:#444;";
-
-    logEl = document.createElement("pre");
-    logEl.style.cssText =
-      "margin-top:8px;max-height:240px;overflow:auto;" +
-      "background:#f8f8f8;padding:8px;border-radius:8px;";
-
-    button.addEventListener("click", start);
-
-    panel.appendChild(button);
-    panel.appendChild(statusEl);
-    panel.appendChild(metaEl);
-    panel.appendChild(logEl);
-    document.body.appendChild(panel);
-
-    render();
+    ({ render, highlightLine } = createUi(
+      { onRun: handleRun, onStep: handleStep, onNext: continueStep },
+      { logs, getAssertions: () => assertions, source: fn.toString() }
+    ));
   } else {
     // Headless automation: auto-start.
-    start();
+    start(false);
   }
 
   return { start };

@@ -29,7 +29,7 @@
       host.addEventListener("pwc-filter:change", (e) => { lastEvent = e; });
 
       // --- filterText getter/setter + event ---
-      log("filterText property on pwc-filter");
+      await log("filterText property on pwc-filter");
       equal(host.filter.filterText, "", "filterText is empty initially");
 
       host.filter.filterText = "alpha";
@@ -40,12 +40,12 @@
       equal(lastEvent.detail.totalCount, 4, "totalCount 4");
 
       // --- matchCount = 0 ---
-      log("no-match case");
+      await log("no-match case");
       host.filter.filterText = "zzz-no-match";
       equal(lastEvent.detail.matchCount, 0, "matchCount 0 for no-match");
 
       // --- Filter re-applied after dynamic option change ---
-      log("filter persistence across rebuild");
+      await log("filter persistence across rebuild");
       host.filter.filterText = "alpha";
 
       const opt = document.createElement("option");
@@ -61,7 +61,7 @@
       equal(lastEvent.detail.matchCount, 2, "matchCount 2 after adding Alpha Two");
       equal(lastEvent.detail.totalCount, 5, "totalCount 5 after rebuild");
 
-      log("done");
+      await log("done");
     });
   </script>
 </body>

@@ -23,7 +23,7 @@
     run(async ({ assert, equal, waitFor, log }) => {
       const host = document.getElementById("demo");
 
-      log("waiting for UI to build");
+      await log("waiting for UI to build");
       await waitFor(
         () => host.querySelector(".pwc-msdl-container"),
         { label: "container rendered" }
@@ -55,7 +55,7 @@
       assert(child.style.paddingLeft, "child item has indentation");
 
       // Test adding an item
-      log("adding item via click");
+      await log("adding item via click");
       const addBtn = container.querySelector(".pwc-msdl-available [data-value='1'] [data-action='add']");
       addBtn.click();
 
@@ -70,7 +70,7 @@
       assert(availEntry.classList.contains("pwc-msdl-item--selected"), "available entry marked as selected");
 
       // Test removing an item
-      log("removing item via click");
+      await log("removing item via click");
       const removeBtn = container.querySelector(".pwc-msdl-selected [data-value='4'] [data-action='remove']");
       removeBtn.click();
 
@@ -80,7 +80,7 @@
       );
       equal(select.querySelector("option[value='4']").selected, false, "option 4 is deselected in native select");
 
-      log("done");
+      await log("done");
     });
   </script>
 </body>

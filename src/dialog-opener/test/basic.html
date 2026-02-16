@@ -40,7 +40,7 @@
     }
     else {
       run(async ({ assert, equal, waitFor, nextTick, log }) => {
-        log("checking element definition");
+        await log("checking element definition");
         assert(customElements.get("pwc-dialog-opener"), "pwc-dialog-opener not defined");
 
         const el = document.querySelector("#dialog-opener-demo");
@@ -49,13 +49,13 @@
         const link = el.querySelector("a");
         assert(link, "missing link");
 
-        log("clicking link");
+        await log("clicking link");
         link.dispatchEvent(
           new MouseEvent("click", { bubbles: true, cancelable: true, composed: true })
         );
         await nextTick();
 
-        log("waiting for dialog to exist");
+        await log("waiting for dialog to exist");
         await waitFor(() => Boolean(document.querySelector("dialog.pwc-modal-dialog")), {
           message: "dialog not created"
         });
@@ -63,19 +63,19 @@
         const dlg = document.querySelector("dialog.pwc-modal-dialog");
         assert(dlg, "dialog missing");
 
-        log("waiting for dialog to be open");
+        await log("waiting for dialog to be open");
         await waitFor(() => dlg.open === true, { message: "dialog did not open" });
 
-        log("checking iframe exists");
+        await log("checking iframe exists");
         const iframe = dlg.querySelector("iframe");
         assert(iframe, "iframe not created");
 
-        log("waiting for iframe load");
+        await log("waiting for iframe load");
         await waitFor(() => {
           return iframe.contentDocument && iframe.contentDocument.readyState === "complete";
         }, { timeoutMs: 10_000, message: "iframe did not load" });
 
-        log("checking iframe src has _layout=false");
+        await log("checking iframe src has _layout=false");
         {
           const raw = iframe.getAttribute("src") || "";
           const u = new URL(raw, window.location.href);
@@ -83,7 +83,7 @@
           assert(u.searchParams.get("pwc_embedded") === "true", `missing or wrong pwc_embedded param: ${u.search}`);
         }
 
-        log("waiting for moved-out OK button");
+        await log("waiting for moved-out OK button");
         await waitFor(() => {
           const btn = dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]");
           return Boolean(btn);
@@ -92,12 +92,12 @@
         const okBtn = dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]");
         assert(okBtn, "moved-out submit button missing");
 
-        log("clicking moved-out OK button");
+        await log("clicking moved-out OK button");
         okBtn.dispatchEvent(
           new MouseEvent("click", { bubbles: true, cancelable: true, composed: true })
         );
 
-        log("waiting for dialog to close after redirect");
+        await log("waiting for dialog to close after redirect");
         await waitFor(() => dlg.open === false, { timeoutMs: 10_000, message: "dialog did not close after OK" });
 
         equal(document.querySelectorAll("pwc-modal-dialog").length, 1, "modal-dialog element should persist for reuse");

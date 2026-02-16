@@ -41,19 +41,10 @@
 
 <script type="module">
   import { run } from "../../../static/test-harness.js";
-
-  function key(el, k, opts = {}) {
-    el.dispatchEvent(new KeyboardEvent("keydown", {
-      key: k,
-      bubbles: true,
-      cancelable: true,
-      ctrlKey: Boolean(opts.ctrlKey),
-      metaKey: Boolean(opts.metaKey)
-    }));
-  }
+  import { key } from "../../../static/test-helpers.js";
 
   run(async ({ assert, equal, waitFor, log, nextTick }) => {
-    log("checking element definition");
+    await log("checking element definition");
     assert(customElements.get("pwc-zone-transfer"), "pwc-zone-transfer not defined");
 
     const el = document.getElementById("zt");
@@ -67,13 +58,13 @@
     const a2 = zoneA.querySelector("#a2");
     assert(a2, "missing a2");
 
-    log("focus a2 (roving tabindex)");
+    await log("focus a2 (roving tabindex)");
     a2.tabIndex = 0;
     a2.focus();
     await nextTick("after focus");
     equal(document.activeElement, a2, "a2 should be focused");
 
-    log("keyboard reorder within zone: Ctrl+ArrowDown moves a2 below a3");
+    await log("keyboard reorder within zone: Ctrl+ArrowDown moves a2 below a3");
     key(a2, "ArrowDown", { ctrlKey: true });
     await nextTick("after reorder");
 
@@ -84,7 +75,7 @@
       equal(ids[2], "a2", "a2 becomes third");
     }
 
-    log("keyboard move to zone via hotkey: '2' moves focused item to zone b");
+    await log("keyboard move to zone via hotkey: '2' moves focused item to zone b");
     zoneA.querySelector("#a2").focus();
     await nextTick("after refocus");
 
@@ -94,7 +85,7 @@
     await waitFor(() => zoneB.querySelector("#a2"), { label: "a2 moved to zone b" });
     equal(Boolean(zoneA.querySelector("#a2")), false, "a2 removed from zone a");
 
-    log("keyboard move to empty zone via hotkey: '3' moves focused item to zone c");
+    await log("keyboard move to empty zone via hotkey: '3' moves focused item to zone c");
     zoneB.querySelector("#a2").focus();
     await nextTick("after focus in b");
 
@@ -104,7 +95,7 @@
     await waitFor(() => zoneC.querySelector("#a2"), { label: "a2 moved to zone c" });
     equal(Boolean(zoneB.querySelector("#a2")), false, "a2 removed from zone b");
 
-    log("done");
+    await log("done");
   });
 </script>
 </body>

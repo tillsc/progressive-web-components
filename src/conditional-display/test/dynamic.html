@@ -39,11 +39,7 @@
 
 <script type="module">
   import { run } from "../../../static/test-harness.js";
-
-  function changeValue(el, value) {
-    el.value = value;
-    el.dispatchEvent(new Event("change", { bubbles: true }));
-  }
+  import { changeValue } from "../../../static/test-helpers.js";
 
   run(async ({ assert, equal, waitFor, log }) => {
 
@@ -52,14 +48,14 @@
     const method = document.getElementById("method");
     const section = document.getElementById("dynamic-children");
 
-    log("dynamic children: initial state (value=a, visible)");
+    await log("dynamic children: initial state (value=a, visible)");
     await waitFor(() => !section.hidden, { label: "section visible" });
 
-    log("dynamic children: hide section");
+    await log("dynamic children: hide section");
     changeValue(method, "b");
     await waitFor(() => section.hidden, { label: "section hidden" });
 
-    log("dynamic children: add input while hidden");
+    await log("dynamic children: add input while hidden");
     const added = document.createElement("input");
     added.name = "added";
     added.placeholder = "Added while hidden";
@@ -68,13 +64,13 @@
     await waitFor(() => added.disabled, { label: "added input gets disabled" });
     assert(added.hasAttribute("data-pwc-temporarily-disabled"), "added input should be marked as temporarily disabled");
 
-    log("dynamic children: show section again");
+    await log("dynamic children: show section again");
     changeValue(method, "a");
     await waitFor(() => !section.hidden, { label: "section visible again" });
     equal(added.disabled, false, "added input should be re-enabled");
     equal(section.querySelector("[name=original]").disabled, false, "original input should be re-enabled");
 
-    log("dynamic children: add input while visible + hidden");
+    await log("dynamic children: add input while visible + hidden");
     changeValue(method, "a");
     const added2 = document.createElement("input");
     added2.name = "added2";
@@ -89,26 +85,26 @@
 
     const el = document.getElementById("dynamic-selector");
 
-    log("dynamic selector: initial state (selector=#select-1, value=x, visible)");
+    await log("dynamic selector: initial state (selector=#select-1, value=x, visible)");
     await waitFor(() => !el.hidden, { label: "dynamic-selector visible" });
 
-    log("dynamic selector: switch selector to #select-2 (value=y, no match)");
+    await log("dynamic selector: switch selector to #select-2 (value=y, no match)");
     el.setAttribute("selector", "#select-2");
     await waitFor(() => el.hidden, { label: "dynamic-selector hidden after selector change" });
 
-    log("dynamic selector: change select-2 to x (matches)");
+    await log("dynamic selector: change select-2 to x (matches)");
     changeValue(document.getElementById("select-2"), "x");
     await waitFor(() => !el.hidden, { label: "dynamic-selector visible after select-2 change" });
 
-    log("dynamic selector: switch selector back to #select-1 (value=x, matches)");
+    await log("dynamic selector: switch selector back to #select-1 (value=x, matches)");
     el.setAttribute("selector", "#select-1");
     await waitFor(() => !el.hidden, { label: "dynamic-selector visible with select-1" });
 
-    log("dynamic selector: change select-1 to y (no match)");
+    await log("dynamic selector: change select-1 to y (no match)");
     changeValue(document.getElementById("select-1"), "y");
     await waitFor(() => el.hidden, { label: "dynamic-selector hidden after select-1 change" });
 
-    log("done");
+    await log("done");
   });
 </script>
 </body>

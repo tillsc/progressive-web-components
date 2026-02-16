@@ -35,7 +35,7 @@
   import { run } from "../../../static/test-harness.js";
 
   run(async ({ assert, equal, waitFor, log, nextTick }) => {
-    log("checking element definition");
+    await log("checking element definition");
     assert(customElements.get("pwc-zone-transfer"), "pwc-zone-transfer not defined");
 
     const el = document.getElementById("zt");
@@ -49,11 +49,11 @@
     const alice = zoneAvailable.querySelector('[data-pwc-item="a"]');
     assert(alice, "missing item a");
 
-    log("precondition: item is in available zone");
+    await log("precondition: item is in available zone");
     equal(zoneAvailable.querySelectorAll("[data-pwc-item]").length, 2, "expected 2 items in available");
     equal(zoneSelected.querySelectorAll("[data-pwc-item]").length, 0, "expected 0 items in selected");
 
-    log("simulating drag&drop: Alice -> selected");
+    await log("simulating drag&drop: Alice -> selected");
 
     alice.dispatchEvent(new DragEvent("dragstart", { bubbles: true, cancelable: true }));
     zoneSelected.dispatchEvent(new DragEvent("dragover", { bubbles: true, cancelable: true, clientY: 0 }));
@@ -62,16 +62,16 @@
 
     await nextTick("after drop");
 
-    log("waiting for DOM move to complete");
+    await log("waiting for DOM move to complete");
     await waitFor(() => {
       return zoneSelected.querySelector('[data-pwc-item="a"]') && !zoneAvailable.querySelector('[data-pwc-item="a"]');
     }, { label: "alice moved to selected" });
 
-    log("asserting final counts");
+    await log("asserting final counts");
     equal(zoneAvailable.querySelectorAll("[data-pwc-item]").length, 1, "expected 1 item remaining in available");
     equal(zoneSelected.querySelectorAll("[data-pwc-item]").length, 1, "expected 1 item in selected");
 
-    log("done");
+    await log("done");
   });
 </script>
 </body>

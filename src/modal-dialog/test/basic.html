@@ -30,7 +30,7 @@
     import { run } from "../../../static/test-harness.js";
 
     run(async ({ assert, equal, waitFor, log }) => {
-      log("clicking open-parent link");
+      await log("clicking open-parent link");
       document.getElementById("open-parent").click();
 
       await waitFor(
@@ -44,7 +44,7 @@
         "exactly one open dialog (parent)"
       );
 
-      log("clicking open-child link inside parent");
+      await log("clicking open-child link inside parent");
       parentDlg.querySelector("#open-child").click();
 
       await waitFor(() => {
@@ -59,7 +59,7 @@
         "exactly one open dialog (child)"
       );
 
-      log("closing child via X button");
+      await log("closing child via X button");
       childDlg.querySelector('[data-pwc-action="close"]').click();
 
       await waitFor(() => parentDlg.open === true, { label: "parent restored" });
@@ -69,7 +69,7 @@
         "exactly one open dialog (restored parent)"
       );
 
-      log("closing parent via X button");
+      await log("closing parent via X button");
       parentDlg.querySelector('[data-pwc-action="close"]').click();
 
       await waitFor(
@@ -77,7 +77,7 @@
         { label: "all modals removed from DOM" }
       );
 
-      log("done");
+      await log("done");
     });
   </script>
 </body>

@@ -61,14 +61,14 @@
       };
 
       // 1. Open the foreign Bootstrap modal
-      log("opening foreign modal");
+      await log("opening foreign modal");
       document.getElementById("open-foreign").click();
 
       await waitForShownStable(foreignEl, "foreign");
       assert(foreignEl.classList.contains("show"), "foreign modal is shown");
 
       // 2. Open a pwc-modal-dialog-bs5 on top
-      log("opening pwc modal on top of foreign");
+      await log("opening pwc modal on top of foreign");
       foreignEl.querySelector("#open-pwc").click();
 
       await waitFor(() => {
@@ -90,7 +90,7 @@
       );
 
       // 3. Close the pwc modal — foreign modal should restore
-      log("closing pwc child via close button");
+      await log("closing pwc child via close button");
       pwcChild.querySelector('[data-pwc-action="close"]').click();
 
       await waitFor(
@@ -109,7 +109,7 @@
       );
 
       // 4. Clean up — close the foreign modal
-      log("closing foreign modal");
+      await log("closing foreign modal");
       BsModal.getInstance(foreignEl).hide();
 
       await waitFor(
@@ -117,7 +117,7 @@
         { label: "foreign hidden" }
       );
 
-      log("done");
+      await log("done");
     });
   </script>
 </body>

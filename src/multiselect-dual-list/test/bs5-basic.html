@@ -22,7 +22,7 @@
     run(async ({ assert, equal, waitFor, log }) => {
       const host = document.getElementById("demo");
 
-      log("waiting for UI to build");
+      await log("waiting for UI to build");
       await waitFor(
         () => host.querySelector(".row"),
         { label: "container rendered" }
@@ -48,7 +48,7 @@
       equal(selectedItems[0].dataset.value, "3", "pre-selected item has value 3");
 
       // Test adding an item
-      log("adding item via click");
+      await log("adding item via click");
       const addBtn = container.querySelector("[data-value='1'] [data-action='add']");
       addBtn.click();
 
@@ -59,7 +59,7 @@
       equal(select.querySelector("option[value='1']").selected, true, "option 1 is selected");
 
       // Test removing an item
-      log("removing item via click");
+      await log("removing item via click");
       const removeBtn = selectedCol.querySelector("[data-value='3'] [data-action='remove']");
       removeBtn.click();
 
@@ -69,7 +69,7 @@
       );
       equal(select.querySelector("option[value='3']").selected, false, "option 3 deselected");
 
-      log("done");
+      await log("done");
     });
   </script>
 </body>

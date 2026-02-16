@@ -46,14 +46,7 @@
 
 <script type="module">
   import { run } from "../../../static/test-harness.js";
-
-  function key(el, k, opts = {}) {
-    el.dispatchEvent(new KeyboardEvent("keydown", {
-      key: k, bubbles: true, cancelable: true,
-      ctrlKey: Boolean(opts.ctrlKey),
-      metaKey: Boolean(opts.metaKey)
-    }));
-  }
+  import { key } from "../../../static/test-helpers.js";
 
   run(async ({ assert, equal, waitFor, log, nextTick }) => {
     const el = document.getElementById("zt");
@@ -65,17 +58,17 @@
 
     // --- Zones: role and aria-label ---
 
-    log("zones have role=listbox");
+    await log("zones have role=listbox");
     equal(zoneA.getAttribute("role"), "listbox", "zone alpha role");
     equal(zoneB.getAttribute("role"), "listbox", "zone beta role");
 
-    log("zones have aria-label from name attribute");
+    await log("zones have aria-label from name attribute");
     equal(zoneA.getAttribute("aria-label"), "alpha", "zone alpha aria-label");
     equal(zoneB.getAttribute("aria-label"), "beta", "zone beta aria-label");
 
     // --- Items: role ---
 
-    log("items have role=option");
+    await log("items have role=option");
     const items = el.querySelectorAll("pwc-zone-transfer-item");
     for (const item of items) {
       equal(item.getAttribute("role"), "option", `${item.id} has role=option`);
@@ -88,7 +81,7 @@
     a2.focus();
     await nextTick("after focus");
 
-    log("keyboard reorder announces position");
+    await log("keyboard reorder announces position");
     key(a2, "ArrowDown", { ctrlKey: true });
     await nextTick("after reorder");
 
@@ -98,13 +91,13 @@
     equal(liveRegion.getAttribute("aria-atomic"), "true", "live region is atomic");
     equal(liveRegion.getAttribute("role"), "status", "live region has role=status");
 
-    log("live region shows position number after reorder");
+    await log("live region shows position number after reorder");
     // a2 moved from index 1 to index 2 (0-based), so announcement is "3" (1-based)
     equal(liveRegion.textContent, "3", "position announcement after reorder");
 
     // --- Live region: keyboard zone move ---
 
-    log("keyboard zone move announces zone name");
+    await log("keyboard zone move announces zone name");
     a2.focus();
     await nextTick("after refocus");
 
@@ -114,7 +107,7 @@
     await waitFor(() => zoneB.querySelector("#a2"), { label: "a2 moved to beta" });
     equal(liveRegion.textContent, "beta", "zone name announcement after move");
 
-    log("done");
+    await log("done");
   });
 </script>
 </body>
