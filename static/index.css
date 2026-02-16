@@ -22,6 +22,7 @@ h2 {
 .pwc-page-main {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
 .pwc-page-sidebar {
@@ -59,4 +60,19 @@ h2 {
 
 .pwc-page-sidebar a:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 40rem) {
+  .pwc-page-layout {
+    flex-direction: column;
+  }
+
+  .pwc-page-sidebar {
+    width: auto;
+    position: static;
+    border-left: none;
+    border-top: 1px solid #ddd;
+    padding-left: 0;
+    padding-top: 1rem;
+  }
 }
