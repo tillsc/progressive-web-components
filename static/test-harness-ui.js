@@ -1,13 +1,17 @@
 // Floating UI panel for manual (non-headless) test sessions.
 //
 // Features:
-// - Source code display with line numbers
+// - Source code display with syntax highlighting (sugar-high, loaded from CDN)
 // - Active step highlighting (yellow background on current log line)
 // - Run / Step / Next controls for step-through execution
+
+// Load sugar-high lazily from CDN. Gracefully degrades to plain text if unavailable.
+const shPromise = import("https://cdn.jsdelivr.net/npm/sugar-high@0.9/+esm").catch(() => null);
 
 export function createUi(actions, { logs, getAssertions, source }) {
   const sourceLines = dedent(source);
   let lastHighlightIdx = -1;
+  let codeVisible = false;
 
   // --- DOM ---
 
@@ -17,39 +21,33 @@ export function createUi(actions, { logs, getAssertions, source }) {
     "font:12px system-ui,sans-serif;color:#111;" +
     "background:#fff;border:1px solid rgba(0,0,0,.15);" +
     "border-radius:10px;padding:10px;box-shadow:0 10px 30px rgba(0,0,0,.2);" +
-    "max-width:680px;min-width:420px;display:flex;flex-direction:column;max-height:80vh;";
+    "min-width:320px;display:flex;flex-direction:column;max-height:80vh;";
 
-  // -- Button bar --
+  // -- Status bar --
 
-  const buttonBar = document.createElement("div");
-  buttonBar.style.cssText = "display:flex;gap:6px;align-items:center;margin-bottom:8px;";
-
-  const runBtn = makeBtn("Run");
-  runBtn.addEventListener("click", actions.onRun);
-
-  const stepBtn = makeBtn("Step");
-  stepBtn.addEventListener("click", actions.onStep);
-
-  const nextBtn = makeBtn("Next");
-  nextBtn.hidden = true;
-  nextBtn.addEventListener("click", actions.onNext);
+  const statusBar = document.createElement("div");
+  statusBar.style.cssText = "display:flex;align-items:center;gap:8px;";
 
   const statusEl = document.createElement("span");
-  statusEl.style.cssText = "margin-left:auto;font-weight:600;";
+  statusEl.style.cssText = "font-weight:600;";
   statusEl.textContent = "Ready";
 
   const metaEl = document.createElement("span");
-  metaEl.style.cssText = "margin-left:8px;color:#666;font-size:11px;";
+  metaEl.style.cssText = "color:#666;font-size:11px;";
 
-  buttonBar.append(runBtn, stepBtn, nextBtn, statusEl, metaEl);
+  statusBar.append(statusEl, metaEl);
 
-  // -- Source code --
+  // -- Source code (collapsed by default) --
 
   const codeEl = document.createElement("div");
   codeEl.style.cssText =
     "overflow:auto;max-height:50vh;background:#fafafa;" +
-    "border-radius:8px;margin-bottom:8px;border:1px solid rgba(0,0,0,.08);" +
-    "font:11px/1.6 ui-monospace,'SF Mono',Monaco,'Cascadia Code',monospace;";
+    "border-radius:8px;border:1px solid rgba(0,0,0,.08);" +
+    "font:11px/1.6 ui-monospace,'SF Mono',Monaco,'Cascadia Code',monospace;" +
+    "display:none;margin:8px 0;" +
+    "--sh-class:#8250df;--sh-identifier:#24292f;--sh-sign:#24292f;" +
+    "--sh-property:#0550ae;--sh-entity:#6639ba;--sh-jsxliterals:#0550ae;" +
+    "--sh-keyword:#cf222e;--sh-string:#0a3069;--sh-comment:#6e7781;";
 
   const lineEls = sourceLines.map((line, i) => {
     const div = document.createElement("div");
@@ -66,15 +64,69 @@ export function createUi(actions, { logs, getAssertions, source }) {
     return div;
   });
 
+  // Apply syntax highlighting once sugar-high loads
+  shPromise.then((mod) => {
+    if (!mod?.highlight) return;
+    const html = mod.highlight(sourceLines.join("\n"));
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    const highlighted = tmp.querySelectorAll(".sh__line");
+    for (let i = 0; i < Math.min(highlighted.length, lineEls.length); i++) {
+      const div = lineEls[i];
+      const numSpan = div.firstChild;
+      div.textContent = "";
+      div.appendChild(numSpan);
+      const code = document.createElement("span");
+      code.innerHTML = highlighted[i].innerHTML;
+      div.appendChild(code);
+    }
+  });
+
   // -- Log output --
 
   const logEl = document.createElement("pre");
   logEl.style.cssText =
-    "margin:0;max-height:100px;overflow:auto;" +
+    "margin:0;max-height:100px;overflow:auto;margin-top:8px;" +
     "background:#f8f8f8;padding:6px 8px;border-radius:8px;font-size:11px;line-height:1.4;";
 
-  panel.append(buttonBar, codeEl, logEl);
+  // -- Button bar (bottom) --
+
+  const buttonBar = document.createElement("div");
+  buttonBar.style.cssText = "display:flex;gap:6px;align-items:center;margin-top:8px;";
+
+  const runBtn = makeBtn("Run");
+  runBtn.addEventListener("click", actions.onRun);
+
+  const stepBtn = makeBtn("Step");
+  stepBtn.addEventListener("click", actions.onStep);
+
+  const nextBtn = makeBtn("Next");
+  nextBtn.hidden = true;
+  nextBtn.addEventListener("click", actions.onNext);
+
+  const codeToggle = makeBtn("Code \u25B6");
+  codeToggle.addEventListener("click", () => toggleCode(!codeVisible));
+
+  const resetBtn = makeBtn("\u21BB");
+  resetBtn.title = "Reload page and reset test";
+  resetBtn.style.cssText += "margin-left:auto;";
+  resetBtn.addEventListener("click", () => location.replace(location.href));
+
+  buttonBar.append(runBtn, stepBtn, nextBtn, codeToggle, resetBtn);
+
+  // -- Assemble --
+
+  panel.append(statusBar, codeEl, logEl, buttonBar);
   document.body.appendChild(panel);
+
+  // --- Code toggle ---
+
+  function toggleCode(show) {
+    codeVisible = show;
+    codeEl.style.display = show ? "" : "none";
+    codeToggle.textContent = show ? "Code \u25BC" : "Code \u25B6";
+    panel.style.maxWidth = show ? "680px" : "";
+  }
 
   // --- Render ---
 
@@ -95,6 +147,7 @@ export function createUi(actions, { logs, getAssertions, source }) {
           stepBtn.hidden = true;
           nextBtn.hidden = false;
           nextBtn.disabled = true;
+          toggleCode(true);
           break;
         case "paused":
           statusEl.textContent = "Paused";
