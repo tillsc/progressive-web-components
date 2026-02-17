@@ -51,6 +51,7 @@
 
   <script type="module">
     import { run } from "../../../static/test-harness.js";
+    import { click } from "../../../static/test-helpers.js";
 
     run(async ({ assert, equal, waitFor, log }) => {
       const BsModal = window.bootstrap?.Modal;
@@ -69,14 +70,14 @@
 
       // 1. Open the foreign Bootstrap modal
       await log("opening foreign modal");
-      document.getElementById("open-foreign").click();
+      click(document.getElementById("open-foreign"));
 
       await waitForShownStable(foreignEl, "foreign");
       assert(foreignEl.classList.contains("show"), "foreign modal is shown");
 
       // 2. Open a pwc-modal-dialog-bs5 on top
       await log("opening pwc modal on top of foreign");
-      foreignEl.querySelector("#open-pwc").click();
+      click(foreignEl.querySelector("#open-pwc"));
 
       await waitFor(() => {
         const shown = document.querySelectorAll(".modal.show");
@@ -98,7 +99,7 @@
 
       // 3. Close the pwc modal — foreign modal should restore
       await log("closing pwc child via close button");
-      pwcChild.querySelector('[data-pwc-action="close"]').click();
+      click(pwcChild.querySelector('[data-pwc-action="close"]'));
 
       await waitFor(
         () => !pwcChild.classList.contains("show"),

@@ -23,6 +23,7 @@
 
 <script type="module">
   import { run } from "../../../static/test-harness.js";
+  import { setValue } from "../../../static/test-helpers.js";
 
   run(async ({ assert, equal, waitFor, log, nextTick }) => {
     await log("checking element definition");
@@ -41,15 +42,13 @@
     equal(rows.filter((r) => !r.hidden).length, 3, "expected all rows visible");
 
     await log("filtering for 'bob'");
-    input.value = "bob";
-    input.dispatchEvent(new Event("input", { bubbles: true }));
+    setValue(input, "bob", { change: false });
 
     await waitFor(() => rows.filter((r) => !r.hidden).length === 1, { label: "bob filtered" });
     equal(rows.find((r) => !r.hidden)?.textContent.trim(), "BobBrown", "expected Bob Brown to remain visible");
 
     await log("clearing filter");
-    input.value = "";
-    input.dispatchEvent(new Event("input", { bubbles: true }));
+    setValue(input, "", { change: false });
 
     await waitFor(() => rows.filter((r) => !r.hidden).length === 3, { label: "filter removed again" });
 

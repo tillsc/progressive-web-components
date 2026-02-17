@@ -23,6 +23,7 @@
 
   <script type="module">
     import { run } from "../../../static/test-harness.js";
+    import { click } from "../../../static/test-helpers.js";
 
     run(async ({ assert, equal, waitFor, log }) => {
       const host = document.getElementById("demo");
@@ -33,8 +34,8 @@
 
       // Modify selection before chunking: select a1, deselect a2
       await log("modifying selection before chunking");
-      container.querySelector("[data-value='a1'] [data-action='add']").click();
-      container.querySelector(".pwc-msdl-selected [data-value='a2'] [data-action='remove']").click();
+      click(container.querySelector("[data-value='a1'] [data-action='add']"));
+      click(container.querySelector(".pwc-msdl-selected [data-value='a2'] [data-action='remove']"));
       await waitFor(
         () => container.querySelectorAll(".pwc-msdl-selected [data-value]").length === 1,
         { label: "selection modified" }

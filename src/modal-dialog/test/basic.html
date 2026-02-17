@@ -34,10 +34,11 @@
 
   <script type="module">
     import { run } from "../../../static/test-harness.js";
+    import { click } from "../../../static/test-helpers.js";
 
     run(async ({ assert, equal, waitFor, log }) => {
       await log("clicking open-parent link");
-      document.getElementById("open-parent").click();
+      click(document.getElementById("open-parent"));
 
       await waitFor(
         () => document.querySelector("dialog.pwc-modal-dialog[open]"),
@@ -51,7 +52,7 @@
       );
 
       await log("clicking open-child link inside parent");
-      parentDlg.querySelector("#open-child").click();
+      click(parentDlg.querySelector("#open-child"));
 
       await waitFor(() => {
         const open = document.querySelectorAll("dialog.pwc-modal-dialog[open]");
@@ -66,7 +67,7 @@
       );
 
       await log("closing child via X button");
-      childDlg.querySelector('[data-pwc-action="close"]').click();
+      click(childDlg.querySelector('[data-pwc-action="close"]'));
 
       await waitFor(() => parentDlg.open === true, { label: "parent restored" });
 
@@ -76,7 +77,7 @@
       );
 
       await log("closing parent via X button");
-      parentDlg.querySelector('[data-pwc-action="close"]').click();
+      click(parentDlg.querySelector('[data-pwc-action="close"]'));
 
       await waitFor(
         () => document.querySelectorAll("pwc-modal-dialog").length === 0,

@@ -38,6 +38,7 @@
 
   <script type="module">
     import { run } from "../../../static/test-harness.js";
+    import { click } from "../../../static/test-helpers.js";
 
     run(async ({ assert, equal, waitFor, log, nextTick }) => {
       const BsModal = window.bootstrap?.Modal;
@@ -53,7 +54,7 @@
       };
 
       await log("clicking open-parent link");
-      document.getElementById("open-parent").click();
+      click(document.getElementById("open-parent"));
 
       await waitFor(
         () => document.querySelector("pwc-modal-dialog-bs5.show"),
@@ -68,7 +69,7 @@
       );
 
       await log("clicking open-child link inside parent");
-      parent.querySelector("#open-child").click();
+      click(parent.querySelector("#open-child"));
 
       await waitFor(() => {
         const shown = document.querySelectorAll(".modal.show");
@@ -88,7 +89,7 @@
       );
 
       await log("closing child via close button");
-      child.querySelector('[data-pwc-action="close"]').click();
+      click(child.querySelector('[data-pwc-action="close"]'));
 
       await waitFor(
         () => !child.classList.contains("show"),
@@ -106,7 +107,7 @@
       );
 
       await log("closing parent via close button");
-      parent.querySelector('[data-pwc-action="close"]').click();
+      click(parent.querySelector('[data-pwc-action="close"]'));
 
       await waitFor(
         () => !parent.classList.contains("show"),

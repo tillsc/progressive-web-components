@@ -45,6 +45,7 @@
 
   <script type="module">
     import { run } from "../../../static/test-harness.js";
+    import { click } from "../../../static/test-helpers.js";
     
     const u = new URL(window.location.href);
     if (u.searchParams.has("commit")) {
@@ -67,9 +68,7 @@
         assert(link, "missing link");
 
         await log("clicking link");
-        link.dispatchEvent(
-          new MouseEvent("click", { bubbles: true, cancelable: true, composed: true })
-        );
+        click(link);
         await nextTick();
 
         await log("waiting for dialog to exist");
@@ -110,9 +109,7 @@
         assert(okBtn, "moved-out submit button missing");
 
         await log("clicking moved-out OK button");
-        okBtn.dispatchEvent(
-          new MouseEvent("click", { bubbles: true, cancelable: true, composed: true })
-        );
+        click(okBtn);
 
         await log("waiting for dialog to close after redirect");
         await waitFor(() => dlg.open === false, { timeoutMs: 10_000, message: "dialog did not close after OK" });

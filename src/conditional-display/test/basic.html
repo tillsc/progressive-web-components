@@ -84,7 +84,7 @@
 
 <script type="module">
   import { run } from "../../../static/test-harness.js";
-  import { changeValue, clickRadio, toggleCheckbox } from "../../../static/test-helpers.js";
+  import { setValue, clickRadio, toggleCheckbox } from "../../../static/test-helpers.js";
 
   run(async ({ assert, equal, waitFor, log }) => {
 
@@ -104,12 +104,12 @@
     equal(shownCard.hidden, false, "shown-card should be visible for card");
 
     await log("shown-if: switch to paypal");
-    changeValue(payment, "paypal");
+    setValue(payment, "paypal");
     await waitFor(() => shownCard.hidden, { label: "shown-card hidden" });
     equal(shownCard.querySelector("input").disabled, true, "contained input should be disabled when hidden");
 
     await log("shown-if: switch back to card");
-    changeValue(payment, "card");
+    setValue(payment, "card");
     await waitFor(() => !shownCard.hidden, { label: "shown-card visible again" });
     equal(shownCard.querySelector("input").disabled, false, "contained input should be re-enabled");
 
@@ -120,11 +120,11 @@
     await waitFor(() => !hiddenPaypal.hidden, { label: "hidden-paypal visible" });
 
     await log("hidden-if: switch to paypal");
-    changeValue(payment, "paypal");
+    setValue(payment, "paypal");
     await waitFor(() => hiddenPaypal.hidden, { label: "hidden-paypal hidden" });
 
     await log("hidden-if: switch to invoice");
-    changeValue(payment, "invoice");
+    setValue(payment, "invoice");
     await waitFor(() => !hiddenPaypal.hidden, { label: "hidden-paypal visible again" });
 
     // --- pwc-enabled-if with select ---
@@ -135,11 +135,11 @@
     await waitFor(() => !invoiceInput.disabled, { label: "invoice input enabled" });
 
     await log("enabled-if: switch to card");
-    changeValue(payment, "card");
+    setValue(payment, "card");
     await waitFor(() => invoiceInput.disabled, { label: "invoice input disabled" });
 
     await log("enabled-if: switch back to invoice");
-    changeValue(payment, "invoice");
+    setValue(payment, "invoice");
     await waitFor(() => !invoiceInput.disabled, { label: "invoice input enabled again" });
 
     // --- pwc-disabled-if with select ---
@@ -150,7 +150,7 @@
     await waitFor(() => !couponInput.disabled, { label: "coupon enabled" });
 
     await log("disabled-if: switch to card");
-    changeValue(payment, "card");
+    setValue(payment, "card");
     await waitFor(() => couponInput.disabled, { label: "coupon disabled" });
 
     // --- Radio group ---
@@ -200,7 +200,7 @@
     // --- Pre-disabled input preserved ---
 
     await log("pre-disabled: initial state (value=a, section visible)");
-    changeValue(payment, "card");
+    setValue(payment, "card");
     const preDisabled = document.getElementById("shown-pre-disabled");
     const preDisabledSelect = document.getElementById("pre-disabled-select");
     await waitFor(() => !preDisabled.hidden, { label: "pre-disabled section visible" });
@@ -210,7 +210,7 @@
     equal(normalField.disabled, false, "normal_field is enabled");
 
     await log("pre-disabled: hide section (value=b)");
-    changeValue(preDisabledSelect, "b");
+    setValue(preDisabledSelect, "b");
     await waitFor(() => preDisabled.hidden, { label: "pre-disabled section hidden" });
     equal(alwaysDisabled.disabled, true, "always_disabled still disabled");
     assert(!alwaysDisabled.hasAttribute("data-pwc-temporarily-disabled"), "always_disabled should not be marked as temporarily disabled");
@@ -218,7 +218,7 @@
     assert(normalField.hasAttribute("data-pwc-temporarily-disabled"), "normal_field should be marked as temporarily disabled");
 
     await log("pre-disabled: show section again (value=a)");
-    changeValue(preDisabledSelect, "a");
+    setValue(preDisabledSelect, "a");
     await waitFor(() => !preDisabled.hidden, { label: "pre-disabled section visible again" });
     equal(alwaysDisabled.disabled, true, "always_disabled still disabled after re-show");
     equal(normalField.disabled, false, "normal_field re-enabled after re-show");

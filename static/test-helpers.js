@@ -1,8 +1,13 @@
 // Shared DOM interaction helpers for test pages.
 
-export function changeValue(el, value) {
+export function setValue(el, value, { change = true } = {}) {
   el.value = value;
-  el.dispatchEvent(new Event("change", { bubbles: true }));
+  el.dispatchEvent(new Event("input", { bubbles: true }));
+  if (change) el.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+export function click(el) {
+  el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, composed: true }));
 }
 
 export function clickRadio(radio) {

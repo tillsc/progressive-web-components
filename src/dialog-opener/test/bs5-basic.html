@@ -40,6 +40,7 @@
 
   <script type="module">
     import { run } from "../../../static/test-harness.js";
+    import { click } from "../../../static/test-helpers.js";
 
     const u = new URL(window.location.href);
     if (u.searchParams.has("commit")) {
@@ -69,7 +70,7 @@
         assert(link, "missing link");
 
         await log("clicking opener link");
-        link.click();
+        click(link);
 
         await log("waiting for bootstrap modal to appear");
         await waitFor(() => document.querySelector(".modal.show"), {
@@ -93,7 +94,7 @@
         assert(closeButton, "close button not found on modal");
 
         await log("clicking close button");
-        closeButton.click();
+        click(closeButton);
 
         await log("waiting for modal to close");
         await waitFor(() => !modal.classList.contains("show"), {

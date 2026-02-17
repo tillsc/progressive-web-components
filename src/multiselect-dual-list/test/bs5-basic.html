@@ -27,6 +27,7 @@
 
   <script type="module">
     import { run } from "../../../static/test-harness.js";
+    import { click } from "../../../static/test-helpers.js";
 
     run(async ({ assert, equal, waitFor, log }) => {
       const host = document.getElementById("demo");
@@ -59,7 +60,7 @@
       // Test adding an item
       await log("adding item via click");
       const addBtn = container.querySelector("[data-value='1'] [data-action='add']");
-      addBtn.click();
+      click(addBtn);
 
       await waitFor(
         () => selectedCol.querySelectorAll(".list-group [data-value]").length === 2,
@@ -70,7 +71,7 @@
       // Test removing an item
       await log("removing item via click");
       const removeBtn = selectedCol.querySelector("[data-value='3'] [data-action='remove']");
-      removeBtn.click();
+      click(removeBtn);
 
       await waitFor(
         () => selectedCol.querySelectorAll(".list-group [data-value]").length === 1,
