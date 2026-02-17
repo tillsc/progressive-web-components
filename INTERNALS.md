@@ -78,6 +78,24 @@ programmatic DOM changes.
 - Optional variant-specific CSS
 - Built as separate distribution artifacts
 
+## Build system
+
+`build.js` uses esbuild with `.css` loaded as text. Each component (and variant) produces
+a separate ESM bundle in `dist/`. `dist/` is committed to git.
+
+There is no linter or formatter configured.
+
+### Commands
+
+| Command | Description |
+|---|---|
+| `npm run build` | One-shot build |
+| `npm run build:watch` | Incremental rebuild on change |
+| `npm test` | Build + run all tests (Playwright, headless) |
+| `npm run test:verbose` | Build + run tests sequentially with detailed output |
+| `npm run serve` | Start dev server (port 5123) |
+| `npm run watch` | Build watch + dev server (concurrently) |
+
 ## CSS handling
 
 - Authoritative styles live in plain `.css` files
@@ -105,3 +123,17 @@ handled with care.
 - A minimal harness provides assertions and result reporting
 - No test framework dependency
 - Tests can be run headless via Playwright or manually in the browser
+- Components may provide dynamic test routes in `src/<component>/test/routes.mjs`
+
+### Test harness API
+
+`static/test-harness.js` exports `run(fn)`. The callback receives a context `t`:
+
+- `t.assert(condition, message)` — counted assertion, throws on failure
+- `t.equal(actual, expected, message)` — strict equality assertion
+- `t.waitFor(predicate, { timeoutMs, intervalMs, message, label })` — poll until truthy
+- `t.nextTick(label?)` — await microtask
+- `t.log(message)` — log entry (doubles as step-through pause point in UI mode)
+
+In headless mode (Playwright) tests auto-start. In the browser, Run/Step/Next buttons
+allow manual debugging.
