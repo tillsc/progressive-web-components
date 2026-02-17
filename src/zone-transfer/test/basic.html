@@ -13,69 +13,106 @@
 
 <h2>Drag &amp; drop between zones</h2>
 
+<p>Each item contains a <code>&lt;input type="hidden" name="people"&gt;</code>.
+Dragging items into the form zone updates the form data below.</p>
+
 <pwc-zone-transfer id="zt">
+    <h3>Available</h3>
     <pwc-zone-transfer-zone name="available">
-        <div data-pwc-item="a">Alice</div>
-        <div data-pwc-item="b">Bob</div>
+        <div data-pwc-item="a">Alice<input type="hidden" name="people" value="alice"></div>
+        <div data-pwc-item="b">Bob<input type="hidden" name="people" value="bob"></div>
     </pwc-zone-transfer-zone>
 
-    <pwc-zone-transfer-zone name="selected">
-        <!-- empty -->
-    </pwc-zone-transfer-zone>
+    <form>
+        <h3>Selected (with Form)</h3>
+        <pwc-zone-transfer-zone name="selected">
+            <!-- empty -->
+        </pwc-zone-transfer-zone>
+    </form>
 </pwc-zone-transfer>
 
+<h3>FormData</h3>
+<pre id="form-output">(empty)</pre>
+
 <style>
-    pwc-zone-transfer-zone {
+    pwc-zone-transfer-zone, #form-output {
         display: block;
-        border: 1px solid red;
+        border: 1px solid blue;
         padding: 0.4rem;
         margin: 0.8rem;
         min-height: 2rem;
     }
-    pwc-zone-transfer-zone[name="selected"] {
-        border-color: blue;
+    pwc-zone-transfer-zone[name="available"] {
+        border-color: red;
+    }
+    #form-output {
+        border-style: dashed;
+        background: #f8f8f8;
     }
 </style>
 
 <script type="module">
+  const form = document.querySelector("form");
+  const output = document.getElementById("form-output");
+
+  function updateFormData() {
+    const data = new FormData(form);
+    const entries = [...data.entries()];
+    output.textContent = entries.length
+      ? entries.map(([k, v]) => `${k}=${v}`).join("\n")
+      : "(empty)";
+  }
+
+  document.getElementById("zt").addEventListener("pwc-zone-transfer:change", updateFormData);
+  updateFormData();
+</script>
+
+<script type="module">
   import { run } from "../../../static/test-harness.js";
+  import { drag } from "../../../static/test-helpers.js";
 
   run(async ({ assert, equal, waitFor, log, nextTick }) => {
     await log("checking element definition");
     assert(customElements.get("pwc-zone-transfer"), "pwc-zone-transfer not defined");
 
     const el = document.getElementById("zt");
-    assert(el, "missing <pwc-zone-transfer>");
-
+    const output = document.getElementById("form-output");
     const zoneAvailable = el.querySelector('pwc-zone-transfer-zone[name="available"]');
     const zoneSelected = el.querySelector('pwc-zone-transfer-zone[name="selected"]');
-    assert(zoneAvailable, "missing available zone");
-    assert(zoneSelected, "missing selected zone");
 
     const alice = zoneAvailable.querySelector('[data-pwc-item="a"]');
-    assert(alice, "missing item a");
+    const bob = zoneAvailable.querySelector('[data-pwc-item="b"]');
 
-    await log("precondition: item is in available zone");
-    equal(zoneAvailable.querySelectorAll("[data-pwc-item]").length, 2, "expected 2 items in available");
-    equal(zoneSelected.querySelectorAll("[data-pwc-item]").length, 0, "expected 0 items in selected");
+    await log("precondition: form is empty");
+    equal(output.textContent, "(empty)", "output should show (empty)");
 
-    await log("simulating drag&drop: Alice -> selected");
-
-    alice.dispatchEvent(new DragEvent("dragstart", { bubbles: true, cancelable: true }));
-    zoneSelected.dispatchEvent(new DragEvent("dragover", { bubbles: true, cancelable: true, clientY: 0 }));
-    zoneSelected.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true }));
-    alice.dispatchEvent(new DragEvent("dragend", { bubbles: true, cancelable: true }));
-
+    await log("drag Bob -> selected");
+    drag(bob, zoneSelected);
     await nextTick("after drop");
 
-    await log("waiting for DOM move to complete");
-    await waitFor(() => {
-      return zoneSelected.querySelector('[data-pwc-item="a"]') && !zoneAvailable.querySelector('[data-pwc-item="a"]');
-    }, { label: "alice moved to selected" });
+    await waitFor(() => output.textContent.includes("bob"), { label: "bob in output" });
+    equal(output.textContent, "people=bob", "output should show bob");
 
-    await log("asserting final counts");
-    equal(zoneAvailable.querySelectorAll("[data-pwc-item]").length, 1, "expected 1 item remaining in available");
-    equal(zoneSelected.querySelectorAll("[data-pwc-item]").length, 1, "expected 1 item in selected");
+    await log("drag Alice -> selected (after bob)");
+    drag(alice, zoneSelected, { clientY: 9999 });
+    await nextTick("after drop");
+
+    await waitFor(() => output.textContent.includes("alice"), { label: "alice in output" });
+    equal(output.textContent, "people=bob\npeople=alice", "bob before alice");
+
+    await log("drag Alice back -> available");
+    drag(alice, zoneAvailable);
+    await nextTick("after drop");
+
+    await waitFor(() => !output.textContent.includes("alice"), { label: "alice removed from output" });
+    equal(output.textContent, "people=bob", "output should show only bob");
+
+    await log("drag Alice -> selected (before bob)");
+    drag(alice, zoneSelected, { clientY: 0 });
+    await nextTick("after drop");
+
+    await waitFor(() => output.textContent.includes("alice"), { label: "alice back in output" });
+    equal(output.textContent, "people=alice\npeople=bob", "alice before bob");
 
     await log("done");
   });

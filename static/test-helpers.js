@@ -15,6 +15,13 @@ export function toggleCheckbox(cb) {
   cb.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
+export function drag(item, targetZone, { clientY = 0 } = {}) {
+  item.dispatchEvent(new DragEvent("dragstart", { bubbles: true, cancelable: true }));
+  targetZone.dispatchEvent(new DragEvent("dragover", { bubbles: true, cancelable: true, clientY }));
+  targetZone.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true }));
+  item.dispatchEvent(new DragEvent("dragend", { bubbles: true, cancelable: true }));
+}
+
 export function key(el, k, opts = {}) {
   el.dispatchEvent(new KeyboardEvent("keydown", {
     key: k,
