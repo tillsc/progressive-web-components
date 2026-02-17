@@ -7,6 +7,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>dialog-opener: click opens dialog</title>
   <script type="module" src="../../../dist/dialog-opener.js"></script>
+  <style>
+    #dialog-opener-demo {
+      display: block;
+      border: 1px solid #999;
+      padding: 0.8rem;
+      margin: 0.8rem 0;
+    }
+  </style>
 </head>
 
 <body>
@@ -14,6 +22,12 @@
   <h1>dialog-opener: basic</h1>
 
   <h2>Click opens dialog with iframe</h2>
+
+  <p>Clicking the "Open" link opens a dialog with an iframe loading <a href="./iframe-target.html"><code>iframe-target.html</code></a>.
+  The form inside submits via GET back to this page (simulating a server round-trip).
+  This page then adds <code>?pwc_done_with=ok</code> via JS redirect — normally the server
+  would do this after processing the form. The component detects that parameter, closes
+  the dialog, and reloads the opener content with the new values.</p>
 
   <pwc-dialog-opener id="dialog-opener-demo" hoist-actions="submit" local-reload="with-scripts replace-url">
     <a href="./iframe-target.html">Open</a><br>
@@ -34,12 +48,9 @@
     
     const u = new URL(window.location.href);
     if (u.searchParams.has("commit")) {
-      // IFrame subission mode
-      if (u.searchParams.has("commit") && !u.searchParams.has("pwc_done_with")) {
-        // Ensure the iframe URL contains the marker param your component expects.
-        // This runs inside the iframe page.
-        // This would usually be done by the server handling the form submission, 
-        // but we can simulate it here for testing.
+      // IFrame submission mode
+      if (!u.searchParams.has("pwc_done_with")) {
+        // Simulate server redirect (see explanation above)
         u.searchParams.set("pwc_done_with", "ok");
         window.location.replace(u.toString());
       }
