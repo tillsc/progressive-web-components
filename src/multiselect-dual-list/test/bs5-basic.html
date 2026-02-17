@@ -3,10 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <title>multiselect-dual-list: bs5-basic</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
   <script type="module" src="../../../dist/multiselect-dual-list-bs5.js"></script>
 </head>
-<body class="p-3">
+<body>
+<div class="container py-3">
+
+  <h1>multiselect-dual-list-bs5: basic</h1>
+
+  <h2>Bootstrap 5 variant with hierarchy and pre-selection</h2>
+
   <pwc-multiselect-dual-list-bs5 id="demo" available-label="Available" selected-label="Selected">
     <select multiple name="items">
       <option value="1">Root A</option>
@@ -15,6 +22,8 @@
       <option value="4" disabled>Disabled</option>
     </select>
   </pwc-multiselect-dual-list-bs5>
+
+</div>
 
   <script type="module">
     import { run } from "../../../static/test-harness.js";

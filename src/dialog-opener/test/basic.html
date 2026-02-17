@@ -4,11 +4,17 @@
 
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>dialog-opener: click opens dialog</title>
   <script type="module" src="../../../dist/dialog-opener.js"></script>
 </head>
 
 <body>
+
+  <h1>dialog-opener: basic</h1>
+
+  <h2>Click opens dialog with iframe</h2>
+
   <pwc-dialog-opener id="dialog-opener-demo" hoist-actions="submit" local-reload="with-scripts replace-url">
     <a href="./iframe-target.html">Open</a><br>
     Hello <span id="first_name"></span> <span id="last_name"></span>

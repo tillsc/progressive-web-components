@@ -18,10 +18,12 @@ export function createUi(actions, { logs, getAssertions, source }) {
   const panel = document.createElement("div");
   panel.style.cssText =
     "position:fixed;right:12px;bottom:12px;z-index:99999;" +
+    "box-sizing:border-box;" +
     "font:12px system-ui,sans-serif;color:#111;" +
     "background:#fff;border:1px solid rgba(0,0,0,.15);" +
     "border-radius:10px;padding:10px;box-shadow:0 10px 30px rgba(0,0,0,.2);" +
-    "min-width:320px;display:flex;flex-direction:column;max-height:80vh;";
+    "min-width:min(320px,calc(100vw - 24px));max-width:calc(100vw - 24px);" +
+    "display:flex;flex-direction:column;max-height:60vh;";
 
   // -- Status bar --
 
@@ -41,7 +43,7 @@ export function createUi(actions, { logs, getAssertions, source }) {
 
   const codeEl = document.createElement("div");
   codeEl.style.cssText =
-    "overflow:auto;max-height:50vh;background:#fafafa;" +
+    "overflow:auto;min-height:3lh;max-height:calc(60vh - 180px);background:#fafafa;" +
     "border-radius:8px;border:1px solid rgba(0,0,0,.08);" +
     "font:11px/1.6 ui-monospace,'SF Mono',Monaco,'Cascadia Code',monospace;" +
     "display:none;margin:8px 0;" +
@@ -125,7 +127,7 @@ export function createUi(actions, { logs, getAssertions, source }) {
     codeVisible = show;
     codeEl.style.display = show ? "" : "none";
     codeToggle.textContent = show ? "Code \u25BC" : "Code \u25B6";
-    panel.style.maxWidth = show ? "680px" : "";
+    panel.style.maxWidth = show ? "min(680px,calc(100vw - 24px))" : "calc(100vw - 24px)";
   }
 
   // --- Render ---

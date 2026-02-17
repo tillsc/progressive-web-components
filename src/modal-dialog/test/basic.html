@@ -2,11 +2,17 @@
 <html>
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>modal-dialog: basic</title>
   <script type="module" src="../../../dist/modal-dialog.js"></script>
 </head>
 <body>
-  <a href="#" id="open-parent">Open Parent</a>
+
+  <h1>modal-dialog: basic</h1>
+
+  <h2>Nested modals with stacking</h2>
+
+  <p><a href="#" id="open-parent">Open Parent</a> — opens a modal with a link to a child modal.</p>
 
   <script type="module">
     document.getElementById("open-parent").addEventListener("click", (e) => {
