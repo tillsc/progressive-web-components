@@ -1,14 +1,12 @@
 import {PwcElement} from "./pwc-element.js";
 
 /**
- * Sentinel init element.
- *
- * Calls onConnect() once per connection, when a sentinel appears in the light DOM.
- * Uses a MutationObserver only until ready.
- *
- * Subclasses may override sentinelSelector().
+ * Calls onConnect() once a sentinel element appears in the light DOM.
+ * Uses a MutationObserver only until the sentinel is found, then disconnects.
+ * Use when children arrive asynchronously (e.g. streamed partials).
  */
 export class PwcSentinelInitElement extends PwcElement {
+  /** Selector for the sentinel. Subclasses may override. */
   static sentinelSelector = "pwc-sentinel, [data-pwc-sentinel]";
 
   connectedCallback() {
@@ -36,10 +34,7 @@ export class PwcSentinelInitElement extends PwcElement {
     super.disconnectedCallback();
   }
 
-  /**
-   * Hook for subclasses.
-   * Called once per connection, when the sentinel is present.
-   */
+  /** Called once when the sentinel is present. Subclasses override. */
   onConnect() {}
 
   _hasSentinel() {

@@ -1,10 +1,8 @@
 import {PwcElement} from "./pwc-element.js";
 
 /**
- * Simple init element.
- *
  * Calls onConnect() once per connection, deferred to a microtask.
- * Use this when a microtask is sufficient to access server-rendered children.
+ * Use when server-rendered children are available synchronously.
  */
 export class PwcSimpleInitElement extends PwcElement {
   connectedCallback() {
@@ -16,9 +14,6 @@ export class PwcSimpleInitElement extends PwcElement {
     });
   }
 
-  /**
-   * Hook for subclasses.
-   * Called once per connection, after microtask deferral.
-   */
+  /** Called once after connect. Subclasses override. */
   onConnect() {}
 }

@@ -4,7 +4,7 @@ export function ensureId(el, prefix = "pwc") {
   return el.id;
 }
 
-/** Defines a Custom Element only if the name isn't already registered. */
+/** Register a Custom Element only if the name isn't taken. */
 export function defineOnce(name, classDef) {
   if (customElements.get(name)) return;
   customElements.define(name, classDef);

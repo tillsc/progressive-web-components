@@ -1,13 +1,8 @@
 import {PwcElement} from "./pwc-element.js";
 
 /**
- * Children observer element.
- *
  * Calls onChildrenChanged() on connect and on every subsequent child mutation.
- *
- * Modes (static observeMode):
- * - "children": direct children only
- * - "tree": full subtree
+ * Modes: "children" (direct only, default) or "tree" (full subtree).
  */
 export class PwcChildrenObserverElement extends PwcElement {
   static observeMode = "children"; // "children" | "tree"
@@ -22,6 +17,7 @@ export class PwcChildrenObserverElement extends PwcElement {
     super.disconnectedCallback();
   }
 
+  /** Called on connect and on every child mutation. Subclasses override. */
   onChildrenChanged(_mutations) {}
 
   /** Run fn() without triggering onChildrenChanged for the resulting DOM mutations. */

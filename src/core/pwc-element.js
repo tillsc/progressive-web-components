@@ -1,22 +1,11 @@
 /**
  * Base class for progressive-web-components.
  *
- * Responsibilities:
- * - Ensure idempotent lifecycle handling
- * - Declaratively bind and unbind host-level DOM events
- * - Provide a consistent cleanup hook
- *
- * This is intentionally minimal.
+ * Declarative event binding via static events + handleEvent pattern.
  * No rendering, no templating, no magic.
  */
 export class PwcElement extends HTMLElement {
-  /**
-   * List of DOM event types to bind on the host element.
-   * Subclasses may override.
-   *
-   * Example:
-   *   static events = ["click", "input"];
-   */
+  /** DOM event types to bind on the host. Subclasses override. */
   static events = [];
 
   static registerCss(cssText) {
@@ -34,14 +23,9 @@ export class PwcElement extends HTMLElement {
     this.onDisconnect();
   }
 
-  /**
-   * Optional cleanup hook for subclasses.
-   */
+  /** Cleanup hook for subclasses. */
   onDisconnect() {}
 
-  /**
-   * Bind declared events using the handleEvent pattern.
-   */
   _bindEvents() {
     const events = this.constructor.events ?? [];
     for (const type of events) {
@@ -49,9 +33,6 @@ export class PwcElement extends HTMLElement {
     }
   }
 
-  /**
-   * Unbind all previously declared events.
-   */
   _unbindEvents() {
     const events = this.constructor.events ?? [];
     for (const type of events) {
@@ -59,11 +40,7 @@ export class PwcElement extends HTMLElement {
     }
   }
 
-  /**
-   * Default event handler.
-   * Subclasses are expected to override this method
-   * and route events as needed.
-   */
+  /** Default event handler. Subclasses override to route events. */
   handleEvent(_event) {
     // intentionally empty
   }
