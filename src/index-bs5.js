@@ -5,3 +5,4 @@ import './multiselect-dual-list/bs5';
 
 import './conditional-display';
 import './zone-transfer';
+import './include';

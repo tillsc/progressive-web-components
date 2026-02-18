@@ -12,6 +12,7 @@
     "./conditional-display": "./dist/conditional-display.js",
     "./dialog-opener": "./dist/dialog-opener.js",
     "./dialog-opener-bs5": "./dist/dialog-opener-bs5.js",
+    "./include": "./dist/include.js",
     "./filter": "./dist/filter.js",
     "./filter-bs5": "./dist/filter-bs5.js",
     "./modal-dialog": "./dist/modal-dialog.js",

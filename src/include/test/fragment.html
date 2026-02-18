@@ -1,0 +1,14 @@
+<p class="greeting">Hello from fragment! <code>(.greeting)</code></p>
+<p class="detail">This was loaded via pwc-include. <code>(.detail)</code></p>
+<p class="extra">Extra paragraph. <code>(.extra)</code></p>
+
+<div class="sidebar">
+  <p>Sidebar item 1 <code>(.sidebar p)</code></p>
+  <p>Sidebar item 2 <code>(.sidebar p)</code></p>
+</div>
+
+<script>
+  document.currentScript.parentElement
+    .querySelectorAll(".greeting")
+    .forEach(el => el.dataset.scripted = "true");
+</script>

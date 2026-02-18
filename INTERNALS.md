@@ -141,6 +141,34 @@ handled with care.
 - `t.waitFor(predicate, { timeoutMs, intervalMs, message, label })` — poll until truthy
 - `t.nextTick(label?)` — await microtask
 - `t.log(message)` — log entry (doubles as step-through pause point in UI mode)
+- `t.suppressErrors(fn)` — suppress all console errors during `fn`
+- `t.suppressErrors(pattern, fn)` — suppress only errors matching `pattern`
+
+`static/testing/helpers.js` provides DOM interaction helpers:
+
+- `setValue(el, value, { change })` — set value and dispatch input/change events
+- `click(el)` — dispatch click event
+- `clickRadio(radio)` — check radio and dispatch change
+- `toggleCheckbox(cb)` — toggle checkbox and dispatch change
+- `drag(item, targetZone, { clientY })` — simulate drag-and-drop
+- `key(el, k, opts)` — dispatch keyboard event
+- `waitForEvent(el, name, { timeoutMs })` — returns a Promise that resolves with the event
 
 In headless mode (Playwright) tests auto-start. In the browser, Run/Step/Next buttons
 allow manual debugging.
+
+### Error suppression
+
+The test runner (`test/run.mjs`) collects all console errors and page errors during a test
+and fails if any are present. Some tests intentionally trigger errors (e.g. fetching a
+non-existent URL to test fallback behaviour).
+
+`t.suppressErrors(pattern?, fn)` uses console markers (`__SUPPRESS_ERRORS_START__` /
+`__SUPPRESS_ERRORS_END__`) to signal the runner. The runner's console handler recognises
+these markers and skips matching errors between them.
+
+**Why console markers instead of a `window` variable?** The runner's event handler runs in
+Node (Playwright). Reading a browser variable would require `page.evaluate()` which is async.
+Between the moment the error arrives and the evaluate completing, the test may have already
+cleared the flag — a race condition. Console messages are delivered in order by Playwright,
+so START always arrives before the error, which arrives before END.

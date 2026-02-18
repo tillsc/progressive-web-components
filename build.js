@@ -13,6 +13,7 @@ const entryPoints = {
   "multiselect-dual-list-bs5": "src/multiselect-dual-list/bs5/index.js",
   "conditional-display": "src/conditional-display/index.js",
   "zone-transfer": "src/zone-transfer/index.js",
+  "include": "src/include/index.js",
   "all": "src/index.js",
   "all-bs5": "src/index-bs5.js",
 };

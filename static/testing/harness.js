@@ -110,6 +110,17 @@ export function run(fn, options = {}) {
     }
   }
 
+  async function suppressErrors(patternOrFn, maybeFn) {
+    const pattern = typeof patternOrFn === "string" ? patternOrFn : "";
+    const fn = maybeFn || patternOrFn;
+    console.log("__SUPPRESS_ERRORS_START__" + (pattern ? ":" + pattern : ""));
+    try {
+      await fn();
+    } finally {
+      console.log("__SUPPRESS_ERRORS_END__");
+    }
+  }
+
   // Runner reads this. Do not mark as done unless we actually ran.
   window.__TEST_RESULTS__ = { done: false, ok: false, message: "idle" };
 
@@ -198,7 +209,7 @@ export function run(fn, options = {}) {
     if (!stepping) armTimeout();
 
     try {
-      const t = { assert, equal, waitFor, nextTick, log };
+      const t = { assert, equal, waitFor, nextTick, log, suppressErrors };
       await fn(t);
       cleanup();
       finishOk();

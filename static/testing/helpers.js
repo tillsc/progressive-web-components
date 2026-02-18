@@ -27,6 +27,13 @@ export function drag(item, targetZone, { clientY = 0 } = {}) {
   item.dispatchEvent(new DragEvent("dragend", { bubbles: true, cancelable: true }));
 }
 
+export function waitForEvent(el, name, { timeoutMs = 5000 } = {}) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`waitForEvent timeout: ${name}`)), timeoutMs);
+    el.addEventListener(name, (e) => { clearTimeout(timer); resolve(e); }, { once: true });
+  });
+}
+
 export function key(el, k, opts = {}) {
   el.dispatchEvent(new KeyboardEvent("keydown", {
     key: k,

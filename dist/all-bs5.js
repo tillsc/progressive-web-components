@@ -899,6 +899,148 @@ function register4() {
 }
 register4();
 
+// src/conditional-display/conditional-display.js
+var ConditionalDisplayBase = class extends PwcChildrenObserverElement {
+  static observeMode = "tree";
+  static observedAttributes = ["selector", "value"];
+  attributeChangedCallback(name) {
+    switch (name) {
+      case "selector":
+        this._resolveInput();
+        break;
+      case "value": {
+        const value = this.getAttribute("value");
+        this._values = value ? value.split(",") : [];
+        break;
+      }
+      default: {
+        return;
+      }
+    }
+    if (this.isConnected) this._update();
+  }
+  onChildrenChanged() {
+    this._resolveInput();
+    this._update();
+  }
+  onDisconnect() {
+    this._unbindChangeEvent();
+  }
+  _onChange = () => this._update();
+  _unbindChangeEvent() {
+    if (this._changeEventTarget) {
+      this._changeEventTarget.removeEventListener("change", this._onChange);
+      this._changeEventTarget = null;
+    }
+  }
+  _resolveInput() {
+    this._unbindChangeEvent();
+    const selector = this.getAttribute("selector");
+    this._input = selector ? document.querySelector(selector) : null;
+    if (this._input) {
+      this._changeEventTarget = this._input.type === "radio" ? this._input.closest("form") || document : this._input;
+      this._changeEventTarget.addEventListener("change", this._onChange);
+    } else if (selector) {
+      console.warn(`<${this.localName}>: No element matches selector "${selector}"`);
+    }
+  }
+  _getInputValue() {
+    if (!this._input) return void 0;
+    if (this._input.type === "radio") {
+      const name = this._input.name;
+      const form = this._input.closest("form");
+      if (form) return form.elements[name]?.value;
+      const checked = document.querySelector(`input[name="${CSS.escape(name)}"]:checked`);
+      return checked ? checked.value : void 0;
+    }
+    if (this._input.type === "checkbox") {
+      return this._input.checked ? this._input.value : void 0;
+    }
+    return this._input.value;
+  }
+  get _isActive() {
+    if (this._input?.type === "checkbox" && !this._values?.length) {
+      return this._input.checked;
+    }
+    const currentValue = this._getInputValue();
+    return this._values?.includes(currentValue != null ? String(currentValue) : "undefined");
+  }
+  _update() {
+    if (!this._input) return;
+    this._apply(this._isActive);
+  }
+  _setVisible(visible) {
+    if (visible) {
+      this.removeAttribute("hidden");
+      for (const el of this.querySelectorAll("input, select, textarea")) {
+        if (el.hasAttribute("data-pwc-temporarily-disabled")) {
+          el.removeAttribute("data-pwc-temporarily-disabled");
+          el.removeAttribute("disabled");
+        }
+      }
+    } else {
+      this.setAttribute("hidden", "");
+      for (const el of this.querySelectorAll("input, select, textarea")) {
+        if (!el.disabled) {
+          el.setAttribute("disabled", "");
+          el.setAttribute("data-pwc-temporarily-disabled", "");
+        }
+      }
+    }
+  }
+  _setEnabled(enabled) {
+    if (enabled) {
+      for (const el of this.querySelectorAll("input, select, textarea")) {
+        if (el.hasAttribute("data-pwc-temporarily-disabled")) {
+          el.removeAttribute("data-pwc-temporarily-disabled");
+          el.removeAttribute("disabled");
+        }
+      }
+    } else {
+      for (const el of this.querySelectorAll("input, select, textarea")) {
+        if (!el.disabled) {
+          el.setAttribute("disabled", "");
+          el.setAttribute("data-pwc-temporarily-disabled", "");
+        }
+      }
+    }
+  }
+  _apply(_isActive) {
+  }
+};
+var PwcShownIf = class extends ConditionalDisplayBase {
+  _apply(isActive) {
+    this._setVisible(isActive);
+  }
+};
+var PwcHiddenIf = class extends ConditionalDisplayBase {
+  _apply(isActive) {
+    this._setVisible(!isActive);
+  }
+};
+var PwcEnabledIf = class extends ConditionalDisplayBase {
+  _apply(isActive) {
+    this._setEnabled(isActive);
+  }
+};
+var PwcDisabledIf = class extends ConditionalDisplayBase {
+  _apply(isActive) {
+    this._setEnabled(!isActive);
+  }
+};
+function define5() {
+  defineOnce("pwc-shown-if", PwcShownIf);
+  defineOnce("pwc-hidden-if", PwcHiddenIf);
+  defineOnce("pwc-enabled-if", PwcEnabledIf);
+  defineOnce("pwc-disabled-if", PwcDisabledIf);
+}
+
+// src/conditional-display/index.js
+function register5() {
+  define5();
+}
+register5();
+
 // src/zone-transfer/zone-transfer.js
 var PwcZoneTransfer = class extends PwcChildrenObserverElement {
   static events = ["dragstart", "dragover", "drop", "dragend", "keydown"];
@@ -1125,7 +1267,7 @@ var PwcZoneTransfer = class extends PwcChildrenObserverElement {
     return Math.max(0, this._items(zoneEl).indexOf(itemEl));
   }
 };
-function define5() {
+function define6() {
   defineOnce("pwc-zone-transfer", PwcZoneTransfer);
 }
 
@@ -1133,8 +1275,122 @@ function define5() {
 var zone_transfer_default = 'pwc-zone-transfer [draggable="true"] {\n    cursor: grab;\n}\n\npwc-zone-transfer .pwc-zone-transfer-dragging {\n    cursor: grabbing;\n    opacity: 0.6;\n}\n\npwc-zone-transfer .pwc-zone-transfer-placeholder {\n    opacity: 0.3;\n}';
 
 // src/zone-transfer/index.js
-function register5() {
+function register6() {
   PwcZoneTransfer.registerCss(zone_transfer_default);
-  define5();
+  define6();
 }
-register5();
+register6();
+
+// src/include/include.js
+var PwcInclude = class extends PwcSimpleInitElement {
+  static observedAttributes = ["src", "media"];
+  onConnect() {
+    this._load();
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (!this._connected) return;
+    if (oldValue === newValue) return;
+    this._load();
+  }
+  /** Re-fetch the current `src` and replace content. */
+  refresh() {
+    this._load();
+  }
+  onDisconnect() {
+    this._teardownLazy();
+    this._abortPending();
+  }
+  // -- internal ---------------------------------------------------------------
+  _load() {
+    const src = this.getAttribute("src");
+    if (!src) return;
+    const media = this.getAttribute("media");
+    if (media && !window.matchMedia(media).matches) return;
+    if (this.hasAttribute("lazy") && !this._lazyTriggered) {
+      this._setupLazy();
+      return;
+    }
+    this._fetch(src);
+  }
+  async _fetch(src) {
+    this._abortPending();
+    this._controller = new AbortController();
+    this.setAttribute("aria-busy", "true");
+    try {
+      const credentials = this.hasAttribute("with-credentials") ? "include" : "same-origin";
+      const res = await fetch(src, { signal: this._controller.signal, credentials });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const html = await res.text();
+      this._insert(html);
+      this.removeAttribute("aria-busy");
+      this.dispatchEvent(new CustomEvent("pwc-include:load", { bubbles: true }));
+    } catch (err) {
+      if (err.name === "AbortError") return;
+      const alt = this.getAttribute("alt");
+      if (alt && src !== alt) {
+        this._fetch(alt);
+        return;
+      }
+      this.removeAttribute("aria-busy");
+      this.dispatchEvent(
+        new CustomEvent("pwc-include:error", { bubbles: true, detail: { error: err } })
+      );
+    }
+  }
+  _insert(html) {
+    const fragment = this.getAttribute("fragment");
+    if (fragment) {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const matches = doc.querySelectorAll(fragment);
+      this.replaceChildren(...Array.from(matches).map((m) => document.adoptNode(m)));
+    } else {
+      this.innerHTML = html;
+    }
+    if (this.hasAttribute("with-scripts")) {
+      this._executeScripts();
+    }
+  }
+  _executeScripts() {
+    for (const old of Array.from(this.querySelectorAll("script"))) {
+      const s = document.createElement("script");
+      if (old.src) s.src = old.src;
+      if (old.type) s.type = old.type;
+      if (old.noModule) s.noModule = true;
+      s.textContent = old.textContent;
+      old.replaceWith(s);
+    }
+  }
+  _abortPending() {
+    if (this._controller) {
+      this._controller.abort();
+      this._controller = null;
+    }
+  }
+  // -- lazy loading -----------------------------------------------------------
+  _setupLazy() {
+    if (this._observer) return;
+    this._observer = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        this._lazyTriggered = true;
+        this._teardownLazy();
+        this._load();
+      }
+    });
+    this._observer.observe(this);
+  }
+  _teardownLazy() {
+    if (this._observer) {
+      this._observer.disconnect();
+      this._observer = null;
+    }
+  }
+};
+function define7() {
+  defineOnce("pwc-include", PwcInclude);
+}
+
+// src/include/index.js
+function register7() {
+  define7();
+}
+register7();

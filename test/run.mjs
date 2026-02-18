@@ -27,9 +27,30 @@ async function processPage(t, url) {
   const page = await browser.newPage();
   const errors = [];
 
-  page.on("pageerror", (err) => errors.push(err));
+  let suppressPattern = null;
+
+  page.on("pageerror", (err) => {
+    if (suppressPattern !== null) {
+      if (suppressPattern === "" || err.message.includes(suppressPattern)) return;
+    }
+    errors.push(err);
+  });
   page.on("console", (msg) => {
-    if (msg.type() === "error") errors.push(new Error(msg.text()));
+    const text = msg.text();
+    if (text.startsWith("__SUPPRESS_ERRORS_START__")) {
+      suppressPattern = text.includes(":") ? text.slice(text.indexOf(":") + 1) : "";
+      return;
+    }
+    if (text === "__SUPPRESS_ERRORS_END__") {
+      suppressPattern = null;
+      return;
+    }
+    if (msg.type() === "error") {
+      if (suppressPattern !== null) {
+        if (suppressPattern === "" || text.includes(suppressPattern)) return;
+      }
+      errors.push(new Error(text));
+    }
   });
 
   try {
