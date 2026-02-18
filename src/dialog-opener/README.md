@@ -23,6 +23,106 @@ The iframe target **must be same-origin**. Cross-origin URLs are not supported.
 
 ---
 
+## How it works
+
+The component is designed for **server-rendered pages**. The typical flow:
+
+1. The server renders a page containing a `<pwc-dialog-opener>` element.
+2. The user clicks a link inside it — a dialog opens with the link target in an iframe.
+3. The user completes an action (e.g. submits a form).
+4. The server redirects the iframe to a URL containing `pwc_done_with=<result>`.
+5. The dialog closes.
+6. With `local-reload`: the component fetches the redirect URL, finds the element
+   with the **same `id`** in the response, and swaps its own content.
+   Without `local-reload`: a full page navigation is performed instead.
+
+The key point: the server re-renders the page with updated data. The component
+just swaps the HTML fragment — no client-side state management needed.
+
+### Example: inline editing
+
+A contact page rendered by the server:
+
+```html
+<pwc-dialog-opener id="contact-42" local-reload>
+  <a href="/contacts/42/edit">Edit</a>
+  Jane Smith, jane@example.com
+</pwc-dialog-opener>
+```
+
+The edit form (loaded inside the dialog iframe):
+
+```html
+<form method="post" action="/contacts/42">
+  <label>Name: <input name="name" value="Jane Smith"></label>
+  <label>Email: <input name="email" value="jane@example.com"></label>
+  <button type="submit">Save</button>
+</form>
+```
+
+On success, the server saves the changes and redirects the iframe to:
+
+```
+/contacts/42?pwc_done_with=Jane+Doe
+```
+
+The response at that URL **must contain an element with the same `id`**:
+
+```html
+<pwc-dialog-opener id="contact-42" local-reload>
+  <a href="/contacts/42/edit">Edit</a>
+  Jane Doe, jane@example.com
+</pwc-dialog-opener>
+```
+
+The component fetches this page, finds `#contact-42`, and replaces its own
+children. The user sees the updated name without a full page reload.
+
+### Example: autocomplete with "create new"
+
+An autocomplete component lets the user search for a category. When no match
+exists, they can create one on the fly via a dialog:
+
+```html
+<pwc-dialog-opener id="category-picker" local-reload>
+  <pwc-autocomplete name="category_id" src="/categories/search">
+    <!-- renders a filter input + result list internally -->
+  </pwc-autocomplete>
+  <a href="/categories/new">Create</a>
+</pwc-dialog-opener>
+```
+
+The user types "Organic" into the filter, gets no results, and clicks "Create".
+The component collects the value from the `<input>` inside it and forwards it
+as `pwc_default`:
+
+```
+/categories/new?pwc_default=Organic&pwc_embedded=true
+```
+
+The server pre-fills the create form with "Organic". After submission, the
+server creates the category (ID 3) and redirects to:
+
+```
+/products/new?pwc_done_with=3
+```
+
+The server renders that page with the new category already selected, using
+the value of `pwc_done_with`:
+
+```html
+<pwc-dialog-opener id="category-picker" local-reload>
+  <pwc-autocomplete name="category_id" src="/categories/search" value="3">
+    <!-- now shows "Organic" as selected -->
+  </pwc-autocomplete>
+  <a href="/categories/new">Create</a>
+</pwc-dialog-opener>
+```
+
+The component swaps the content — the autocomplete now shows "Organic".
+
+---
+
 ## Attributes
 
 ### `close-text`

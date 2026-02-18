@@ -42,6 +42,93 @@ Zones can be declared either via tag name or via data attributes.
 
 ---
 
+## How it works
+
+Items contain hidden inputs with form values. By moving items between zones,
+you control which values are part of the form submission — and in which order.
+The position of the `<form>` element determines which items are submitted.
+
+### Example: sortable multiselect
+
+Unlike [`<pwc-multiselect-dual-list>`](../multiselect-dual-list/)
+(which enhances a `<select>`), zone-transfer preserves the **order** of
+selected items. This matters when the server needs to know the sequence
+(e.g. a playlist, priority ranking, or column order).
+
+The "available" zone sits outside the form, the "selected" zone inside it.
+Only items inside the form contribute to FormData:
+
+```html
+<pwc-zone-transfer>
+  <h3>Available</h3>
+  <pwc-zone-transfer-zone name="available">
+    <div data-pwc-item="a">Alice<input type="hidden" name="people[]" value="alice"></div>
+    <div data-pwc-item="b">Bob<input type="hidden" name="people[]" value="bob"></div>
+  </pwc-zone-transfer-zone>
+
+  <form method="post" action="/teams/1">
+    <h3>Selected</h3>
+    <pwc-zone-transfer-zone name="selected">
+      <!-- items dragged here become part of the form -->
+    </pwc-zone-transfer-zone>
+    <button type="submit">Save</button>
+  </form>
+</pwc-zone-transfer>
+```
+
+After dragging Bob then Alice into "Selected", the form submits:
+
+```
+people[]=bob&people[]=alice
+```
+
+The server receives an ordered array `["bob", "alice"]`.
+
+> **Note:** The `[]` suffix is a convention used by frameworks like Rails, Phoenix, and
+> Express to parse repeated parameters into arrays. Frameworks that don't use this
+> convention (e.g. Java Servlets) can simply omit the brackets and use
+> `request.getParameterValues("people")` on the repeated name.
+
+### Example: multi-lane (Kanban-style)
+
+All zones live inside the same form. A hidden input at the beginning of each
+zone acts as a lane marker. Items and lane markers share the same `name`,
+so the server receives a single flat array. Lane markers are distinguished
+from item IDs by a prefix:
+
+```html
+<form method="post" action="/board/1">
+  <pwc-zone-transfer>
+    <pwc-zone-transfer-zone name="todo">
+      <input type="hidden" name="items[]" value="lane-todo">
+      <div data-pwc-item="1">Task A<input type="hidden" name="items[]" value="1"></div>
+      <div data-pwc-item="2">Task B<input type="hidden" name="items[]" value="2"></div>
+    </pwc-zone-transfer-zone>
+
+    <pwc-zone-transfer-zone name="doing">
+      <input type="hidden" name="items[]" value="lane-doing">
+      <div data-pwc-item="3">Task C<input type="hidden" name="items[]" value="3"></div>
+    </pwc-zone-transfer-zone>
+
+    <pwc-zone-transfer-zone name="done">
+      <input type="hidden" name="items[]" value="lane-done">
+    </pwc-zone-transfer-zone>
+  </pwc-zone-transfer>
+  <button type="submit">Save</button>
+</form>
+```
+
+After dragging Task B from "todo" to "doing", the form submits:
+
+```
+items[]=lane-todo&items[]=1&items[]=lane-doing&items[]=2&items[]=3&items[]=lane-done
+```
+
+The server receives a single array `["lane-todo", "1", "lane-doing", "2", "3", "lane-done"]`
+and splits on the `lane-` entries to reconstruct the lanes.
+
+---
+
 ## Hooks (selectors)
 
 Defaults (can be overridden by subclassing and changing the static selectors):
