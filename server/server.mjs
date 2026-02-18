@@ -42,6 +42,10 @@ export async function startServer({ port = 0 } = {}) {
     }
   }
 
+  app.get("/.well-known/pwc", (_req, res) => {
+    res.status(204).end();
+  });
+
   app.get("/favicon.ico", (_req, res) => {
     res.status(204).end();
   });

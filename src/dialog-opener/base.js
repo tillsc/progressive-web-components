@@ -141,7 +141,8 @@ export class BaseDialogOpener extends PwcElement {
 
     if (this.hasAttribute("local-reload") && this.id) {
       const localReloadOptionTokens = document.createElement("div").classList;
-      if (this.hasAttribute("local-reload")) localReloadOptionTokens.add(...this.getAttribute("local-reload").split(/\s+/));
+      const tokens = this.getAttribute("local-reload").split(/\s+/).filter(Boolean);
+      if (tokens.length) localReloadOptionTokens.add(...tokens);
       const localReloadOptions = {
         replaceUrl: localReloadOptionTokens.contains("replace-url"),
         pushUrl: localReloadOptionTokens.contains("push-url"),

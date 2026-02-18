@@ -6,6 +6,7 @@
     <title>dialog-opener</title>
     <link rel="stylesheet" href="../../static/index.css">
     <script type="module" src="https://cdn.jsdelivr.net/npm/zero-md@3?register"></script>
+    <script type="module" src="../../static/dev-only-link.js"></script>
   </head>
   <body>
     <div class="pwc-page-layout">
@@ -18,6 +19,10 @@
           <li><a href="./test/basic.test.html">Test: basic</a></li>
           <li><a href="./test/bs5-basic.test.html">Test: bs5-basic</a></li>
           <li><a href="./INTERNALS.md">INTERNALS.md</a></li>
+        </ul>
+        <h3>Server-only links</h3>
+        <ul>
+          <pwc-dev-only-link href="./test/with-backend.test.html">Test: with-backend</pwc-dev-only-link>
         </ul>
       </nav>
     </div>
