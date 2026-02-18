@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>include: shadow DOM &amp; extract-styles</title>
+    <script type="module" src="../../../dist/include.js"></script>
+    <style>.styled { color: rgb(0, 0, 0); }</style>
+</head>
+
+<body>
+
+<h1>include: shadow DOM &amp; extract-styles</h1>
+
+<h2>Shadow basic</h2>
+<pwc-include id="shadow-basic" src="./fragment.html" shadow>
+    <p class="placeholder">Loading…</p>
+</pwc-include>
+
+<hr>
+
+<h2>Shadow + extract-styles (fragment mode)</h2>
+<pwc-include id="shadow-extract" src="./styled-fragment.html" shadow extract-styles></pwc-include>
+
+<hr>
+
+<h2>Two includes sharing the same stylesheet</h2>
+<pwc-include id="shadow-extract-b" src="./styled-fragment.html" shadow extract-styles></pwc-include>
+
+<hr>
+
+<h2>extract-styles="fragment head"</h2>
+<pwc-include id="head-styles" src="./styled-page.html" fragment=".content" shadow extract-styles="fragment head"></pwc-include>
+
+
+<script type="module">
+  import { run } from "../../../static/testing/harness.js";
+  import { waitForEvent } from "../../../static/testing/helpers.js";
+
+  run(async ({ assert, equal, waitFor, log }) => {
+
+    // --- Shadow basic ---
+
+    await log("shadow-basic: content in shadow root");
+    const basic = document.getElementById("shadow-basic");
+    await waitFor(() => basic.shadowRoot?.querySelector(".greeting"), { label: "shadow content loaded" });
+    assert(basic.shadowRoot.querySelector(".greeting"), "content is in shadowRoot");
+    assert(!basic.querySelector(".greeting"), "content is NOT in light DOM");
+    equal(basic.root, basic.shadowRoot, "root getter returns shadowRoot");
+
+    // --- Shadow + extract-styles ---
+
+    await log("shadow-extract: styles extracted into adoptedStyleSheets");
+    const extract = document.getElementById("shadow-extract");
+    await waitFor(() => extract.shadowRoot?.querySelector(".styled"), { label: "styled content loaded" });
+    assert(extract.shadowRoot.adoptedStyleSheets.length > 0, "shadowRoot has adoptedStyleSheets");
+    assert(!extract.shadowRoot.querySelector("style"), "no <style> element in shadowRoot");
+    const styled = extract.shadowRoot.querySelector(".styled");
+    const color = getComputedStyle(styled).color;
+    equal(color, "rgb(255, 0, 0)", "extracted style applied (red)");
+
+    // --- Shared sheets ---
+
+    await log("shared: two includes share the same CSSStyleSheet object");
+    const sharedB = document.getElementById("shadow-extract-b");
+    await waitFor(() => sharedB.shadowRoot?.querySelector(".styled"), { label: "shared-b loaded" });
+    const sheetA = extract.shadowRoot.adoptedStyleSheets[0];
+    const sheetB = sharedB.shadowRoot.adoptedStyleSheets[0];
+    assert(sheetA === sheetB, "same CSSStyleSheet object shared between instances");
+
+    // --- extract-styles="fragment head" ---
+
+    await log("head-styles: styles from both fragment and head");
+    const headStyles = document.getElementById("head-styles");
+    await waitFor(() => headStyles.shadowRoot?.querySelector(".content"), { label: "head-styles loaded" });
+    const sheets = headStyles.shadowRoot.adoptedStyleSheets;
+    assert(sheets.length >= 2, "at least 2 adopted sheets (head + fragment)");
+    assert(!headStyles.shadowRoot.querySelector("style"), "no <style> elements remain");
+    const el = headStyles.shadowRoot.querySelector(".from-head.from-fragment");
+    assert(el, "element with both classes present");
+    equal(getComputedStyle(el).color, "rgb(0, 0, 255)", "fragment extracted style applied (blue)");
+    equal(getComputedStyle(el).fontStyle, "italic", "head extracted style applied (italic)");
+
+
+    await log("done");
+  });
+</script>
+</body>
+</html>

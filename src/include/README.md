@@ -72,9 +72,50 @@ Executes `<script>` elements found in the inserted HTML (both inline and externa
 <pwc-include src="/interactive-widget.html" with-scripts></pwc-include>
 ```
 
+### `shadow`
+
+Inserts content into a Shadow DOM. Styles inside the transcluded HTML are automatically scoped.
+
+```html
+<pwc-include src="/card.html" shadow></pwc-include>
+```
+
+### `extract-styles`
+
+Extracts `<style>` and `<link rel="stylesheet">` elements from the transcluded HTML and converts
+them into shared [Constructable Stylesheets](https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/CSSStyleSheet). Identical stylesheets are cached and shared across all instances (by URL for `<link>`, by normalized CSS text for `<style>`).
+
+With `shadow`: sheets are adopted into the shadow root.
+Without `shadow`: sheets are adopted into the document (like `registerCss()` from `utils.js`).
+
+The attribute value controls **where** styles are collected from:
+
+| Value | Collects from |
+|---|---|
+| `""` (boolean) | Same as `"fragment"` |
+| `"fragment"` | The inserted content (or the selected `fragment`) |
+| `"head"` | The `<head>` of the parsed document |
+| `"fragment head"` | Both |
+| `"document"` | The entire parsed document |
+
+```html
+<!-- Styles within the fragment are extracted and shared -->
+<pwc-include src="/card.html" shadow extract-styles></pwc-include>
+
+<!-- Also pick up <head> stylesheets (e.g. <link> in the fetched page) -->
+<pwc-include src="/page.html" fragment=".content" shadow extract-styles="fragment head"></pwc-include>
+
+<!-- Works without shadow too — sheets go to document.adoptedStyleSheets -->
+<pwc-include src="/card.html" extract-styles></pwc-include>
+```
+
 ---
 
-## Methods
+## Properties & Methods
+
+### `root`
+
+The content root: the shadow root (when `shadow` is set) or the element itself. Read-only.
 
 ### `refresh()`
 

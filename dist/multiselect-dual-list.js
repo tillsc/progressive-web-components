@@ -1,18 +1,7 @@
 // src/core/pwc-element.js
 var PwcElement = class extends HTMLElement {
-  /**
-   * List of DOM event types to bind on the host element.
-   * Subclasses may override.
-   *
-   * Example:
-   *   static events = ["click", "input"];
-   */
+  /** DOM event types to bind on the host. Subclasses override. */
   static events = [];
-  static registerCss(cssText) {
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(cssText);
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-  }
   connectedCallback() {
     this._bindEvents();
   }
@@ -20,34 +9,22 @@ var PwcElement = class extends HTMLElement {
     this._unbindEvents();
     this.onDisconnect();
   }
-  /**
-   * Optional cleanup hook for subclasses.
-   */
+  /** Cleanup hook for subclasses. */
   onDisconnect() {
   }
-  /**
-   * Bind declared events using the handleEvent pattern.
-   */
   _bindEvents() {
     const events = this.constructor.events ?? [];
     for (const type of events) {
       this.addEventListener(type, this);
     }
   }
-  /**
-   * Unbind all previously declared events.
-   */
   _unbindEvents() {
     const events = this.constructor.events ?? [];
     for (const type of events) {
       this.removeEventListener(type, this);
     }
   }
-  /**
-   * Default event handler.
-   * Subclasses are expected to override this method
-   * and route events as needed.
-   */
+  /** Default event handler. Subclasses override to route events. */
   handleEvent(_event) {
   }
 };
@@ -64,6 +41,7 @@ var PwcChildrenObserverElement = class extends PwcElement {
     this._stopChildrenObserver();
     super.disconnectedCallback();
   }
+  /** Called on connect and on every child mutation. Subclasses override. */
   onChildrenChanged(_mutations) {
   }
   /** Run fn() without triggering onChildrenChanged for the resulting DOM mutations. */
@@ -240,6 +218,27 @@ function defineOnce(name, classDef) {
   if (customElements.get(name)) return;
   customElements.define(name, classDef);
 }
+var _sheetCache = /* @__PURE__ */ new Map();
+function getOrCreateSheet(cssText) {
+  const sheet = new CSSStyleSheet();
+  sheet.replaceSync(cssText);
+  const normalized = Array.from(sheet.cssRules, (r) => r.cssText).join("\n");
+  if (_sheetCache.has(normalized)) {
+    return _sheetCache.get(normalized);
+  }
+  _sheetCache.set(normalized, sheet);
+  return sheet;
+}
+function registerCss(cssText) {
+  adoptSheets(document, [getOrCreateSheet(cssText)]);
+}
+function adoptSheets(target, sheets) {
+  const existing = target.adoptedStyleSheets;
+  const newOnes = sheets.filter((s) => !existing.includes(s));
+  if (newOnes.length) {
+    target.adoptedStyleSheets = [...existing, ...newOnes];
+  }
+}
 
 // src/multiselect-dual-list/multiselect-dual-list.js
 var PwcMultiselectDualList = class extends MultiselectDualListBase {
@@ -315,7 +314,7 @@ var multiselect_dual_list_default = "pwc-multiselect-dual-list {\n  /* sizing */
 
 // src/multiselect-dual-list/index.js
 function register() {
-  PwcMultiselectDualList.registerCss(multiselect_dual_list_default);
+  registerCss(multiselect_dual_list_default);
   define();
 }
 register();

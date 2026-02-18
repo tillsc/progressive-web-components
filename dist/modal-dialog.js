@@ -1,18 +1,7 @@
 // src/core/pwc-element.js
 var PwcElement = class extends HTMLElement {
-  /**
-   * List of DOM event types to bind on the host element.
-   * Subclasses may override.
-   *
-   * Example:
-   *   static events = ["click", "input"];
-   */
+  /** DOM event types to bind on the host. Subclasses override. */
   static events = [];
-  static registerCss(cssText) {
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(cssText);
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-  }
   connectedCallback() {
     this._bindEvents();
   }
@@ -20,34 +9,22 @@ var PwcElement = class extends HTMLElement {
     this._unbindEvents();
     this.onDisconnect();
   }
-  /**
-   * Optional cleanup hook for subclasses.
-   */
+  /** Cleanup hook for subclasses. */
   onDisconnect() {
   }
-  /**
-   * Bind declared events using the handleEvent pattern.
-   */
   _bindEvents() {
     const events = this.constructor.events ?? [];
     for (const type of events) {
       this.addEventListener(type, this);
     }
   }
-  /**
-   * Unbind all previously declared events.
-   */
   _unbindEvents() {
     const events = this.constructor.events ?? [];
     for (const type of events) {
       this.removeEventListener(type, this);
     }
   }
-  /**
-   * Default event handler.
-   * Subclasses are expected to override this method
-   * and route events as needed.
-   */
+  /** Default event handler. Subclasses override to route events. */
   handleEvent(_event) {
   }
 };
@@ -61,10 +38,7 @@ var PwcSimpleInitElement = class extends PwcElement {
       this.onConnect();
     });
   }
-  /**
-   * Hook for subclasses.
-   * Called once per connection, after microtask deferral.
-   */
+  /** Called once after connect. Subclasses override. */
   onConnect() {
   }
 };
@@ -159,6 +133,27 @@ function defineOnce(name, classDef) {
   if (customElements.get(name)) return;
   customElements.define(name, classDef);
 }
+var _sheetCache = /* @__PURE__ */ new Map();
+function getOrCreateSheet(cssText) {
+  const sheet = new CSSStyleSheet();
+  sheet.replaceSync(cssText);
+  const normalized = Array.from(sheet.cssRules, (r) => r.cssText).join("\n");
+  if (_sheetCache.has(normalized)) {
+    return _sheetCache.get(normalized);
+  }
+  _sheetCache.set(normalized, sheet);
+  return sheet;
+}
+function registerCss(cssText) {
+  adoptSheets(document, [getOrCreateSheet(cssText)]);
+}
+function adoptSheets(target, sheets) {
+  const existing = target.adoptedStyleSheets;
+  const newOnes = sheets.filter((s) => !existing.includes(s));
+  if (newOnes.length) {
+    target.adoptedStyleSheets = [...existing, ...newOnes];
+  }
+}
 
 // src/modal-dialog/modal-dialog.js
 var PwcModalDialog = class extends ModalDialogBase {
@@ -243,7 +238,7 @@ var modal_dialog_default = "pwc-modal-dialog {\n  /* sizing */\n  --pwc-modal-ma
 
 // src/modal-dialog/index.js
 function register() {
-  PwcModalDialog.registerCss(modal_dialog_default);
+  registerCss(modal_dialog_default);
   define();
 }
 register();

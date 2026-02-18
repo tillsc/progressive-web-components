@@ -7,13 +7,13 @@ is simple enough to live in a single file.
 
 ## Lifecycle
 
-1. `onConnect()` calls `_load()`
-2. `_load()` checks the three gates in order: missing `src` → `media` mismatch → `lazy` not yet triggered
+1. `onConnect()` calls `refresh()`
+2. `refresh()` checks the gates in order: missing `src` → `media` mismatch → `lazy` not yet triggered
 3. If all gates pass, `_fetch(src)` is called
 
 ## Attribute reactivity
 
-`observedAttributes` covers `src` and `media`. `attributeChangedCallback` triggers `_load()`
+`observedAttributes` covers `src` and `media`. `attributeChangedCallback` triggers `refresh()`
 on any change (guarded by `isConnected` and value-equality checks).
 
 ## Fetch & abort
@@ -42,5 +42,31 @@ so the browser executes them.
 ## Lazy loading
 
 `_setupLazy()` creates an `IntersectionObserver` that watches the element. Once it becomes
-visible, the observer disconnects and `_load()` is re-invoked. `_lazyTriggered` ensures
+visible, the observer disconnects and `refresh()` is re-invoked. `_lazyTriggered` ensures
 the observer is only used once; subsequent `refresh()` calls bypass it.
+
+## Shadow DOM (`shadow`)
+
+The shadow root is created lazily at the beginning of `_insert()`, not during `onConnect()`.
+This keeps the original light DOM content (e.g. a loading placeholder) visible until the
+fetched content is ready. The `root` getter returns the shadow root when present, otherwise
+the element itself — all content insertion and script execution go through `root`.
+
+## Style extraction (`extract-styles`)
+
+When set, `_insert()` always parses the response with `DOMParser` (even without `fragment`).
+The pipeline:
+
+1. `_collectStyleElements()` gathers `<style>` and `<link rel="stylesheet">` based on the mode
+2. Collected elements are removed from the parsed DOM before content insertion
+3. `_resolveSheets()` converts them into `CSSStyleSheet` objects using the shared cache
+   in `utils.js` (`getOrCreateSheet` for inline CSS, `fetchSheet` for URLs)
+4. `adoptSheets()` adds sheets to the target (shadow root or document),
+   skipping any already adopted (reference equality)
+
+Styles are adopted before content is inserted to prevent FOUC in shadow DOM.
+
+The cache is module-level in `utils.js` and shared across all component instances. For `<link>`
+elements, the URL is resolved relative to the include's `src` attribute. For inline `<style>`,
+the browser normalizes the CSS via `CSSStyleSheet.replaceSync()` and `cssRules` serialization,
+so whitespace differences don't create duplicate cache entries.

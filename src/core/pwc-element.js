@@ -8,12 +8,6 @@ export class PwcElement extends HTMLElement {
   /** DOM event types to bind on the host. Subclasses override. */
   static events = [];
 
-  static registerCss(cssText) {
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(cssText);
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-  }
-
   connectedCallback() {
     this._bindEvents();
   }

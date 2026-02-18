@@ -1,18 +1,7 @@
 // src/core/pwc-element.js
 var PwcElement = class extends HTMLElement {
-  /**
-   * List of DOM event types to bind on the host element.
-   * Subclasses may override.
-   *
-   * Example:
-   *   static events = ["click", "input"];
-   */
+  /** DOM event types to bind on the host. Subclasses override. */
   static events = [];
-  static registerCss(cssText) {
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(cssText);
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-  }
   connectedCallback() {
     this._bindEvents();
   }
@@ -20,34 +9,22 @@ var PwcElement = class extends HTMLElement {
     this._unbindEvents();
     this.onDisconnect();
   }
-  /**
-   * Optional cleanup hook for subclasses.
-   */
+  /** Cleanup hook for subclasses. */
   onDisconnect() {
   }
-  /**
-   * Bind declared events using the handleEvent pattern.
-   */
   _bindEvents() {
     const events = this.constructor.events ?? [];
     for (const type of events) {
       this.addEventListener(type, this);
     }
   }
-  /**
-   * Unbind all previously declared events.
-   */
   _unbindEvents() {
     const events = this.constructor.events ?? [];
     for (const type of events) {
       this.removeEventListener(type, this);
     }
   }
-  /**
-   * Default event handler.
-   * Subclasses are expected to override this method
-   * and route events as needed.
-   */
+  /** Default event handler. Subclasses override to route events. */
   handleEvent(_event) {
   }
 };
@@ -61,10 +38,7 @@ var PwcSimpleInitElement = class extends PwcElement {
       this.onConnect();
     });
   }
-  /**
-   * Hook for subclasses.
-   * Called once per connection, after microtask deferral.
-   */
+  /** Called once after connect. Subclasses override. */
   onConnect() {
   }
 };
@@ -178,6 +152,49 @@ function defineOnce(name, classDef) {
   if (customElements.get(name)) return;
   customElements.define(name, classDef);
 }
+function tokenList(str) {
+  const el = document.createElement("span");
+  el.className = str || "";
+  return el.classList;
+}
+var _sheetCache = /* @__PURE__ */ new Map();
+function getOrCreateSheet(cssText) {
+  const sheet = new CSSStyleSheet();
+  sheet.replaceSync(cssText);
+  const normalized = Array.from(sheet.cssRules, (r) => r.cssText).join("\n");
+  if (_sheetCache.has(normalized)) {
+    return _sheetCache.get(normalized);
+  }
+  _sheetCache.set(normalized, sheet);
+  return sheet;
+}
+async function fetchSheet(url) {
+  const resolved = new URL(url, document.baseURI).href;
+  if (_sheetCache.has(resolved)) {
+    return _sheetCache.get(resolved);
+  }
+  try {
+    const res = await fetch(resolved);
+    if (!res.ok) return null;
+    const cssText = await res.text();
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(cssText);
+    _sheetCache.set(resolved, sheet);
+    return sheet;
+  } catch {
+    return null;
+  }
+}
+function registerCss(cssText) {
+  adoptSheets(document, [getOrCreateSheet(cssText)]);
+}
+function adoptSheets(target, sheets) {
+  const existing = target.adoptedStyleSheets;
+  const newOnes = sheets.filter((s) => !existing.includes(s));
+  if (newOnes.length) {
+    target.adoptedStyleSheets = [...existing, ...newOnes];
+  }
+}
 
 // src/filter/bs5/filter.js
 var PwcFilterBs5 = class extends BaseFilter {
@@ -268,7 +285,7 @@ var BaseDialogOpener = class extends PwcElement {
     this.iframe.addEventListener("load", this._iframeLoadHandler);
   }
   _installIFrameAdditionalEventTriggers() {
-    const additionalEvents = (this.getAttribute("iframe-additional-events") || "").trim().split(/\s+/).filter(Boolean);
+    const additionalEvents = tokenList(this.getAttribute("iframe-additional-events"));
     if (!additionalEvents.length) return;
     const doc = this.iframe?.contentWindow?.document;
     if (!doc) return;
@@ -306,13 +323,11 @@ var BaseDialogOpener = class extends PwcElement {
       console.log(`<dialog-opener> Warning: local-reload got different base uri (${newUri.toString()}) then window has (${currentUri.toString()}). This might lead to problems, but we'll try it anyway.`);
     }
     if (this.hasAttribute("local-reload") && this.id) {
-      const localReloadOptionTokens = document.createElement("div").classList;
-      const tokens = this.getAttribute("local-reload").split(/\s+/).filter(Boolean);
-      if (tokens.length) localReloadOptionTokens.add(...tokens);
+      const localReloadTokens = tokenList(this.getAttribute("local-reload"));
       const localReloadOptions = {
-        replaceUrl: localReloadOptionTokens.contains("replace-url"),
-        pushUrl: localReloadOptionTokens.contains("push-url"),
-        withScripts: localReloadOptionTokens.contains("with-scripts")
+        replaceUrl: localReloadTokens.contains("replace-url"),
+        pushUrl: localReloadTokens.contains("push-url"),
+        withScripts: localReloadTokens.contains("with-scripts")
       };
       newUri.searchParams.set("local_reload", this.id);
       const res = await fetch(newUri);
@@ -641,6 +656,7 @@ var PwcChildrenObserverElement = class extends PwcElement {
     this._stopChildrenObserver();
     super.disconnectedCallback();
   }
+  /** Called on connect and on every child mutation. Subclasses override. */
   onChildrenChanged(_mutations) {
   }
   /** Run fn() without triggering onChildrenChanged for the resulting DOM mutations. */
@@ -886,7 +902,7 @@ var define4 = () => defineOnce("pwc-multiselect-dual-list-bs5", PwcMultiselectDu
 
 // src/multiselect-dual-list/bs5/index.js
 function register4() {
-  PwcMultiselectDualListBs5.registerCss(
+  registerCss(
     "pwc-multiselect-dual-list-bs5[hide-selected] .list-group-item-secondary { display: none; }"
   );
   define4();
@@ -1270,13 +1286,13 @@ var zone_transfer_default = 'pwc-zone-transfer [draggable="true"] {\n    cursor:
 
 // src/zone-transfer/index.js
 function register6() {
-  PwcZoneTransfer.registerCss(zone_transfer_default);
+  registerCss(zone_transfer_default);
   define6();
 }
 register6();
 
 // src/include/include.js
-var PwcInclude = class extends PwcSimpleInitElement {
+var PwcInclude = class _PwcInclude extends PwcSimpleInitElement {
   static observedAttributes = ["src", "media"];
   onConnect() {
     this.refresh();
@@ -1290,6 +1306,9 @@ var PwcInclude = class extends PwcSimpleInitElement {
     this._teardownLazy();
     this._abortPending();
   }
+  get root() {
+    return this.shadowRoot || this;
+  }
   refresh() {
     const src = this.getAttribute("src");
     if (!src) return;
@@ -1301,7 +1320,6 @@ var PwcInclude = class extends PwcSimpleInitElement {
     }
     this._fetch(src);
   }
-  // -- internal ---------------------------------------------------------------
   async _fetch(src) {
     this._abortPending();
     this._controller = new AbortController();
@@ -1311,7 +1329,7 @@ var PwcInclude = class extends PwcSimpleInitElement {
       const res = await fetch(src, { signal: this._controller.signal, credentials });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const html = await res.text();
-      this._insert(html);
+      await this._insert(html, src);
       this.removeAttribute("aria-busy");
       this.dispatchEvent(new CustomEvent("pwc-include:load", { bubbles: true }));
     } catch (err) {
@@ -1327,21 +1345,69 @@ var PwcInclude = class extends PwcSimpleInitElement {
       );
     }
   }
-  _insert(html) {
-    const fragment = this.getAttribute("fragment");
-    if (fragment) {
+  async _insert(html, srcUrl) {
+    if (this.hasAttribute("shadow") && !this.shadowRoot) {
+      this.attachShadow({ mode: "open" });
+    }
+    const fragmentSelector = this.getAttribute("fragment");
+    const extractStylesAttr = this.getAttribute("extract-styles");
+    if (fragmentSelector || extractStylesAttr !== null) {
       const doc = new DOMParser().parseFromString(html, "text/html");
-      const matches = doc.querySelectorAll(fragment);
-      this.replaceChildren(...Array.from(matches).map((m) => document.adoptNode(m)));
+      const fragments = fragmentSelector ? Array.from(doc.querySelectorAll(fragmentSelector)) : [doc];
+      if (extractStylesAttr !== null) {
+        const styleEls = this._collectStyleElements(doc, extractStylesAttr, fragments);
+        styleEls.forEach((el) => el.remove());
+        const sheets = await _PwcInclude._resolveSheets(styleEls, srcUrl);
+        if (sheets.length) {
+          adoptSheets(this.shadowRoot || document, sheets);
+        }
+      }
+      if (fragmentSelector) {
+        this.root.replaceChildren(...fragments.map((m) => document.adoptNode(m)));
+      } else {
+        this.root.replaceChildren(
+          ...Array.from(doc.body.childNodes).map((n) => document.adoptNode(n))
+        );
+      }
     } else {
-      this.innerHTML = html;
+      this.root.innerHTML = html;
     }
     if (this.hasAttribute("with-scripts")) {
       this._executeScripts();
     }
   }
+  _collectStyleElements(doc, extractStylesAttr, fragments) {
+    const modes = tokenList(extractStylesAttr || "fragment");
+    const selector = 'style, link[rel="stylesheet"]';
+    const result = [];
+    if (modes.contains("document")) {
+      result.push(...doc.querySelectorAll(selector));
+    } else {
+      if (modes.contains("head")) {
+        result.push(...doc.head.querySelectorAll(selector));
+      }
+      if (modes.contains("fragment")) {
+        for (const fragment of fragments) {
+          result.push(...fragment.querySelectorAll(selector));
+        }
+      }
+    }
+    return result;
+  }
+  static async _resolveSheets(styleElements, srcUrl) {
+    const promises = styleElements.map((el) => {
+      if (el.tagName === "LINK") {
+        const href = el.getAttribute("href");
+        const resolved = new URL(href, new URL(srcUrl, document.baseURI)).href;
+        return fetchSheet(resolved);
+      }
+      return Promise.resolve(getOrCreateSheet(el.textContent));
+    });
+    const results = await Promise.all(promises);
+    return [...new Set(results.filter(Boolean))];
+  }
   _executeScripts() {
-    for (const old of Array.from(this.querySelectorAll("script"))) {
+    for (const old of Array.from(this.root.querySelectorAll("script"))) {
       const s = document.createElement("script");
       if (old.src) s.src = old.src;
       if (old.type) s.type = old.type;
@@ -1356,7 +1422,6 @@ var PwcInclude = class extends PwcSimpleInitElement {
       this._controller = null;
     }
   }
-  // -- lazy loading -----------------------------------------------------------
   _setupLazy() {
     if (this._observer) return;
     this._observer = new IntersectionObserver((entries) => {

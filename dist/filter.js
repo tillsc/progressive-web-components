@@ -6,19 +6,8 @@ function defineOnce(name, classDef) {
 
 // src/core/pwc-element.js
 var PwcElement = class extends HTMLElement {
-  /**
-   * List of DOM event types to bind on the host element.
-   * Subclasses may override.
-   *
-   * Example:
-   *   static events = ["click", "input"];
-   */
+  /** DOM event types to bind on the host. Subclasses override. */
   static events = [];
-  static registerCss(cssText) {
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(cssText);
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-  }
   connectedCallback() {
     this._bindEvents();
   }
@@ -26,34 +15,22 @@ var PwcElement = class extends HTMLElement {
     this._unbindEvents();
     this.onDisconnect();
   }
-  /**
-   * Optional cleanup hook for subclasses.
-   */
+  /** Cleanup hook for subclasses. */
   onDisconnect() {
   }
-  /**
-   * Bind declared events using the handleEvent pattern.
-   */
   _bindEvents() {
     const events = this.constructor.events ?? [];
     for (const type of events) {
       this.addEventListener(type, this);
     }
   }
-  /**
-   * Unbind all previously declared events.
-   */
   _unbindEvents() {
     const events = this.constructor.events ?? [];
     for (const type of events) {
       this.removeEventListener(type, this);
     }
   }
-  /**
-   * Default event handler.
-   * Subclasses are expected to override this method
-   * and route events as needed.
-   */
+  /** Default event handler. Subclasses override to route events. */
   handleEvent(_event) {
   }
 };
@@ -67,10 +44,7 @@ var PwcSimpleInitElement = class extends PwcElement {
       this.onConnect();
     });
   }
-  /**
-   * Hook for subclasses.
-   * Called once per connection, after microtask deferral.
-   */
+  /** Called once after connect. Subclasses override. */
   onConnect() {
   }
 };

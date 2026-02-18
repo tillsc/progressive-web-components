@@ -107,8 +107,25 @@ There is no linter or formatter configured.
 - Authoritative styles live in plain `.css` files
 - Component source files do not import CSS directly
 - `index.js` files are responsible for bundling JS and CSS
-- CSS is installed once at define time
+- CSS is installed once at define time via `registerCss(cssText)` from `utils.js`
 - No per-instance style registration
+
+### Shared utilities (`utils.js`)
+
+General helpers:
+
+- `ensureId(el, prefix)` — assigns a random ID if the element has none
+- `defineOnce(name, classDef)` — registers a Custom Element only if the name isn't taken
+- `tokenList(str)` — parses a space-separated string into a `DOMTokenList`
+
+Constructable stylesheet management (shared module-level cache):
+
+- `registerCss(cssText)` — registers a stylesheet on the document (shorthand below)
+- `getOrCreateSheet(cssText)` — creates a `CSSStyleSheet`, caches by browser-normalized CSS
+  (whitespace differences share the same sheet)
+- `fetchSheet(url)` — fetches CSS by URL, caches the resulting sheet
+- `adoptSheets(target, sheets)` — adopts sheets into a target (`document` or `shadowRoot`),
+  deduplicating by reference
 
 ## Trust model for attributes
 

@@ -7,22 +7,16 @@ function defineOnce(name, classDef) {
   if (customElements.get(name)) return;
   customElements.define(name, classDef);
 }
+function tokenList(str) {
+  const el = document.createElement("span");
+  el.className = str || "";
+  return el.classList;
+}
 
 // src/core/pwc-element.js
 var PwcElement = class extends HTMLElement {
-  /**
-   * List of DOM event types to bind on the host element.
-   * Subclasses may override.
-   *
-   * Example:
-   *   static events = ["click", "input"];
-   */
+  /** DOM event types to bind on the host. Subclasses override. */
   static events = [];
-  static registerCss(cssText) {
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(cssText);
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-  }
   connectedCallback() {
     this._bindEvents();
   }
@@ -30,34 +24,22 @@ var PwcElement = class extends HTMLElement {
     this._unbindEvents();
     this.onDisconnect();
   }
-  /**
-   * Optional cleanup hook for subclasses.
-   */
+  /** Cleanup hook for subclasses. */
   onDisconnect() {
   }
-  /**
-   * Bind declared events using the handleEvent pattern.
-   */
   _bindEvents() {
     const events = this.constructor.events ?? [];
     for (const type of events) {
       this.addEventListener(type, this);
     }
   }
-  /**
-   * Unbind all previously declared events.
-   */
   _unbindEvents() {
     const events = this.constructor.events ?? [];
     for (const type of events) {
       this.removeEventListener(type, this);
     }
   }
-  /**
-   * Default event handler.
-   * Subclasses are expected to override this method
-   * and route events as needed.
-   */
+  /** Default event handler. Subclasses override to route events. */
   handleEvent(_event) {
   }
 };
@@ -128,7 +110,7 @@ var BaseDialogOpener = class extends PwcElement {
     this.iframe.addEventListener("load", this._iframeLoadHandler);
   }
   _installIFrameAdditionalEventTriggers() {
-    const additionalEvents = (this.getAttribute("iframe-additional-events") || "").trim().split(/\s+/).filter(Boolean);
+    const additionalEvents = tokenList(this.getAttribute("iframe-additional-events"));
     if (!additionalEvents.length) return;
     const doc = this.iframe?.contentWindow?.document;
     if (!doc) return;
@@ -166,13 +148,11 @@ var BaseDialogOpener = class extends PwcElement {
       console.log(`<dialog-opener> Warning: local-reload got different base uri (${newUri.toString()}) then window has (${currentUri.toString()}). This might lead to problems, but we'll try it anyway.`);
     }
     if (this.hasAttribute("local-reload") && this.id) {
-      const localReloadOptionTokens = document.createElement("div").classList;
-      const tokens = this.getAttribute("local-reload").split(/\s+/).filter(Boolean);
-      if (tokens.length) localReloadOptionTokens.add(...tokens);
+      const localReloadTokens = tokenList(this.getAttribute("local-reload"));
       const localReloadOptions = {
-        replaceUrl: localReloadOptionTokens.contains("replace-url"),
-        pushUrl: localReloadOptionTokens.contains("push-url"),
-        withScripts: localReloadOptionTokens.contains("with-scripts")
+        replaceUrl: localReloadTokens.contains("replace-url"),
+        pushUrl: localReloadTokens.contains("push-url"),
+        withScripts: localReloadTokens.contains("with-scripts")
       };
       newUri.searchParams.set("local_reload", this.id);
       const res = await fetch(newUri);
@@ -314,10 +294,7 @@ var PwcSimpleInitElement = class extends PwcElement {
       this.onConnect();
     });
   }
-  /**
-   * Hook for subclasses.
-   * Called once per connection, after microtask deferral.
-   */
+  /** Called once after connect. Subclasses override. */
   onConnect() {
   }
 };

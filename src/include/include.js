@@ -1,5 +1,5 @@
 import { PwcSimpleInitElement } from "../core/pwc-simple-init-element.js";
-import { defineOnce } from "../core/utils.js";
+import { defineOnce, tokenList, getOrCreateSheet, fetchSheet, adoptSheets } from "../core/utils.js";
 
 /**
  * <pwc-include>
@@ -25,15 +25,17 @@ export class PwcInclude extends PwcSimpleInitElement {
     this._abortPending();
   }
 
+  get root() {
+    return this.shadowRoot || this;
+  }
+
   refresh() {
     const src = this.getAttribute("src");
     if (!src) return;
 
-    // Media gate
     const media = this.getAttribute("media");
     if (media && !window.matchMedia(media).matches) return;
 
-    // Lazy: defer until visible
     if (this.hasAttribute("lazy") && !this._lazyTriggered) {
       this._setupLazy();
       return;
@@ -54,14 +56,13 @@ export class PwcInclude extends PwcSimpleInitElement {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const html = await res.text();
-      this._insert(html);
+      await this._insert(html, src);
 
       this.removeAttribute("aria-busy");
       this.dispatchEvent(new CustomEvent("pwc-include:load", { bubbles: true }));
     } catch (err) {
       if (err.name === "AbortError") return;
 
-      // Try fallback URL
       const alt = this.getAttribute("alt");
       if (alt && src !== alt) {
         this._fetch(alt);
@@ -75,14 +76,38 @@ export class PwcInclude extends PwcSimpleInitElement {
     }
   }
 
-  _insert(html) {
-    const fragment = this.getAttribute("fragment");
-    if (fragment) {
+  async _insert(html, srcUrl) {
+    if (this.hasAttribute("shadow") && !this.shadowRoot) {
+      this.attachShadow({ mode: "open" });
+    }
+
+    const fragmentSelector = this.getAttribute("fragment");
+    const extractStylesAttr = this.getAttribute("extract-styles");
+    if (fragmentSelector || extractStylesAttr !== null) {
       const doc = new DOMParser().parseFromString(html, "text/html");
-      const matches = doc.querySelectorAll(fragment);
-      this.replaceChildren(...Array.from(matches).map((m) => document.adoptNode(m)));
+      const fragments = fragmentSelector
+        ? Array.from(doc.querySelectorAll(fragmentSelector))
+        : [doc];
+
+      if (extractStylesAttr !== null) {
+        const styleEls = this._collectStyleElements(doc, extractStylesAttr, fragments);
+        styleEls.forEach((el) => el.remove());
+
+        const sheets = await PwcInclude._resolveSheets(styleEls, srcUrl);
+        if (sheets.length) {
+          adoptSheets(this.shadowRoot || document, sheets);
+        }
+      }
+
+      if (fragmentSelector) {
+        this.root.replaceChildren(...fragments.map((m) => document.adoptNode(m)));
+      } else {
+        this.root.replaceChildren(
+          ...Array.from(doc.body.childNodes).map((n) => document.adoptNode(n))
+        );
+      }
     } else {
-      this.innerHTML = html;
+      this.root.innerHTML = html;
     }
 
     if (this.hasAttribute("with-scripts")) {
@@ -90,8 +115,42 @@ export class PwcInclude extends PwcSimpleInitElement {
     }
   }
 
+  _collectStyleElements(doc, extractStylesAttr, fragments) {
+    const modes = tokenList(extractStylesAttr || "fragment");
+    const selector = 'style, link[rel="stylesheet"]';
+    const result = [];
+
+    if (modes.contains("document")) {
+      result.push(...doc.querySelectorAll(selector));
+    } else {
+      if (modes.contains("head")) {
+        result.push(...doc.head.querySelectorAll(selector));
+      }
+      if (modes.contains("fragment")) {
+        for (const fragment of fragments) {
+          result.push(...fragment.querySelectorAll(selector));
+        }
+      }
+    }
+
+    return result;
+  }
+
+  static async _resolveSheets(styleElements, srcUrl) {
+    const promises = styleElements.map((el) => {
+      if (el.tagName === "LINK") {
+        const href = el.getAttribute("href");
+        const resolved = new URL(href, new URL(srcUrl, document.baseURI)).href;
+        return fetchSheet(resolved);
+      }
+      return Promise.resolve(getOrCreateSheet(el.textContent));
+    });
+    const results = await Promise.all(promises);
+    return [...new Set(results.filter(Boolean))];
+  }
+
   _executeScripts() {
-    for (const old of Array.from(this.querySelectorAll("script"))) {
+    for (const old of Array.from(this.root.querySelectorAll("script"))) {
       const s = document.createElement("script");
       if (old.src) s.src = old.src;
       if (old.type) s.type = old.type;

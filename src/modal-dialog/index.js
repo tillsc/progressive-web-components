@@ -1,8 +1,9 @@
-import { PwcModalDialog, define } from "./modal-dialog.js";
+import { define } from "./modal-dialog.js";
+import { registerCss } from "../core/utils.js";
 import cssText from "./modal-dialog.css";
 
 export function register() {
-  PwcModalDialog.registerCss(cssText);
+  registerCss(cssText);
   define();
 }
 

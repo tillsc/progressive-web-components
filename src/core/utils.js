@@ -16,3 +16,52 @@ export function tokenList(str) {
   el.className = str || "";
   return el.classList;
 }
+
+/** Shared cache: normalized cssText or resolved URL → CSSStyleSheet. */
+const _sheetCache = new Map();
+
+/** Return a cached CSSStyleSheet for the given CSS text.
+ *  Browser normalization ensures whitespace differences share the same sheet. */
+export function getOrCreateSheet(cssText) {
+  const sheet = new CSSStyleSheet();
+  sheet.replaceSync(cssText);
+  const normalized = Array.from(sheet.cssRules, (r) => r.cssText).join("\n");
+  if (_sheetCache.has(normalized)) {
+    return _sheetCache.get(normalized);
+  }
+  _sheetCache.set(normalized, sheet);
+  return sheet;
+}
+
+/** Fetch a stylesheet by URL and cache the resulting CSSStyleSheet. Returns null on failure. */
+export async function fetchSheet(url) {
+  const resolved = new URL(url, document.baseURI).href;
+  if (_sheetCache.has(resolved)) {
+    return _sheetCache.get(resolved);
+  }
+  try {
+    const res = await fetch(resolved);
+    if (!res.ok) return null;
+    const cssText = await res.text();
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(cssText);
+    _sheetCache.set(resolved, sheet);
+    return sheet;
+  } catch {
+    return null;
+  }
+}
+
+/** Register a stylesheet on the document (cached, deduplicated). */
+export function registerCss(cssText) {
+  adoptSheets(document, [getOrCreateSheet(cssText)]);
+}
+
+/** Adopt sheets into a target (document or shadowRoot), skipping duplicates. */
+export function adoptSheets(target, sheets) {
+  const existing = target.adoptedStyleSheets;
+  const newOnes = sheets.filter((s) => !existing.includes(s));
+  if (newOnes.length) {
+    target.adoptedStyleSheets = [...existing, ...newOnes];
+  }
+}
