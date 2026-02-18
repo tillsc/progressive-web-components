@@ -20,7 +20,7 @@ export async function startServer({ port = 0 } = {}) {
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
 
-  const repoRoot = path.resolve(__dirname, "../..");
+  const repoRoot = path.resolve(__dirname, "..");
   const srcRoot = path.join(repoRoot, "src");
 
   // Load optional dynamic routes from component test directories

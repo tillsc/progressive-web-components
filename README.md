@@ -19,14 +19,14 @@ A collection of Custom Elements designed to work with server-rendered HTML and p
 
 ## Components
 
-| Component                                                                               | Description |
-|-----------------------------------------------------------------------------------------|-------------|
-| <a href="src/conditional-display/" data-test-page>&lt;pwc-shown-if&gt;</a> / <a href="src/conditional-display/">&lt;pwc-hidden-if&gt;</a> / <a href="src/conditional-display/">&lt;pwc-enabled-if&gt;</a> / <a href="src/conditional-display/">&lt;pwc-disabled-if&gt;</a> | Conditionally show/hide or enable/disable DOM sections based on a form input |
-| <a href="src/dialog-opener/" data-test-page>&lt;pwc-dialog-opener&gt;</a>               | Enhances links to open their targets in a modal dialog |
-| <a href="src/filter/" data-test-page>&lt;pwc-filter&gt;</a>                             | Adds a search input to filter arbitrary markup based on free-text input |
-| <a href="src/modal-dialog/" data-test-page>&lt;pwc-modal-dialog&gt;</a>                 | Low-level building block for modal dialogs from JavaScript |
-| <a href="src/multiselect-dual-list/" data-test-page>&lt;pwc-multiselect-dual-list&gt;</a> | Dual-list multiselect UI that enhances a native `<select>` element |
-| <a href="src/zone-transfer/" data-test-page>&lt;pwc-zone-transfer&gt;</a>               | Zone-based drag & drop and keyboard sorting for moving elements between containers |
+| Component | Description |
+|---|---|
+| [`<pwc-shown-if>`](src/conditional-display/) / [`<pwc-hidden-if>`](src/conditional-display/) / [`<pwc-enabled-if>`](src/conditional-display/) / [`<pwc-disabled-if>`](src/conditional-display/) | Conditionally show/hide or enable/disable DOM sections based on a form input |
+| [`<pwc-dialog-opener>`](src/dialog-opener/) | Enhances links to open their targets in a modal dialog |
+| [`<pwc-filter>`](src/filter/) | Adds a search input to filter arbitrary markup based on free-text input |
+| [`<pwc-modal-dialog>`](src/modal-dialog/) | Low-level building block for modal dialogs from JavaScript |
+| [`<pwc-multiselect-dual-list>`](src/multiselect-dual-list/) | Dual-list multiselect UI that enhances a native `<select>` element |
+| [`<pwc-zone-transfer>`](src/zone-transfer/) | Zone-based drag & drop and keyboard sorting for moving elements between containers |
 
 ## Installation
 

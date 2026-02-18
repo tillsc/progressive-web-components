@@ -24,9 +24,9 @@
     "clean": "rm -rf dist",
     "build": "node build.js",
     "build:watch": "node build.js --watch",
-    "test": "npm run build && node test/run.mjs",
-    "test:verbose": "npm run build && TEST_VERBOSE=1 TEST_CONCURRENCY=1 node test/run.mjs",
-    "serve": "node test/server/serve.mjs",
+    "test": "npm run build && node --test",
+    "test:verbose": "npm run build && TEST_VERBOSE=1 node --test",
+    "serve": "node server/serve.mjs",
     "watch": "concurrently -k -n build,serve \"npm run build:watch\" \"npm run serve\""
   },
   "devDependencies": {

@@ -22,8 +22,8 @@
 </pwc-filter>
 
 <script type="module">
-  import { run } from "../../../static/test-harness.js";
-  import { setValue } from "../../../static/test-helpers.js";
+  import { run } from "../../../static/testing/harness.js";
+  import { setValue } from "../../../static/testing/helpers.js";
 
   run(async ({ assert, equal, waitFor, log, nextTick }) => {
     await log("checking element definition");

@@ -92,7 +92,7 @@ There is no linter or formatter configured.
 | `npm run build` | One-shot build |
 | `npm run build:watch` | Incremental rebuild on change |
 | `npm test` | Build + run all tests (Playwright, headless) |
-| `npm run test:verbose` | Build + run tests sequentially with detailed output |
+| `npm run test:verbose` | Build + run tests with detailed step-by-step output |
 | `npm run serve` | Start dev server (port 5123) |
 | `npm run watch` | Build watch + dev server (concurrently) |
 
@@ -116,18 +116,19 @@ handled with care.
 
 ## Testing
 
-- Tests are written as HTML pages
-- Each component may provide `src/<component>/test/index.html`
-- Test pages are explicitly listed via `data-test-page` links
-- Tests run in a real browser (headless or interactive)
+- Tests are written as HTML pages named `*.test.html`
+- Test files live in `src/<component>/test/`
+- The test runner discovers tests by globbing `src/*/test/*.test.html`
+- Tests run via `node:test` with Playwright (headless or interactive)
 - A minimal harness provides assertions and result reporting
-- No test framework dependency
-- Tests can be run headless via Playwright or manually in the browser
+- No test framework dependency beyond `node:test`
+- Tests can also be opened manually in the browser for debugging
 - Components may provide dynamic test routes in `src/<component>/test/routes.mjs`
+- Run a subset of tests: `node --test --test-name-pattern="filter"`
 
 ### Test harness API
 
-`static/test-harness.js` exports `run(fn)`. The callback receives a context `t`:
+`static/testing/harness.js` exports `run(fn)`. The callback receives a context `t`:
 
 - `t.assert(condition, message)` — counted assertion, throws on failure
 - `t.equal(actual, expected, message)` — strict equality assertion

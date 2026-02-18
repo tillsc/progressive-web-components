@@ -21,7 +21,7 @@
 // - In UI mode, tests do not start automatically.
 // - In UI mode, errors from manual interaction do not fail a test unless you started it.
 
-import { createUi } from "./test-harness-ui.js";
+import { createUi } from "./harness-ui.js";
 
 function isAutomatedHeadless() {
   return navigator.webdriver === true;

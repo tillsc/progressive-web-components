@@ -39,8 +39,8 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script type="module">
-    import { run } from "../../../static/test-harness.js";
-    import { click } from "../../../static/test-helpers.js";
+    import { run } from "../../../static/testing/harness.js";
+    import { click } from "../../../static/testing/helpers.js";
 
     const u = new URL(window.location.href);
     if (u.searchParams.has("commit")) {
