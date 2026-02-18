@@ -26,16 +26,10 @@ export class PwcElement extends HTMLElement {
   }
 
   connectedCallback() {
-    if (this._connected) return;
-    this._connected = true;
-
     this._bindEvents();
   }
 
   disconnectedCallback() {
-    if (!this._connected) return;
-    this._connected = false;
-
     this._unbindEvents();
     this.onDisconnect();
   }

@@ -8,11 +8,10 @@ import {PwcElement} from "./pwc-element.js";
  */
 export class PwcSimpleInitElement extends PwcElement {
   connectedCallback() {
-    if (this._connected) return;
     super.connectedCallback();
 
     queueMicrotask(() => {
-      if (!this._connected) return;
+      if (!this.isConnected) return;
       this.onConnect();
     });
   }

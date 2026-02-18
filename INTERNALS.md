@@ -37,9 +37,9 @@ All components extend one of the init-strategy classes, which in turn extend `Pw
     ├── PwcSentinelInitElement
     └── PwcChildrenObserverElement
 
-**`PwcElement`** — Shared foundation. Idempotent lifecycle via a `_connected` guard,
-declarative event binding through `static events` and the `handleEvent` pattern,
-and a cleanup hook (`onDisconnect()`). No rendering, no templating.
+**`PwcElement`** — Shared foundation. Declarative event binding through `static events`
+and the `handleEvent` pattern, and a cleanup hook (`onDisconnect()`). No rendering,
+no templating.
 
 **`PwcSimpleInitElement`** — Calls `onConnect()` once per connection, deferred to a
 microtask. Use this when server-rendered children are available synchronously and a

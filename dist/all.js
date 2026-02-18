@@ -14,13 +14,9 @@ var PwcElement = class extends HTMLElement {
     document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
   }
   connectedCallback() {
-    if (this._connected) return;
-    this._connected = true;
     this._bindEvents();
   }
   disconnectedCallback() {
-    if (!this._connected) return;
-    this._connected = false;
     this._unbindEvents();
     this.onDisconnect();
   }
@@ -61,7 +57,6 @@ var PwcChildrenObserverElement = class extends PwcElement {
   static observeMode = "children";
   // "children" | "tree"
   connectedCallback() {
-    if (this._connected) return;
     super.connectedCallback();
     this._startChildrenObserver();
   }
@@ -80,7 +75,7 @@ var PwcChildrenObserverElement = class extends PwcElement {
     const mode = this.constructor.observeMode || "children";
     const subtree = mode === "tree";
     this._childrenObserver = new MutationObserver((mutations) => {
-      if (!this._connected) return;
+      if (!this.isConnected) return;
       this.onChildrenChanged(mutations);
     });
     this._childrenObserver.observe(this, { childList: true, subtree });
@@ -248,10 +243,9 @@ register();
 // src/core/pwc-simple-init-element.js
 var PwcSimpleInitElement = class extends PwcElement {
   connectedCallback() {
-    if (this._connected) return;
     super.connectedCallback();
     queueMicrotask(() => {
-      if (!this._connected) return;
+      if (!this.isConnected) return;
       this.onConnect();
     });
   }
@@ -1247,23 +1241,18 @@ register5();
 var PwcInclude = class extends PwcSimpleInitElement {
   static observedAttributes = ["src", "media"];
   onConnect() {
-    this._load();
+    this.refresh();
   }
   attributeChangedCallback(name, oldValue, newValue) {
-    if (!this._connected) return;
+    if (!this.isConnected) return;
     if (oldValue === newValue) return;
-    this._load();
-  }
-  /** Re-fetch the current `src` and replace content. */
-  refresh() {
-    this._load();
+    this.refresh();
   }
   onDisconnect() {
     this._teardownLazy();
     this._abortPending();
   }
-  // -- internal ---------------------------------------------------------------
-  _load() {
+  refresh() {
     const src = this.getAttribute("src");
     if (!src) return;
     const media = this.getAttribute("media");
@@ -1274,6 +1263,7 @@ var PwcInclude = class extends PwcSimpleInitElement {
     }
     this._fetch(src);
   }
+  // -- internal ---------------------------------------------------------------
   async _fetch(src) {
     this._abortPending();
     this._controller = new AbortController();
@@ -1335,7 +1325,7 @@ var PwcInclude = class extends PwcSimpleInitElement {
       if (entries.some((e) => e.isIntersecting)) {
         this._lazyTriggered = true;
         this._teardownLazy();
-        this._load();
+        this.refresh();
       }
     });
     this._observer.observe(this);

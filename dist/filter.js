@@ -20,13 +20,9 @@ var PwcElement = class extends HTMLElement {
     document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
   }
   connectedCallback() {
-    if (this._connected) return;
-    this._connected = true;
     this._bindEvents();
   }
   disconnectedCallback() {
-    if (!this._connected) return;
-    this._connected = false;
     this._unbindEvents();
     this.onDisconnect();
   }
@@ -65,10 +61,9 @@ var PwcElement = class extends HTMLElement {
 // src/core/pwc-simple-init-element.js
 var PwcSimpleInitElement = class extends PwcElement {
   connectedCallback() {
-    if (this._connected) return;
     super.connectedCallback();
     queueMicrotask(() => {
-      if (!this._connected) return;
+      if (!this.isConnected) return;
       this.onConnect();
     });
   }

@@ -13,7 +13,6 @@ export class PwcChildrenObserverElement extends PwcElement {
   static observeMode = "children"; // "children" | "tree"
 
   connectedCallback() {
-    if (this._connected) return;
     super.connectedCallback();
     this._startChildrenObserver();
   }
@@ -36,7 +35,7 @@ export class PwcChildrenObserverElement extends PwcElement {
     const subtree = mode === "tree";
 
     this._childrenObserver = new MutationObserver((mutations) => {
-      if (!this._connected) return;
+      if (!this.isConnected) return;
       this.onChildrenChanged(mutations);
     });
 

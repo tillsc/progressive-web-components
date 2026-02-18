@@ -14,13 +14,9 @@ var PwcElement = class extends HTMLElement {
     document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
   }
   connectedCallback() {
-    if (this._connected) return;
-    this._connected = true;
     this._bindEvents();
   }
   disconnectedCallback() {
-    if (!this._connected) return;
-    this._connected = false;
     this._unbindEvents();
     this.onDisconnect();
   }
@@ -61,7 +57,6 @@ var PwcChildrenObserverElement = class extends PwcElement {
   static observeMode = "children";
   // "children" | "tree"
   connectedCallback() {
-    if (this._connected) return;
     super.connectedCallback();
     this._startChildrenObserver();
   }
@@ -80,7 +75,7 @@ var PwcChildrenObserverElement = class extends PwcElement {
     const mode = this.constructor.observeMode || "children";
     const subtree = mode === "tree";
     this._childrenObserver = new MutationObserver((mutations) => {
-      if (!this._connected) return;
+      if (!this.isConnected) return;
       this.onChildrenChanged(mutations);
     });
     this._childrenObserver.observe(this, { childList: true, subtree });

@@ -12,7 +12,6 @@ export class PwcSentinelInitElement extends PwcElement {
   static sentinelSelector = "pwc-sentinel, [data-pwc-sentinel]";
 
   connectedCallback() {
-    if (this._connected) return;
     super.connectedCallback();
 
     if (this._hasSentinel()) {
@@ -21,7 +20,7 @@ export class PwcSentinelInitElement extends PwcElement {
     }
 
     this._sentinelObserver = new MutationObserver(() => {
-      if (!this._connected) return;
+      if (!this.isConnected) return;
       if (!this._hasSentinel()) return;
 
       this._stopSentinelObserver();
