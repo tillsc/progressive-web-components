@@ -5,8 +5,6 @@ Lightweight text filter web component.
 `<pwc-filter>` adds a search input and filters arbitrary markup based on free-text input.
 It is designed to work with **tables, lists, or any structured DOM**.
 
-The component does **not** use Shadow DOM and relies on regular DOM structure.
-
 ---
 
 ## Basic usage
@@ -150,7 +148,7 @@ The input receives an `aria-label` matching the `placeholder` text.
 
 ---
 
-## Styling
+## Styling (vanilla)
 
 The component does not impose any styling.
 

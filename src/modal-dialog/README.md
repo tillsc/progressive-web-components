@@ -6,8 +6,6 @@ Minimal modal dialog web component.
 It is designed as a low-level building block and does **not** manage navigation, iframes,
 or application flow on its own.
 
-The component does **not** use Shadow DOM and relies on regular DOM structure and CSS hooks.
-
 ---
 
 ## Basic usage

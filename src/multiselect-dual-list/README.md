@@ -6,8 +6,6 @@ Dual-list multiselect web component.
 selected items on the left, available items on the right.
 Hierarchical relationships between options are displayed as indentation.
 
-The component does **not** use Shadow DOM and relies on stable, explicit markup hooks.
-
 ---
 
 ## Basic usage

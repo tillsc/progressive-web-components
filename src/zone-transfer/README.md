@@ -6,10 +6,8 @@ Minimal zone-based drag & drop plus sorting between containers ("zones").
 HTML5 Drag and Drop API without external libraries. It moves elements between zones and
 emits a single change event.
 
-The component does **not** use Shadow DOM and relies on regular DOM structure and data attributes.
-
 ---
-
+  
 ## Basic usage
 
 Zones can be declared either via tag name or via data attributes.

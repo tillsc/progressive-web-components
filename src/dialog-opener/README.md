@@ -5,8 +5,6 @@ Server-first dialog opener web component.
 `<pwc-dialog-opener>` enhances existing links to open their targets inside a modal dialog.
 It is designed to work with server-rendered HTML and minimal JavaScript.
 
-The component does **not** use Shadow DOM and relies on stable, explicit markup hooks.
-
 ---
 
 ## Basic usage
@@ -292,7 +290,7 @@ When omitted, the title is derived automatically with a "Dialog: " prefix:
 
 ---
 
-## Styling
+## Styling (vanilla)
 
 The dialog-opener reuses `<pwc-modal-dialog>` (or its BS5 variant) for all layout and
 chrome. If your page already styles the modal-dialog component, the dialog-opener will
