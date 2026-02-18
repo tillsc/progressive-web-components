@@ -83,6 +83,12 @@ programmatic DOM changes.
 `build.js` uses esbuild with `.css` loaded as text. Each component (and variant) produces
 a separate ESM bundle in `dist/`. `dist/` is committed to git.
 
+### All-bundles (`src/index.js` / `src/index-bs5.js`)
+
+Every component must appear in **both** all-bundles. `index-bs5.js` imports the `bs5/`
+variant where one exists, and the plain component otherwise. When adding a new component
+without a BS5 variant, add it to both files.
+
 There is no linter or formatter configured.
 
 ### Commands
