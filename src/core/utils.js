@@ -9,3 +9,10 @@ export function defineOnce(name, classDef) {
   if (customElements.get(name)) return;
   customElements.define(name, classDef);
 }
+
+/** Parse a space-separated string into a DOMTokenList. */
+export function tokenList(str) {
+  const el = document.createElement("span");
+  el.className = str || "";
+  return el.classList;
+}

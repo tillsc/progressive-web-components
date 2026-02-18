@@ -1,4 +1,5 @@
 import { PwcElement } from "../core/pwc-element.js";
+import { tokenList } from "../core/utils.js";
 
 export class BaseDialogOpener extends PwcElement {
   static events = ["click"];
@@ -87,8 +88,7 @@ export class BaseDialogOpener extends PwcElement {
   }
 
   _installIFrameAdditionalEventTriggers() {
-    const additionalEvents = (this.getAttribute("iframe-additional-events") || "").trim()
-      .split(/\s+/).filter(Boolean);
+    const additionalEvents = tokenList(this.getAttribute("iframe-additional-events"));
     if (!additionalEvents.length) return;
 
     const doc = this.iframe?.contentWindow?.document;
@@ -140,13 +140,11 @@ export class BaseDialogOpener extends PwcElement {
     }
 
     if (this.hasAttribute("local-reload") && this.id) {
-      const localReloadOptionTokens = document.createElement("div").classList;
-      const tokens = this.getAttribute("local-reload").split(/\s+/).filter(Boolean);
-      if (tokens.length) localReloadOptionTokens.add(...tokens);
+      const localReloadTokens = tokenList(this.getAttribute("local-reload"));
       const localReloadOptions = {
-        replaceUrl: localReloadOptionTokens.contains("replace-url"),
-        pushUrl: localReloadOptionTokens.contains("push-url"),
-        withScripts: localReloadOptionTokens.contains("with-scripts")
+        replaceUrl: localReloadTokens.contains("replace-url"),
+        pushUrl: localReloadTokens.contains("push-url"),
+        withScripts: localReloadTokens.contains("with-scripts")
       };
 
       newUri.searchParams.set("local_reload", this.id);
