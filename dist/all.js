@@ -33,6 +33,7 @@ var PwcElement = class extends HTMLElement {
 var PwcChildrenObserverElement = class extends PwcElement {
   static observeMode = "children";
   // "children" | "tree"
+  static observeAttributes = null;
   connectedCallback() {
     super.connectedCallback();
     this._startChildrenObserver();
@@ -56,7 +57,12 @@ var PwcChildrenObserverElement = class extends PwcElement {
       if (!this.isConnected) return;
       this.onChildrenChanged(mutations);
     });
-    this._childrenObserver.observe(this, { childList: true, subtree });
+    const options = { childList: true, subtree };
+    if (this.constructor.observeAttributes?.length) {
+      options.attributes = true;
+      options.attributeFilter = this.constructor.observeAttributes;
+    }
+    this._childrenObserver.observe(this, options);
     this.onChildrenChanged([]);
   }
   _stopChildrenObserver() {
@@ -1422,3 +1428,179 @@ function register6() {
   define7();
 }
 register6();
+
+// src/auto-submit/auto-submit.js
+var PwcAutoSubmit = class extends PwcElement {
+  static events = ["change"];
+  handleEvent(e) {
+    const target = e.target;
+    if (!target.hasAttribute("data-auto-submit")) return;
+    const form = this.querySelector("form") || target.closest("form");
+    if (!form) return;
+    if (this.hasAttribute("local-reload") && this.id) {
+      this._submitAndLocalReload(form, target);
+    } else {
+      if (this.hasAttribute("local-reload")) {
+        console.warn("<pwc-auto-submit> has local-reload attribute but no id", this);
+      }
+      form.submit();
+    }
+  }
+  async _submitAndLocalReload(form, trigger) {
+    this._abortPending();
+    this._controller = new AbortController();
+    this.setAttribute("aria-busy", "true");
+    const url = new URL(form.action || window.location.href);
+    const method = (form.method || "GET").toUpperCase();
+    const formData = new FormData(form);
+    formData.set("_pwc_autosubmitted_by", trigger.name || trigger.id || "");
+    try {
+      const credentials = this.hasAttribute("with-credentials") ? "include" : "same-origin";
+      let res;
+      if (method === "GET") {
+        url.search = new URLSearchParams(formData).toString();
+        res = await fetch(url, { signal: this._controller.signal, credentials });
+      } else {
+        res = await fetch(url, {
+          method,
+          body: formData,
+          signal: this._controller.signal,
+          credentials
+        });
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const match = doc.getElementById(this.id);
+      if (match) {
+        transclude(this, Array.from(match.childNodes), this);
+        if (this.hasAttribute("with-scripts")) {
+          executeScripts(this);
+        }
+        this.removeAttribute("aria-busy");
+        this.dispatchEvent(new CustomEvent("pwc-auto-submit:load", { bubbles: true }));
+      } else {
+        console.warn(`<pwc-auto-submit> could not find #${this.id} in response, replacing entire document`);
+        document.open();
+        document.write(html);
+        document.close();
+      }
+    } catch (err) {
+      if (err.name === "AbortError") return;
+      this.removeAttribute("aria-busy");
+      this.dispatchEvent(
+        new CustomEvent("pwc-auto-submit:error", { bubbles: true, detail: { error: err } })
+      );
+    }
+  }
+  _abortPending() {
+    if (this._controller) {
+      this._controller.abort();
+      this._controller = null;
+    }
+  }
+  onDisconnect() {
+    this._abortPending();
+  }
+};
+function define8() {
+  defineOnce("pwc-auto-submit", PwcAutoSubmit);
+}
+
+// src/auto-submit/index.js
+function register7() {
+  define8();
+}
+register7();
+
+// src/validity/base.js
+var BaseValidity = class extends PwcChildrenObserverElement {
+  static observeMode = "tree";
+  static observeAttributes = ["data-validity"];
+  _cleanups = [];
+  onChildrenChanged(mutations) {
+    if (!mutations.length) {
+      for (const el of this.querySelectorAll("[data-validity]")) {
+        this._applyValidity(el);
+      }
+      return;
+    }
+    const affected = mutations.flatMap(
+      (m) => m.type === "attributes" ? [m.target] : [...m.addedNodes].filter((n) => n.nodeType === Node.ELEMENT_NODE).flatMap((n) => [n, ...n.querySelectorAll("[data-validity]")]).filter((n) => n.hasAttribute("data-validity"))
+    );
+    for (const el of affected) this._applyValidity(el);
+  }
+  _applyValidity(el) {
+    const value = el.getAttribute("data-validity");
+    if (value) {
+      el.setCustomValidity(value);
+      this._updateMessage(el, value);
+      this._setupClearing(el);
+    } else {
+      if (el.validity?.customError) el.setCustomValidity("");
+      this._updateMessage(el, null);
+    }
+  }
+  _updateMessage(_el, _text) {
+  }
+  _setupClearing(el) {
+    if (el.dataset.validityClear === "none") return;
+    const clearOn = this.getAttribute("clear-on");
+    const clearAfter = this.getAttribute("clear-after");
+    if (!clearOn && !clearAfter) return;
+    let timeoutId;
+    const clear = () => {
+      if (clearOn) {
+        for (const event of tokenList(clearOn)) {
+          el.removeEventListener(event, clear);
+        }
+      }
+      if (timeoutId !== void 0) {
+        clearTimeout(timeoutId);
+        timeoutId = void 0;
+      }
+      el.removeAttribute("data-validity");
+    };
+    if (clearOn) {
+      for (const event of tokenList(clearOn)) {
+        el.addEventListener(event, clear);
+      }
+    }
+    if (clearAfter) {
+      timeoutId = setTimeout(clear, parseInt(clearAfter, 10));
+    }
+    this._cleanups.push(clear);
+  }
+  onDisconnect() {
+    for (const fn of this._cleanups) fn();
+    this._cleanups = [];
+  }
+};
+
+// src/validity/validity.js
+var PwcValidity = class extends BaseValidity {
+  _updateMessage(el, text) {
+    this._withoutChildrenChangedNotification(() => {
+      let msg = el.nextElementSibling;
+      if (text) {
+        if (!msg?.matches(".pwc-validity-message")) {
+          msg = document.createElement("span");
+          msg.className = "pwc-validity-message";
+          el.insertAdjacentElement("afterend", msg);
+        }
+        msg.textContent = text;
+      } else if (msg?.matches(".pwc-validity-message")) {
+        msg.remove();
+      }
+    });
+  }
+};
+function define9() {
+  defineOnce("pwc-validity", PwcValidity);
+}
+
+// src/validity/index.js
+function register8() {
+  define9();
+}
+register8();

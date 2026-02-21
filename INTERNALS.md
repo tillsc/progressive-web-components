@@ -137,7 +137,7 @@ Constructable stylesheet management (shared module-level cache):
 
 ### Transclusion (`transclude.js`)
 
-Shared DOM replacement logic used by `pwc-include`, `pwc-dialog-opener`, and future components that fetch HTML and insert it into the page.
+Shared DOM replacement logic used by `pwc-include`, `pwc-dialog-opener`, `pwc-auto-submit`, and future components that fetch HTML and insert it into the page.
 
 - `transclude(target, content, contextElement)` — Replaces children of `target` with `content` (string or node array). Supports a morph hook (see [DOM morphing](README.md#dom-morphing) in the README).
 - `executeScripts(root)` — Re-creates `<script>` elements so the browser executes them.

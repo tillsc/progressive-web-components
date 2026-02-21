@@ -33,6 +33,7 @@ var PwcElement = class extends HTMLElement {
 var PwcChildrenObserverElement = class extends PwcElement {
   static observeMode = "children";
   // "children" | "tree"
+  static observeAttributes = null;
   connectedCallback() {
     super.connectedCallback();
     this._startChildrenObserver();
@@ -56,7 +57,12 @@ var PwcChildrenObserverElement = class extends PwcElement {
       if (!this.isConnected) return;
       this.onChildrenChanged(mutations);
     });
-    this._childrenObserver.observe(this, { childList: true, subtree });
+    const options = { childList: true, subtree };
+    if (this.constructor.observeAttributes?.length) {
+      options.attributes = true;
+      options.attributeFilter = this.constructor.observeAttributes;
+    }
+    this._childrenObserver.observe(this, options);
     this.onChildrenChanged([]);
   }
   _stopChildrenObserver() {

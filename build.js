@@ -14,6 +14,9 @@ const entryPoints = {
   "conditional-display": "src/conditional-display/index.js",
   "zone-transfer": "src/zone-transfer/index.js",
   "include": "src/include/index.js",
+  "auto-submit": "src/auto-submit/index.js",
+  "validity": "src/validity/index.js",
+  "validity-bs5": "src/validity/bs5/index.js",
   "all": "src/index.js",
   "all-bs5": "src/index-bs5.js",
 };

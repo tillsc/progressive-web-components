@@ -5,3 +5,5 @@ import './modal-dialog';
 import './multiselect-dual-list';
 import './zone-transfer';
 import './include';
+import './auto-submit';
+import './validity';

@@ -21,12 +21,14 @@ A collection of Custom Elements designed to work with server-rendered HTML and p
 
 | Component | Description |
 |---|---|
+| [`<pwc-auto-submit>`](src/auto-submit/) | Auto-submits a form on `change` events, with optional local reload via fetch + transclusion |
 | [`<pwc-shown-if>`](src/conditional-display/) / [`<pwc-hidden-if>`](src/conditional-display/) / [`<pwc-enabled-if>`](src/conditional-display/) / [`<pwc-disabled-if>`](src/conditional-display/) | Conditionally show/hide or enable/disable DOM sections based on a form input |
 | [`<pwc-dialog-opener>`](src/dialog-opener/) | Enhances links to open their targets in a modal dialog |
-| [`<pwc-include>`](src/include/) | Client-side HTML transclusion — fetches HTML from a URL and inserts it |
 | [`<pwc-filter>`](src/filter/) | Adds a search input to filter arbitrary markup based on free-text input |
+| [`<pwc-include>`](src/include/) | Client-side HTML transclusion — fetches HTML from a URL and inserts it |
 | [`<pwc-modal-dialog>`](src/modal-dialog/) | Low-level building block for modal dialogs from JavaScript |
 | [`<pwc-multiselect-dual-list>`](src/multiselect-dual-list/) | Dual-list multiselect UI that enhances a native `<select>` element |
+| [`<pwc-validity>`](src/validity/) | Maps `data-validity` attributes to `setCustomValidity()` with optional auto-clearing |
 | [`<pwc-zone-transfer>`](src/zone-transfer/) | Zone-based drag & drop and keyboard sorting for moving elements between containers |
 
 ## Installation
@@ -62,18 +64,20 @@ For more control you can import the unbundled source files directly
 
 `dist/` contains one JavaScript file per component (and variant). No build step is required for consumers.
 
+- `auto-submit.js` (no Bootstrap variant needed)
 - `conditional-display.js` (no Bootstrap variant needed)
 - `dialog-opener.js` / `dialog-opener-bs5.js`
 - `filter.js` / `filter-bs5.js`
+- `include.js` (no Bootstrap variant needed)
 - `modal-dialog.js` / `modal-dialog-bs5.js`
 - `multiselect-dual-list.js` / `multiselect-dual-list-bs5.js`
-- `include.js` (no Bootstrap variant needed)
+- `validity.js` / `validity-bs5.js`
 - `zone-transfer.js` (no Bootstrap variant needed)
 - `all.js` / `all-bs5.js` (all components bundled)
 
 ## DOM morphing
 
-Components that replace HTML (`<pwc-include>`, `<pwc-dialog-opener>` with `local-reload`)
+Components that replace HTML (`<pwc-include>`, `<pwc-dialog-opener>` and `<pwc-auto-submit>` with `local-reload`)
 support an optional morph hook. When registered, the morph function is called instead of
 replacing the DOM wholesale, which preserves focus, scroll position, and input state during
 updates.

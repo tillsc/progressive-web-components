@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>auto-submit: basic</title>
+    <script type="module" src="../../../dist/auto-submit.js"></script>
+</head>
+
+<body>
+
+<h1>auto-submit: basic</h1>
+
+<pwc-auto-submit id="auto-submit-test" local-reload>
+    <form method="get" action="./response.html">
+        <select name="color" data-auto-submit>
+            <option value="red" selected>Red</option>
+            <option value="blue">Blue</option>
+            <option value="green">Green</option>
+        </select>
+        <span class="result">Color: red</span>
+    </form>
+</pwc-auto-submit>
+
+<script type="module">
+  import { run } from "../../../static/testing/harness.js";
+  import { setValue, waitForEvent } from "../../../static/testing/helpers.js";
+
+  run(async ({ assert, equal, waitFor, log }) => {
+
+    const el = document.getElementById("auto-submit-test");
+    const select = el.querySelector("select[name=color]");
+
+    // --- Basic local-reload ---
+
+    await log("local-reload: change select triggers fetch and transclusion");
+    const loadPromise = waitForEvent(el, "pwc-auto-submit:load");
+    setValue(select, "blue");
+
+    await log("local-reload: waiting for load event");
+    await loadPromise;
+
+    assert(el.textContent.includes("Form submitted"), "content replaced with response");
+    equal(el.getAttribute("aria-busy"), null, "aria-busy removed after load");
+
+    await log("done");
+  });
+</script>
+</body>
+</html>
