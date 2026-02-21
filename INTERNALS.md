@@ -54,9 +54,11 @@ when the component's children are rendered asynchronously (e.g. streamed partial
 
 **`PwcChildrenObserverElement`** — Calls `onChildrenChanged()` on connect and on every
 subsequent child mutation. Supports two modes via `static observeMode`: `"children"`
-(direct children only, default) and `"tree"` (full subtree). Provides
-`_withoutChildrenChangedNotification(fn)` to suppress observer callbacks during
-programmatic DOM changes.
+(direct children only, default) and `"tree"` (full subtree). Optional attribute
+observation via `static observeAttributes` (array of attribute names, e.g.
+`["data-validity"]`) — when set, `onChildrenChanged()` also fires on changes to the
+listed attributes. Provides `_withoutChildrenChangedNotification(fn)` to suppress
+observer callbacks during programmatic DOM changes.
 
 ### Choosing a base class
 

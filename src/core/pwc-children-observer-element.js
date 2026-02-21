@@ -3,9 +3,11 @@ import {PwcElement} from "./pwc-element.js";
 /**
  * Calls onChildrenChanged() on connect and on every subsequent child mutation.
  * Modes: "children" (direct only, default) or "tree" (full subtree).
+ * Optional attribute observation via static observeAttributes (array of names).
  */
 export class PwcChildrenObserverElement extends PwcElement {
   static observeMode = "children"; // "children" | "tree"
+  static observeAttributes = null;
 
   connectedCallback() {
     super.connectedCallback();
@@ -35,7 +37,13 @@ export class PwcChildrenObserverElement extends PwcElement {
       this.onChildrenChanged(mutations);
     });
 
-    this._childrenObserver.observe(this, { childList: true, subtree });
+    const options = { childList: true, subtree };
+    if (this.constructor.observeAttributes?.length) {
+      options.attributes = true;
+      options.attributeFilter = this.constructor.observeAttributes;
+    }
+
+    this._childrenObserver.observe(this, options);
 
     this.onChildrenChanged([]);
   }
