@@ -70,3 +70,42 @@ For more control you can import the unbundled source files directly
 - `include.js` (no Bootstrap variant needed)
 - `zone-transfer.js` (no Bootstrap variant needed)
 - `all.js` / `all-bs5.js` (all components bundled)
+
+## DOM morphing
+
+Components that replace HTML (`<pwc-include>`, `<pwc-dialog-opener>` with `local-reload`)
+support an optional morph hook. When registered, the morph function is called instead of
+replacing the DOM wholesale, which preserves focus, scroll position, and input state during
+updates.
+
+The morph function receives `(target, content)` where `content` is either an HTML string
+or an array of DOM nodes, and must replace the **children** of `target`. Without a registered
+morph function the components fall back to `innerHTML` / `replaceChildren`.
+
+Any morphing library that can operate on inner content works. Examples:
+
+| Library | Wrapper |
+|---|---|
+| [Idiomorph](https://github.com/bigskysoftware/idiomorph) | `(target, content) => Idiomorph.morph(target, content, { morphStyle: "innerHTML" })` |
+| [morphdom](https://github.com/patrick-steele-idem/morphdom) | `(target, content) => morphdom(target, content, { childrenOnly: true })` |
+
+Register via the
+[Context Protocol](https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md):
+
+```js
+document.addEventListener("context-request", (e) => {
+  if (e.context === "morph") e.callback(myMorphFn);
+});
+```
+
+Alternatively, set it as a global:
+
+```js
+window.PWC = { morph: myMorphFn };
+```
+
+To disable morphing for a specific element, add the `nomorph` attribute:
+
+```html
+<pwc-include src="/partial" nomorph></pwc-include>
+```

@@ -44,6 +44,45 @@ var PwcElement = class extends HTMLElement {
   }
 };
 
+// src/core/context.js
+var ContextRequestEvent = class extends Event {
+  constructor(context, callback) {
+    super("context-request", { bubbles: true, composed: true });
+    this.context = context;
+    this.callback = callback;
+  }
+};
+function requestContext(element, name) {
+  let value;
+  element.dispatchEvent(new ContextRequestEvent(name, (v) => {
+    value = v;
+  }));
+  return value ?? window.PWC?.[name];
+}
+
+// src/core/transclude.js
+function transclude(target, content, contextElement) {
+  const el = contextElement || target;
+  const morph = el.hasAttribute?.("nomorph") ? null : requestContext(el, "morph");
+  if (morph) {
+    morph(target, content);
+  } else if (typeof content === "string") {
+    target.innerHTML = content;
+  } else {
+    target.replaceChildren(...content);
+  }
+}
+function executeScripts(root) {
+  for (const old of Array.from(root.querySelectorAll("script"))) {
+    const s = document.createElement("script");
+    if (old.src) s.src = old.src;
+    if (old.type) s.type = old.type;
+    if (old.noModule) s.noModule = true;
+    s.textContent = old.textContent;
+    old.replaceWith(s);
+  }
+}
+
 // src/dialog-opener/base.js
 var BaseDialogOpener = class extends PwcElement {
   static events = ["click"];
@@ -161,7 +200,7 @@ var BaseDialogOpener = class extends PwcElement {
         const newDocument = new DOMParser().parseFromString(html, "text/html");
         const fragment = newDocument.getElementById(this.id);
         if (fragment) {
-          this.replaceChildren(...fragment.childNodes);
+          transclude(this, Array.from(fragment.childNodes), this);
           if (localReloadOptions.replaceUrl || localReloadOptions.pushUrl) {
             if (localReloadOptions.pushUrl) {
               history.pushState(null, "", newUri);
@@ -170,7 +209,7 @@ var BaseDialogOpener = class extends PwcElement {
             }
           }
           if (localReloadOptions.withScripts) {
-            this._executeInlineScripts(this);
+            executeScripts(this);
           }
           this.dispatchEvent(
             new CustomEvent("pwc-dialog-opener:local-reload", {
@@ -184,22 +223,6 @@ var BaseDialogOpener = class extends PwcElement {
       }
     }
     return false;
-  }
-  _executeInlineScripts(root) {
-    console.log("Executing inline scripts in local-reload fragment", root);
-    const scripts = Array.from(root.querySelectorAll("script"));
-    for (const old of scripts) {
-      if (old.src) {
-        console.warn("Ignoring external script in local-reload fragment:", old.src);
-        old.remove();
-        continue;
-      }
-      const s = document.createElement("script");
-      if (old.type) s.type = old.type;
-      if (old.noModule) s.noModule = true;
-      s.textContent = old.textContent || "";
-      old.replaceWith(s);
-    }
   }
   _applyIFrameDomTransformations() {
     const iframeDoc = this.iframe.contentWindow?.document;

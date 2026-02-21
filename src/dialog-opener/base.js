@@ -1,5 +1,6 @@
 import { PwcElement } from "../core/pwc-element.js";
 import { tokenList } from "../core/utils.js";
+import { transclude, executeScripts } from "../core/transclude.js";
 
 export class BaseDialogOpener extends PwcElement {
   static events = ["click"];
@@ -156,7 +157,7 @@ export class BaseDialogOpener extends PwcElement {
         const fragment = newDocument.getElementById(this.id);
 
         if (fragment) {
-          this.replaceChildren(...fragment.childNodes);
+          transclude(this, Array.from(fragment.childNodes), this);
 
           // Optional History API update
           if (localReloadOptions.replaceUrl || localReloadOptions.pushUrl) {
@@ -170,7 +171,7 @@ export class BaseDialogOpener extends PwcElement {
           }
 
           if (localReloadOptions.withScripts) {
-            this._executeInlineScripts(this);
+            executeScripts(this);
           }
 
           this.dispatchEvent(
@@ -187,29 +188,6 @@ export class BaseDialogOpener extends PwcElement {
     }
 
     return false;
-  }
-
-  _executeInlineScripts(root) {
-    console.log("Executing inline scripts in local-reload fragment", root);
-    const scripts = Array.from(root.querySelectorAll("script"));
-
-    for (const old of scripts) {
-      if (old.src) {
-        console.warn("Ignoring external script in local-reload fragment:", old.src);
-        old.remove();
-        continue;
-      }
-
-      // Re-create script to execute it
-      const s = document.createElement("script");
-      // preserve type if present (default is classic)
-      if (old.type) s.type = old.type;
-      if (old.noModule) s.noModule = true;
-
-      s.textContent = old.textContent || "";
-
-      old.replaceWith(s);
-    }
   }
 
   _applyIFrameDomTransformations() {

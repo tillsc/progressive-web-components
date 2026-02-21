@@ -1,5 +1,6 @@
 import { PwcSimpleInitElement } from "../core/pwc-simple-init-element.js";
 import { defineOnce, tokenList, getOrCreateSheet, fetchSheet, adoptSheets } from "../core/utils.js";
+import { transclude, executeScripts } from "../core/transclude.js";
 
 /**
  * <pwc-include>
@@ -100,18 +101,16 @@ export class PwcInclude extends PwcSimpleInitElement {
       }
 
       if (fragmentSelector) {
-        this.root.replaceChildren(...fragments.map((m) => document.adoptNode(m)));
+        transclude(this.root, fragments.map((m) => document.adoptNode(m)), this);
       } else {
-        this.root.replaceChildren(
-          ...Array.from(doc.body.childNodes).map((n) => document.adoptNode(n))
-        );
+        transclude(this.root, Array.from(doc.body.childNodes).map((n) => document.adoptNode(n)), this);
       }
     } else {
-      this.root.innerHTML = html;
+      transclude(this.root, html, this);
     }
 
     if (this.hasAttribute("with-scripts")) {
-      this._executeScripts();
+      executeScripts(this.root);
     }
   }
 
@@ -147,17 +146,6 @@ export class PwcInclude extends PwcSimpleInitElement {
     });
     const results = await Promise.all(promises);
     return [...new Set(results.filter(Boolean))];
-  }
-
-  _executeScripts() {
-    for (const old of Array.from(this.root.querySelectorAll("script"))) {
-      const s = document.createElement("script");
-      if (old.src) s.src = old.src;
-      if (old.type) s.type = old.type;
-      if (old.noModule) s.noModule = true;
-      s.textContent = old.textContent;
-      old.replaceWith(s);
-    }
   }
 
   _abortPending() {

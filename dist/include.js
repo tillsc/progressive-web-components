@@ -89,6 +89,45 @@ function adoptSheets(target, sheets) {
   }
 }
 
+// src/core/context.js
+var ContextRequestEvent = class extends Event {
+  constructor(context, callback) {
+    super("context-request", { bubbles: true, composed: true });
+    this.context = context;
+    this.callback = callback;
+  }
+};
+function requestContext(element, name) {
+  let value;
+  element.dispatchEvent(new ContextRequestEvent(name, (v) => {
+    value = v;
+  }));
+  return value ?? window.PWC?.[name];
+}
+
+// src/core/transclude.js
+function transclude(target, content, contextElement) {
+  const el = contextElement || target;
+  const morph = el.hasAttribute?.("nomorph") ? null : requestContext(el, "morph");
+  if (morph) {
+    morph(target, content);
+  } else if (typeof content === "string") {
+    target.innerHTML = content;
+  } else {
+    target.replaceChildren(...content);
+  }
+}
+function executeScripts(root) {
+  for (const old of Array.from(root.querySelectorAll("script"))) {
+    const s = document.createElement("script");
+    if (old.src) s.src = old.src;
+    if (old.type) s.type = old.type;
+    if (old.noModule) s.noModule = true;
+    s.textContent = old.textContent;
+    old.replaceWith(s);
+  }
+}
+
 // src/include/include.js
 var PwcInclude = class _PwcInclude extends PwcSimpleInitElement {
   static observedAttributes = ["src", "media"];
@@ -161,17 +200,15 @@ var PwcInclude = class _PwcInclude extends PwcSimpleInitElement {
         }
       }
       if (fragmentSelector) {
-        this.root.replaceChildren(...fragments.map((m) => document.adoptNode(m)));
+        transclude(this.root, fragments.map((m) => document.adoptNode(m)), this);
       } else {
-        this.root.replaceChildren(
-          ...Array.from(doc.body.childNodes).map((n) => document.adoptNode(n))
-        );
+        transclude(this.root, Array.from(doc.body.childNodes).map((n) => document.adoptNode(n)), this);
       }
     } else {
-      this.root.innerHTML = html;
+      transclude(this.root, html, this);
     }
     if (this.hasAttribute("with-scripts")) {
-      this._executeScripts();
+      executeScripts(this.root);
     }
   }
   _collectStyleElements(doc, extractStylesAttr, fragments) {
@@ -203,16 +240,6 @@ var PwcInclude = class _PwcInclude extends PwcSimpleInitElement {
     });
     const results = await Promise.all(promises);
     return [...new Set(results.filter(Boolean))];
-  }
-  _executeScripts() {
-    for (const old of Array.from(this.root.querySelectorAll("script"))) {
-      const s = document.createElement("script");
-      if (old.src) s.src = old.src;
-      if (old.type) s.type = old.type;
-      if (old.noModule) s.noModule = true;
-      s.textContent = old.textContent;
-      old.replaceWith(s);
-    }
   }
   _abortPending() {
     if (this._controller) {

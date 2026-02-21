@@ -12,6 +12,8 @@ Example: `<pwc-multiselect-dual-list>` component
             pwc-simple-init-element.js
             pwc-sentinel-init-element.js
             pwc-children-observer-element.js
+            context.js
+            transclude.js
             utils.js
 
         multiselect-dual-list/
@@ -126,6 +128,17 @@ Constructable stylesheet management (shared module-level cache):
 - `fetchSheet(url)` — fetches CSS by URL, caches the resulting sheet
 - `adoptSheets(target, sheets)` — adopts sheets into a target (`document` or `shadowRoot`),
   deduplicating by reference
+
+### Context Protocol (`context.js`)
+
+- `requestContext(element, name)` — W3C Context Protocol DI. Dispatches a `context-request` event from `element`, falls back to `window.PWC?.[name]`.
+
+### Transclusion (`transclude.js`)
+
+Shared DOM replacement logic used by `pwc-include`, `pwc-dialog-opener`, and future components that fetch HTML and insert it into the page.
+
+- `transclude(target, content, contextElement)` — Replaces children of `target` with `content` (string or node array). Supports a morph hook (see [DOM morphing](README.md#dom-morphing) in the README).
+- `executeScripts(root)` — Re-creates `<script>` elements so the browser executes them.
 
 ## Trust model for attributes
 
