@@ -83,11 +83,12 @@ registered, the morph library is used instead of
 replacing the DOM wholesale, which preserves focus, scroll position, and input state during
 updates.
 
-Register the [Idiomorph](https://github.com/bigskysoftware/idiomorph) namespace object
-directly — `transclude` configures `morphStyle: "innerHTML"`, `restoreFocus: true`, and
-a `beforeAttributeUpdated` callback that protects `value`/`checked` on connected, editable
-form elements automatically (readonly and disabled fields are always updated from the server).
-Without a registered morph library the components fall back to `innerHTML` / `replaceChildren`.
+Register the [Idiomorph](https://github.com/bigskysoftware/idiomorph) namespace
+object directly. The components configure `morphStyle: "innerHTML"`,
+`restoreFocus: true`, and a `beforeAttributeUpdated` callback that protects
+`value`/`checked` on connected, editable form elements automatically (readonly
+and disabled fields are always updated from the server). Without a registered
+morph library the components fall back to `innerHTML` / `replaceChildren`.
 
 Register via the
 [Context Protocol](https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md):
