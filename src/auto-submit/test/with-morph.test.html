@@ -22,7 +22,11 @@
     <label for="last">Last (with <code>data-auto-submit</code>)</label><br>
     <input id="last" name="last" value="Smith" data-auto-submit><br><br>
     <label for="color">Color</label><br>
-    <input id="color" name="color" value="red">
+    <input id="color" name="color" value="red"><br><br>
+    <label for="readonly-computed">Readonly computed</label><br>
+    <input id="readonly-computed" name="readonly_computed" value="" readonly><br><br>
+    <label for="forced">Forced (data-pwc-force-value)</label><br>
+    <input id="forced" name="forced" value="initial" data-pwc-force-value>
   </form>
 </pwc-auto-submit>
 
@@ -31,32 +35,8 @@
   import { setValue, waitForEvent } from "../../../static/testing/helpers.js";
   import { Idiomorph } from 'https://cdn.jsdelivr.net/npm/idiomorph@0.7.4/+esm';
 
-  const morphFn = (target, content) => {
-    Idiomorph.morph(target, content, {
-      morphStyle: "innerHTML",
-      restoreFocus: true,
-      callbacks: {
-        beforeAttributeUpdated(attributeName, node, _mutationType) {
-          if (
-            node instanceof HTMLInputElement ||
-            node instanceof HTMLTextAreaElement ||
-            node instanceof HTMLSelectElement
-          ) {
-            if (!node.isConnected) return true
-
-            if (attributeName === "value" || attributeName === "checked") {
-              return false
-            }
-          }
-
-          return true
-        }
-      }
-    })
-  }
-
   document.addEventListener("context-request", (e) => {
-    if (e.context === "morph") e.callback(morphFn);
+    if (e.context === "idiomorph") e.callback(Idiomorph);
   });
 
   run(async ({ assert, equal, waitFor, log }) => {
@@ -67,6 +47,8 @@
     equal(el.querySelector("#first").value, "Alice", "first");
     equal(el.querySelector("#last").value, "Smith", "last");
     equal(el.querySelector("#color").value, "red", "color");
+    equal(el.querySelector("#readonly-computed").value, "", "readonly-computed empty initially");
+    equal(el.querySelector("#forced").value, "initial", "forced has initial value");
 
     await log("change last → triggers auto-submit");
     const loadPromise = waitForEvent(el, "pwc-auto-submit:load");
@@ -80,6 +62,12 @@
     equal(el.querySelector("#last").value, "Jones", "last has new value");
     assert(document.activeElement == el.querySelector("#color"), "color input still has the focus");
     equal(el.querySelector("#color").value, "blue", "color not reset to server value (local change not lost)");
+
+    await log("readonly field updated from server");
+    equal(el.querySelector("#readonly-computed").value, "Alice Jones", "readonly field was updated by server");
+
+    await log("data-pwc-force-value overrides local value");
+    equal(el.querySelector("#forced").value, "FORCED", "editable field was force-updated by server");
 
     await log("done");
   });

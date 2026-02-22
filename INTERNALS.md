@@ -6,38 +6,42 @@ Developer and maintainer documentation for the project architecture.
 
 Example: `<pwc-multiselect-dual-list>` component
 
-    src/
-        core/
-            pwc-element.js
-            pwc-simple-init-element.js
-            pwc-sentinel-init-element.js
-            pwc-children-observer-element.js
-            context.js
-            transclude.js
-            utils.js
+```
+src/
+  core/
+    pwc-element.js
+    pwc-simple-init-element.js
+    pwc-sentinel-init-element.js
+    pwc-children-observer-element.js
+    context.js
+    transclude.js
+    utils.js
 
-        multiselect-dual-list/
-            base.js
-            multiselect-dual-list.js
-            multiselect-dual-list.css
-            index.js
+  multiselect-dual-list/
+    base.js
+    multiselect-dual-list.js
+    multiselect-dual-list.css
+    index.js
 
-            bs5/
-                multiselect-dual-list.js
-                index.js
+    bs5/
+      multiselect-dual-list.js
+      index.js
 
-    dist/
-        multiselect-dual-list.js
-        multiselect-dual-list-bs5.js
+dist/
+  multiselect-dual-list.js
+  multiselect-dual-list-bs5.js
+```
 
 ## Base class hierarchy
 
 All components extend one of the init-strategy classes, which in turn extend `PwcElement`.
 
-    PwcElement
-    ├── PwcSimpleInitElement
-    ├── PwcSentinelInitElement
-    └── PwcChildrenObserverElement
+```
+PwcElement
+├── PwcSimpleInitElement
+├── PwcSentinelInitElement
+└── PwcChildrenObserverElement
+```
 
 **`PwcElement`** — Shared foundation. Declarative event binding through `static events`
 and the `handleEvent` pattern, and a cleanup hook (`onDisconnect()`). No rendering,
@@ -133,13 +137,18 @@ Constructable stylesheet management (shared module-level cache):
 
 ### Context Protocol (`context.js`)
 
-- `requestContext(element, name)` — W3C Context Protocol DI. Dispatches a `context-request` event from `element`, falls back to `window.PWC?.[name]`.
+- `requestContext(element, name)` — W3C Context Protocol DI. Dispatches a
+  `context-request` event from `element`, falls back to `window.PWC?.[name]`.
 
 ### Transclusion (`transclude.js`)
 
-Shared DOM replacement logic used by `pwc-include`, `pwc-dialog-opener`, `pwc-auto-submit`, and future components that fetch HTML and insert it into the page.
+Shared DOM replacement logic used by `pwc-include`, `pwc-dialog-opener`,
+`pwc-auto-submit`, and future components that fetch HTML and insert it into
+the page.
 
-- `transclude(target, content, contextElement)` — Replaces children of `target` with `content` (string or node array). Supports a morph hook (see [DOM morphing](README.md#dom-morphing) in the README).
+- `transclude(target, content, contextElement)` — Replaces children of `target`
+  with `content` (string or node array). Supports an optional morph library via
+  the `"idiomorph"` context.
 - `executeScripts(root)` — Re-creates `<script>` elements so the browser executes them.
 
 ## Trust model for attributes

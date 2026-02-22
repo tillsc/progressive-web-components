@@ -106,11 +106,29 @@ function requestContext(element, name) {
 }
 
 // src/core/transclude.js
+var MORPH_OPTIONS = {
+  morphStyle: "innerHTML",
+  restoreFocus: true,
+  callbacks: {
+    beforeAttributeUpdated(attributeName, node) {
+      if ((attributeName === "value" || attributeName === "checked") && node.matches?.("input,textarea,select") && node.isConnected && !node.readOnly && !node.disabled) return false;
+      return true;
+    },
+    afterNodeMorphed(oldNode, newNode) {
+      if (!newNode?.matches?.("[data-pwc-force-value]")) return;
+      if (newNode.matches("input[type=checkbox],input[type=radio]")) {
+        oldNode.checked = newNode.hasAttribute("checked");
+      } else {
+        oldNode.value = newNode.getAttribute("value") ?? "";
+      }
+    }
+  }
+};
 function transclude(target, content, contextElement) {
   const el = contextElement || target;
-  const morph = el.hasAttribute?.("nomorph") ? null : requestContext(el, "morph");
-  if (morph) {
-    morph(target, content);
+  const morphLib = el.hasAttribute?.("nomorph") ? null : requestContext(el, "idiomorph");
+  if (morphLib) {
+    morphLib.morph(target, content, MORPH_OPTIONS);
   } else if (typeof content === "string") {
     target.innerHTML = content;
   } else {

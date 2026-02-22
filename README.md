@@ -77,35 +77,33 @@ For more control you can import the unbundled source files directly
 
 ## DOM morphing
 
-Components that replace HTML (`<pwc-include>`, `<pwc-dialog-opener>` and `<pwc-auto-submit>` with `local-reload`)
-support an optional morph hook. When registered, the morph function is called instead of
+Components that replace HTML (`<pwc-include>`, `<pwc-dialog-opener>` and
+`<pwc-auto-submit>` with `local-reload`) support an optional morph hook. When
+registered, the morph library is used instead of
 replacing the DOM wholesale, which preserves focus, scroll position, and input state during
 updates.
 
-The morph function receives `(target, content)` where `content` is either an HTML string
-or an array of DOM nodes, and must replace the **children** of `target`. Without a registered
-morph function the components fall back to `innerHTML` / `replaceChildren`.
-
-Any morphing library that can operate on inner content works. Examples:
-
-| Library | Wrapper |
-|---|---|
-| [Idiomorph](https://github.com/bigskysoftware/idiomorph) | `(target, content) => Idiomorph.morph(target, content, { morphStyle: "innerHTML" })` |
-| [morphdom](https://github.com/patrick-steele-idem/morphdom) | `(target, content) => morphdom(target, content, { childrenOnly: true })` |
+Register the [Idiomorph](https://github.com/bigskysoftware/idiomorph) namespace object
+directly — `transclude` configures `morphStyle: "innerHTML"`, `restoreFocus: true`, and
+a `beforeAttributeUpdated` callback that protects `value`/`checked` on connected, editable
+form elements automatically (readonly and disabled fields are always updated from the server).
+Without a registered morph library the components fall back to `innerHTML` / `replaceChildren`.
 
 Register via the
 [Context Protocol](https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md):
 
 ```js
+import { Idiomorph } from "idiomorph";
+
 document.addEventListener("context-request", (e) => {
-  if (e.context === "morph") e.callback(myMorphFn);
+  if (e.context === "idiomorph") e.callback(Idiomorph);
 });
 ```
 
 Alternatively, set it as a global:
 
 ```js
-window.PWC = { morph: myMorphFn };
+window.PWC = { idiomorph: Idiomorph };
 ```
 
 To disable morphing for a specific element, add the `nomorph` attribute:
@@ -113,3 +111,17 @@ To disable morphing for a specific element, add the `nomorph` attribute:
 ```html
 <pwc-include src="/partial" nomorph></pwc-include>
 ```
+
+### `data-pwc-force-value`
+
+Readonly and disabled fields are never protected (the user cannot have changed them), so
+they always receive the server-rendered value automatically.
+
+For editable fields that should still accept the server value, add `data-pwc-force-value`
+in the server response:
+
+```html
+<input name="total" value="42" data-pwc-force-value>
+```
+
+For checkboxes and radio buttons, the `checked` attribute is forced instead of `value`.
