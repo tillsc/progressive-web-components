@@ -50,10 +50,10 @@ export class BaseValidity extends PwcChildrenObserverElement {
   _updateMessage(_el, _text) {}
 
   _setupClearing(el) {
-    if (el.dataset.validityClear === "none") return;
-
-    const clearOn = this.getAttribute("clear-on");
-    const clearAfter = this.getAttribute("clear-after");
+    let clearOn = el.dataset.validityClearOn ?? this.getAttribute("clear-on");
+    let clearAfter = el.dataset.validityClearAfter ?? this.getAttribute("clear-after");
+    if (clearOn === "off") clearOn = null;
+    if (clearAfter === "off") clearAfter = null;
 
     if (!clearOn && !clearAfter) return;
 

@@ -29,11 +29,13 @@ mutations filtered to `data-validity`. On connect, `onChildrenChanged([])` scans
 
 ## Clearing mechanism
 
-`_setupClearing(el)` installs event listeners (`clear-on`) and/or a timeout (`clear-after`).
+`_setupClearing(el)` resolves clearing parameters with per-element override via `??`:
+`data-validity-clear-on` / `data-validity-clear-after` on the element take precedence over
+`clear-on` / `clear-after` on the component. Either can be set to `"off"` to disable that
+clearing channel for a specific element.
+
 The clear action removes the `data-validity` attribute — the MutationObserver then detects this
 and calls `_applyValidity` with the empty value, which resets the custom validity. This indirection
 keeps the clearing logic in one place regardless of the mutation source.
-
-Elements with `data-validity-clear="none"` skip clearing setup entirely.
 
 All event listeners and timeouts are tracked in `_cleanups` and torn down on disconnect.

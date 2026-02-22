@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>auto-submit: with-backend</title>
+  <script type="module" src="../../../dist/auto-submit.js"></script>
+  <style>
+      pwc-auto-submit[aria-busy="true"] { opacity: 0.5; }
+  </style>
+</head>
+
+<body>
+
+<h1>auto-submit: with-backend</h1>
+
+<h2>Server-side form processing</h2>
+
+<pwc-auto-submit id="as-backend" local-reload>
+  <form method="get" action="/src/auto-submit/test/backend/form">
+    <label for="first">First</label><br>
+    <input id="first" name="first" value="Alice"><br><br>
+    <label for="last">Last (with <code>data-auto-submit</code>)</label><br>
+    <input id="last" name="last" value="Smith" data-auto-submit><br><br>
+    <label for="color">Color</label><br>
+    <input id="color" name="color" value="red">
+  </form>
+</pwc-auto-submit>
+
+<script type="module">
+  import { run } from "../../../static/testing/harness.js";
+  import { setValue, waitForEvent } from "../../../static/testing/helpers.js";
+
+  run(async ({ assert, equal, waitFor, log }) => {
+
+    const el = document.getElementById("as-backend");
+
+    await log("precondition: initial values");
+    equal(el.querySelector("#first").value, "Alice", "first");
+    equal(el.querySelector("#last").value, "Smith", "last");
+    equal(el.querySelector("#color").value, "red", "color");
+
+    await log("change last → triggers auto-submit");
+    const loadPromise = waitForEvent(el, "pwc-auto-submit:load");
+    setValue(el.querySelector("#last"), "Jones");
+    setValue(el.querySelector("#color"), "blue"); // Will be lost since it was set after auto-submit
+    el.querySelector("#color").focus();
+    await loadPromise;
+
+    await log("after transclusion: server echoed submitted values");
+    equal(el.querySelector("#first").value, "Alice", "first unchanged (submitted as-is)");
+    equal(el.querySelector("#last").value, "Jones", "last has new value");
+    assert(document.activeElement !== el.querySelector("#color"), "color has lost the focus");
+    equal(el.querySelector("#color").value, "red", "color reset to server value (local change lost)");
+    equal(el.getAttribute("aria-busy"), null, "aria-busy removed");
+
+    await log("trigger again but change color before last");
+    const loadPromise2 = waitForEvent(el, "pwc-auto-submit:load");
+    setValue(el.querySelector("#color"), "blue");
+    setValue(el.querySelector("#last"), "Doe");
+    await loadPromise2;
+
+    equal(el.querySelector("#last").value, "Doe", "last has new value");
+    equal(el.querySelector("#color").value, "blue", "color is now blue");
+
+    await log("done");
+  });
+</script>
+</body>
+</html>

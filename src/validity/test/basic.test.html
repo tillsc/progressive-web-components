@@ -6,9 +6,8 @@
     <title>validity: basic</title>
     <script type="module" src="../../../dist/validity.js"></script>
     <style>
-        input, select, textarea { display: block; margin: 0.3rem 0 0; }
-        :invalid { border: 2px solid #c00; outline-color: #c00; }
-        .pwc-validity-message { color: #c00; font-size: 0.85rem; display: block; }
+        :invalid { border-color: #c00; outline-color: #c00; }
+        .pwc-validity-message { color: #c00; font-size: 0.85rem; }
     </style>
 </head>
 
@@ -19,12 +18,16 @@
 <h2>Initial validity</h2>
 
 <pwc-validity id="v-initial">
+    <label for="name">Name</label>
     <input id="name" data-validity="Name is required">
+    <label for="role">Role</label>
     <select id="role" data-validity="Pick a role">
         <option value="">--</option>
         <option value="admin">Admin</option>
     </select>
+    <label for="bio">Bio</label>
     <textarea id="bio" data-validity="Bio too short"></textarea>
+    <label for="clean">Clean field</label>
     <input id="clean" placeholder="no error">
 </pwc-validity>
 
@@ -33,6 +36,7 @@
 <h2>clear-on</h2>
 
 <pwc-validity id="v-clear-on" clear-on="input">
+    <label for="clear-on-input">Type to clear the error</label>
     <input id="clear-on-input" data-validity="Fix this">
 </pwc-validity>
 
@@ -40,36 +44,13 @@
 
 <h2>clear-after</h2>
 
-<pwc-validity id="v-clear-after" clear-after="500">
+<pwc-validity id="v-clear-after" clear-after="50">
+    <label for="clear-after-input">Error disappears after timeout</label>
     <input id="clear-after-input" data-validity="Goes away soon">
-</pwc-validity>
-
-<hr>
-
-<h2>clear-on + clear-after (event wins)</h2>
-
-<pwc-validity id="v-both" clear-on="input" clear-after="5000">
-    <input id="both-input" data-validity="Either way">
-</pwc-validity>
-
-<hr>
-
-<h2>data-validity-clear="none"</h2>
-
-<pwc-validity id="v-no-clear" clear-on="input" clear-after="200">
-    <input id="no-clear-input" data-validity="Stays forever" data-validity-clear="none">
-</pwc-validity>
-
-<hr>
-
-<h2>Dynamically added element</h2>
-
-<pwc-validity id="v-dynamic">
 </pwc-validity>
 
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
-  import { setValue } from "../../../static/testing/helpers.js";
 
   const msgOf = (el) => el.nextElementSibling?.matches(".pwc-validity-message") ? el.nextElementSibling : null;
 
@@ -107,51 +88,11 @@
 
     // --- clear-after ---
 
-    await log("clear-after: error and message span clear after timeout");
+    await log("clear-after: error cleared after timeout");
     const clearAfterInput = document.getElementById("clear-after-input");
-    await waitFor(() => clearAfterInput.validationMessage, { label: "clear-after has error" });
-    assert(msgOf(clearAfterInput), "message span present before timeout");
-
-    await waitFor(() => !clearAfterInput.validationMessage, { label: "clear-after error cleared", timeoutMs: 2000 });
-    equal(clearAfterInput.validationMessage, "", "error cleared after timeout");
+    await waitFor(() => !clearAfterInput.validationMessage, { label: "clear-after error cleared" });
+    equal(clearAfterInput.validationMessage, "", "error cleared");
     equal(msgOf(clearAfterInput), null, "message span removed");
-
-    // --- clear-on + clear-after (event wins) ---
-
-    await log("both: event clears before timeout");
-    const bothInput = document.getElementById("both-input");
-    await waitFor(() => bothInput.validationMessage, { label: "both has error" });
-
-    bothInput.dispatchEvent(new Event("input", { bubbles: true }));
-    await waitFor(() => !bothInput.validationMessage, { label: "both error cleared" });
-    equal(bothInput.validationMessage, "", "error cleared by event");
-    equal(msgOf(bothInput), null, "message span removed");
-
-    // --- data-validity-clear="none" ---
-
-    await log("no-clear: error persists despite clear-on and clear-after");
-    const noClearInput = document.getElementById("no-clear-input");
-    await waitFor(() => noClearInput.validationMessage, { label: "no-clear has error" });
-    equal(noClearInput.validationMessage, "Stays forever", "initial error set");
-
-    noClearInput.dispatchEvent(new Event("input", { bubbles: true }));
-    // Wait longer than clear-after (200ms) to confirm it doesn't clear
-    await new Promise((r) => setTimeout(r, 350));
-    equal(noClearInput.validationMessage, "Stays forever", "error still present after event and timeout");
-    assert(msgOf(noClearInput), "message span still present");
-
-    // --- Dynamically added element ---
-
-    await log("dynamic: validity and message span applied to dynamically inserted element");
-    const vDynamic = document.getElementById("v-dynamic");
-    const dynInput = document.createElement("input");
-    dynInput.id = "dyn-input";
-    dynInput.setAttribute("data-validity", "Dynamic error");
-    vDynamic.appendChild(dynInput);
-
-    await waitFor(() => dynInput.validationMessage, { label: "dynamic input has error" });
-    equal(dynInput.validationMessage, "Dynamic error", "dynamic error set");
-    equal(msgOf(dynInput)?.textContent, "Dynamic error", "dynamic message span");
 
     await log("done");
   });

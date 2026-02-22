@@ -58,12 +58,22 @@ The custom validation message. Set by the server on elements that failed validat
 <input name="email" data-validity="Invalid email address">
 ```
 
-### `data-validity-clear="none"`
+### `data-validity-clear-on`
 
-Prevents auto-clearing for this specific element, regardless of `clear-on` / `clear-after`.
+Per-element override for `clear-on`. Set to `"off"` to disable event-based clearing for this element.
 
 ```html
-<input name="token" data-validity="Token expired" data-validity-clear="none">
+<input name="email" data-validity="Invalid" data-validity-clear-on="input">
+<input name="token" data-validity="Expired" data-validity-clear-on="off">
+```
+
+### `data-validity-clear-after`
+
+Per-element override for `clear-after`. Set to `"off"` to disable timeout-based clearing for this element.
+
+```html
+<input name="token" data-validity="Expired" data-validity-clear-after="10000">
+<input name="pin" data-validity="Wrong PIN" data-validity-clear-after="off">
 ```
 
 ---

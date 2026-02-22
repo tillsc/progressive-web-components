@@ -111,13 +111,13 @@ var BaseValidity = class extends PwcChildrenObserverElement {
       this._updateMessage(el, null);
     }
   }
-  /** Variant hook: display or remove the error message in the DOM. */
   _updateMessage(_el, _text) {
   }
   _setupClearing(el) {
-    if (el.dataset.validityClear === "none") return;
-    const clearOn = this.getAttribute("clear-on");
-    const clearAfter = this.getAttribute("clear-after");
+    let clearOn = el.dataset.validityClearOn ?? this.getAttribute("clear-on");
+    let clearAfter = el.dataset.validityClearAfter ?? this.getAttribute("clear-after");
+    if (clearOn === "off") clearOn = null;
+    if (clearAfter === "off") clearAfter = null;
     if (!clearOn && !clearAfter) return;
     let timeoutId;
     const clear = () => {

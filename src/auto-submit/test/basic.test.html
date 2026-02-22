@@ -1,25 +1,30 @@
 <!doctype html>
 <html>
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>auto-submit: basic</title>
-    <script type="module" src="../../../dist/auto-submit.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>auto-submit: basic</title>
+  <script type="module" src="../../../dist/auto-submit.js"></script>
+  <style>
+      pwc-auto-submit[aria-busy="true"] { opacity: 0.5; }
+  </style>
 </head>
 
 <body>
 
 <h1>auto-submit: basic</h1>
 
+<h2>Local reload</h2>
+
 <pwc-auto-submit id="auto-submit-test" local-reload>
-    <form method="get" action="./response.html">
-        <select name="color" data-auto-submit>
-            <option value="red" selected>Red</option>
-            <option value="blue">Blue</option>
-            <option value="green">Green</option>
-        </select>
-        <span class="result">Color: red</span>
-    </form>
+  <form method="get" action="./response.html">
+    <label for="first">First</label><br>
+    <input id="first" name="first" value="original"><br><br
+    <label for="last">Last (with <code>data-auto-submit</code>)</label><br>
+    <input id="last" name="last" value="original" data-auto-submit><br><br>
+    <label for="color">Color</label><br>
+    <input id="color" name="color" value="red">
+  </form>
 </pwc-auto-submit>
 
 <script type="module">
@@ -29,19 +34,22 @@
   run(async ({ assert, equal, waitFor, log }) => {
 
     const el = document.getElementById("auto-submit-test");
-    const select = el.querySelector("select[name=color]");
 
-    // --- Basic local-reload ---
+    await log("precondition: three form fields present");
+    equal(el.querySelector("#first").value, "original", "first input has original value");
+    equal(el.querySelector("#last").value, "original", "last input has original value");
+    equal( el.querySelector("#color").value, "red", "color starts at red");
 
-    await log("local-reload: change select triggers fetch and transclusion");
+    await log("local-reload: change color triggers fetch and transclusion");
     const loadPromise = waitForEvent(el, "pwc-auto-submit:load");
-    setValue(select, "blue");
-
-    await log("local-reload: waiting for load event");
+    setValue(el.querySelector("#last"), "something else");
     await loadPromise;
 
-    assert(el.textContent.includes("Form submitted"), "content replaced with response");
-    equal(el.getAttribute("aria-busy"), null, "aria-busy removed after load");
+    await log("after transclusion: three form fields still present with response values");
+    equal(el.querySelector("#first").value, "from auto-submit response", "first input has response value");
+    equal(el.querySelector("#last").value, "from auto-submit response", "last input has response value");
+    equal(el.querySelector("#color").value, "from auto-submit response", "color input has response value");
+    equal(el.getAttribute("aria-busy"), null, "aria-busy removed");
 
     await log("done");
   });

@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>validity-bs5: basic</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <script type="module" src="../../../dist/validity-bs5.js"></script>
+</head>
+
+<body>
+<div class="container py-3">
+
+<h1>validity-bs5: basic</h1>
+
+<h2>Initial validity</h2>
+
+<pwc-validity-bs5 id="v-initial">
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input id="email" class="form-control" data-validity="Invalid email address">
+    </div>
+    <div class="mb-3">
+        <label for="role" class="form-label">Role</label>
+        <select id="role" class="form-select" data-validity="Pick a role">
+            <option value="">--</option>
+            <option value="admin">Admin</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="clean" class="form-label">Clean</label>
+        <input id="clean" class="form-control" placeholder="no error">
+    </div>
+</pwc-validity-bs5>
+
+<hr>
+
+<h2>clear-on</h2>
+
+<pwc-validity-bs5 id="v-clear-on" clear-on="input">
+    <div class="mb-3">
+        <label for="clear-on-input" class="form-label">Type to clear</label>
+        <input id="clear-on-input" class="form-control" data-validity="Fix this">
+    </div>
+</pwc-validity-bs5>
+
+</div>
+
+<script type="module">
+  import { run } from "../../../static/testing/harness.js";
+
+  const feedbackOf = (el) => el.nextElementSibling?.matches(".invalid-feedback") ? el.nextElementSibling : null;
+
+  run(async ({ assert, equal, waitFor, log }) => {
+
+    // --- Initial validity with BS5 classes ---
+
+    await log("initial: is-invalid class and invalid-feedback div present");
+    const email = document.getElementById("email");
+    const role = document.getElementById("role");
+    const clean = document.getElementById("clean");
+
+    await waitFor(() => email.validationMessage, { label: "email has validation message" });
+    equal(email.validationMessage, "Invalid email address", "email message");
+    assert(email.classList.contains("is-invalid"), "email has is-invalid class");
+    equal(feedbackOf(email)?.textContent, "Invalid email address", "email feedback div");
+
+    equal(role.validationMessage, "Pick a role", "role message");
+    assert(role.classList.contains("is-invalid"), "role has is-invalid class");
+    equal(feedbackOf(role)?.textContent, "Pick a role", "role feedback div");
+
+    equal(clean.validationMessage, "", "clean input has no error");
+    assert(!clean.classList.contains("is-invalid"), "clean has no is-invalid class");
+    equal(feedbackOf(clean), null, "clean has no feedback div");
+
+    // --- clear-on removes BS5 classes ---
+
+    await log("clear-on: is-invalid class and feedback div removed on input");
+    const clearOnInput = document.getElementById("clear-on-input");
+    await waitFor(() => clearOnInput.validationMessage, { label: "clear-on has error" });
+    assert(clearOnInput.classList.contains("is-invalid"), "is-invalid present before clear");
+    assert(feedbackOf(clearOnInput), "feedback div present before clear");
+
+    clearOnInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await waitFor(() => !clearOnInput.validationMessage, { label: "clear-on error cleared" });
+    assert(!clearOnInput.classList.contains("is-invalid"), "is-invalid removed");
+    equal(feedbackOf(clearOnInput), null, "feedback div removed");
+
+    await log("done");
+  });
+</script>
+</body>
+</html>
