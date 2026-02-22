@@ -170,7 +170,6 @@ handled with care.
 - A minimal harness provides assertions and result reporting
 - No test framework dependency beyond `node:test`
 - Tests can also be opened manually in the browser for debugging
-- Components may provide dynamic test routes in `src/<component>/test/routes.mjs`
 - Run a subset of tests: `node --test --test-name-pattern="filter"`
 
 ### Test harness API
@@ -184,6 +183,15 @@ handled with care.
 - `t.log(message)` — log entry (doubles as step-through pause point in UI mode)
 - `t.suppressErrors(fn)` — suppress all console errors during `fn`
 - `t.suppressErrors(pattern, fn)` — suppress only errors matching `pattern`
+
+`static/testing/mock-server.js` provides Service Worker based request mocking:
+
+- `mockRoutes(routes)` — registers a SW that intercepts fetch requests matching
+  the given routes. Each route is `{ path, handle(request) }` where `handle`
+  returns a `Response`. Handlers run on the page and have full DOM access.
+- `echoElement(selector, { values, texts })` — clones an element from the
+  current page and applies changes. `values` maps selectors to `value`
+  attributes, `texts` maps selectors to `textContent`. Returns a `Response`.
 
 `static/testing/helpers.js` provides DOM interaction helpers:
 

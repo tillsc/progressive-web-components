@@ -16,7 +16,7 @@
 
 
 <pwc-auto-submit id="as-backend" local-reload>
-  <form method="get" action="/src/auto-submit/test/backend/form">
+  <form method="get" action="/mock/auto-submit/morph">
     <label for="first">First</label><br>
     <input id="first" name="first" value="Alice"><br><br>
     <label for="last">Last (with <code>data-auto-submit</code>)</label><br>
@@ -27,23 +27,45 @@
     <input id="readonly-computed" name="readonly_computed" value="" readonly><br><br>
     <label for="forced">Forced (data-pwc-force-value)</label><br>
     <input id="forced" name="forced" value="initial" data-pwc-force-value>
+    <span id="response-marker"></span>
   </form>
 </pwc-auto-submit>
 
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
   import { setValue, waitForEvent } from "../../../static/testing/helpers.js";
+  import { mockRoutes, echoElement } from "../../../static/testing/mock-server.js";
   import { Idiomorph } from 'https://cdn.jsdelivr.net/npm/idiomorph@0.7.4/+esm';
 
   document.addEventListener("context-request", (e) => {
     if (e.context === "idiomorph") e.callback(Idiomorph);
   });
 
+  await mockRoutes([
+    {
+      path: "/mock/auto-submit/morph",
+      handle(request) {
+        const p = new URL(request.url).searchParams;
+        return echoElement("#as-backend", {
+          values: {
+            "#first": p.get("first"),
+            "#last": p.get("last"),
+            "#color": p.get("color"),
+            "#readonly-computed": `${p.get("first")} ${p.get("last")}`,
+            "#forced": "FORCED",
+          },
+          texts: { "#response-marker": "mock-response" },
+        });
+      },
+    },
+  ]);
+
   run(async ({ assert, equal, waitFor, log }) => {
 
     const el = document.getElementById("as-backend");
 
     await log("precondition: initial values");
+    equal(el.querySelector("#response-marker").textContent, "", "no response marker yet");
     equal(el.querySelector("#first").value, "Alice", "first");
     equal(el.querySelector("#last").value, "Smith", "last");
     equal(el.querySelector("#color").value, "red", "color");
@@ -58,6 +80,7 @@
     await loadPromise;
 
     await log("after transclusion: server echoed submitted values");
+    equal(el.querySelector("#response-marker").textContent, "mock-response", "response was transcluded");
     equal(el.querySelector("#first").value, "Alice", "first unchanged (submitted as-is)");
     equal(el.querySelector("#last").value, "Jones", "last has new value");
     assert(document.activeElement == el.querySelector("#color"), "color input still has the focus");

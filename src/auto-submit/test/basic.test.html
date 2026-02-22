@@ -14,42 +14,73 @@
 
 <h1>auto-submit: basic</h1>
 
-<h2>Local reload</h2>
-
-<pwc-auto-submit id="auto-submit-test" local-reload>
-  <form method="get" action="./response.html">
+<pwc-auto-submit id="as-backend" local-reload>
+  <form method="get" action="/mock/auto-submit/basic">
     <label for="first">First</label><br>
-    <input id="first" name="first" value="original"><br><br
+    <input id="first" name="first" value="Alice"><br><br>
     <label for="last">Last (with <code>data-auto-submit</code>)</label><br>
-    <input id="last" name="last" value="original" data-auto-submit><br><br>
+    <input id="last" name="last" value="Smith" data-auto-submit><br><br>
     <label for="color">Color</label><br>
     <input id="color" name="color" value="red">
+    <span id="response-marker"></span>
   </form>
 </pwc-auto-submit>
 
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
   import { setValue, waitForEvent } from "../../../static/testing/helpers.js";
+  import { mockRoutes, echoElement } from "../../../static/testing/mock-server.js";
+
+  await mockRoutes([
+    {
+      path: "/mock/auto-submit/basic",
+      handle(request) {
+        const p = new URL(request.url).searchParams;
+        return echoElement("#as-backend", {
+          values: {
+            "#first": p.get("first"),
+            "#last": p.get("last"),
+            "#color": p.get("color"),
+          },
+          texts: { "#response-marker": "mock-response" },
+        });
+      },
+    },
+  ]);
 
   run(async ({ assert, equal, waitFor, log }) => {
 
-    const el = document.getElementById("auto-submit-test");
+    const el = document.getElementById("as-backend");
 
-    await log("precondition: three form fields present");
-    equal(el.querySelector("#first").value, "original", "first input has original value");
-    equal(el.querySelector("#last").value, "original", "last input has original value");
-    equal( el.querySelector("#color").value, "red", "color starts at red");
+    await log("precondition: initial values");
+    equal(el.querySelector("#response-marker").textContent, "", "no response marker yet");
+    equal(el.querySelector("#first").value, "Alice", "first");
+    equal(el.querySelector("#last").value, "Smith", "last");
+    equal(el.querySelector("#color").value, "red", "color");
 
-    await log("local-reload: change color triggers fetch and transclusion");
+    await log("change last → triggers auto-submit");
     const loadPromise = waitForEvent(el, "pwc-auto-submit:load");
-    setValue(el.querySelector("#last"), "something else");
+    setValue(el.querySelector("#last"), "Jones");
+    setValue(el.querySelector("#color"), "blue"); // Will be lost since it was set after auto-submit
+    el.querySelector("#color").focus();
     await loadPromise;
 
-    await log("after transclusion: three form fields still present with response values");
-    equal(el.querySelector("#first").value, "from auto-submit response", "first input has response value");
-    equal(el.querySelector("#last").value, "from auto-submit response", "last input has response value");
-    equal(el.querySelector("#color").value, "from auto-submit response", "color input has response value");
+    await log("after transclusion: server echoed submitted values");
+    equal(el.querySelector("#response-marker").textContent, "mock-response", "response was transcluded");
+    equal(el.querySelector("#first").value, "Alice", "first unchanged (submitted as-is)");
+    equal(el.querySelector("#last").value, "Jones", "last has new value");
+    assert(document.activeElement !== el.querySelector("#color"), "color has lost the focus");
+    equal(el.querySelector("#color").value, "red", "color reset to server value (local change lost)");
     equal(el.getAttribute("aria-busy"), null, "aria-busy removed");
+
+    await log("trigger again but change color before last");
+    const loadPromise2 = waitForEvent(el, "pwc-auto-submit:load");
+    setValue(el.querySelector("#color"), "blue");
+    setValue(el.querySelector("#last"), "Doe");
+    await loadPromise2;
+
+    equal(el.querySelector("#last").value, "Doe", "last has new value");
+    equal(el.querySelector("#color").value, "blue", "color is now blue");
 
     await log("done");
   });

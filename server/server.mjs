@@ -50,6 +50,12 @@ export async function startServer({ port = 0 } = {}) {
     res.status(204).end();
   });
 
+  // Allow mock-sw.js to control all pages (scope: "/")
+  app.get("/static/testing/mock-sw.js", (_req, res, next) => {
+    res.setHeader("Service-Worker-Allowed", "/");
+    next();
+  });
+
   // Serve the entire repo root as static files
   app.use(express.static(repoRoot, { etag: false, maxAge: 0 }));
 
