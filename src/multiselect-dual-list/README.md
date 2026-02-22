@@ -185,4 +185,3 @@ A Bootstrap 5 styled variant is provided with the same API:
 Notes:
 - Same attributes and behavior as the vanilla component
 - Uses Bootstrap `list-group` markup and utility classes
-- Requires Bootstrap 5 CSS to be present

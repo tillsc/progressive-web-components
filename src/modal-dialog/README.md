@@ -147,5 +147,4 @@ A Bootstrap 5 based implementation is available:
 Notes:
 - Same JavaScript API as the vanilla component
 - Uses Bootstrap modal markup and classes
-- Requires Bootstrap 5 JavaScript and CSS to be present globally
 - Can stack over regular Bootstrap modals (not just pwc modals)
