@@ -1,4 +1,5 @@
 import { PwcSimpleInitElement } from "../src/core/pwc-simple-init-element.js";
+import { registerCss } from "../src/core/utils.js";
 
 const backendAvailable = fetch("/.well-known/pwc", { method: "HEAD" })
   .then((r) => r.ok)
@@ -21,5 +22,5 @@ class PwcDevOnlyLink extends PwcSimpleInitElement {
   }
 }
 
-PwcDevOnlyLink.registerCss("pwc-dev-only-link { display: list-item; }");
+registerCss("pwc-dev-only-link { display: list-item; }");
 customElements.define("pwc-dev-only-link", PwcDevOnlyLink);
