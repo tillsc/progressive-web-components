@@ -186,12 +186,15 @@ handled with care.
 
 `static/testing/mock-server.js` provides Service Worker based request mocking:
 
-- `mockRoutes(routes)` — registers a SW that intercepts fetch requests matching
-  the given routes. Each route is `{ path, handle(request) }` where `handle`
-  returns a `Response`. Handlers run on the page and have full DOM access.
-- `echoElement(selector, { values, texts })` — clones an element from the
-  current page and applies changes. `values` maps selectors to `value`
-  attributes, `texts` maps selectors to `textContent`. Returns a `Response`.
+- `mockRoutes(routes)` — registers a SW that intercepts fetch requests
+  matching the given routes. Each route is `{ path, handle(request) }`
+  where `path` is resolved relative to the page URL (e.g. `"./mock/basic"`)
+  and `handle` returns a `Response`. Handlers run on the page and have
+  full DOM access.
+- `echoElement(selector, { values, texts })` — clones an element (or
+  `<template>` content) from the current page and applies changes.
+  `values` maps selectors to `value` attributes, `texts` maps selectors
+  to `textContent`. Returns a `Response`.
 
 `static/testing/helpers.js` provides DOM interaction helpers:
 
