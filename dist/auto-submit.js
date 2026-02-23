@@ -56,8 +56,8 @@ var MORPH_OPTIONS = {
   morphStyle: "innerHTML",
   restoreFocus: true,
   callbacks: {
-    beforeAttributeUpdated(attributeName, node) {
-      if ((attributeName === "value" || attributeName === "checked") && node.matches?.("input,textarea,select") && node.isConnected && !node.readOnly && !node.disabled) return false;
+    beforeAttributeUpdated(attributeName, oldNode) {
+      if ((attributeName === "value" || attributeName === "checked") && oldNode.matches?.("input,textarea,select") && oldNode.isConnected && !oldNode.readOnly && !oldNode.disabled) return false;
       return true;
     },
     afterNodeMorphed(oldNode, newNode) {

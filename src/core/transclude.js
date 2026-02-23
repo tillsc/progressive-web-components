@@ -4,11 +4,14 @@ const MORPH_OPTIONS = {
   morphStyle: "innerHTML",
   restoreFocus: true,
   callbacks: {
-    beforeAttributeUpdated(attributeName, node) {
+    beforeAttributeUpdated(attributeName, oldNode) {
+      // idiomorph calls this with attributeName="value" for <textarea> too,
+      // even though textarea has no value attribute — it reuses the hook to
+      // guard its .value property sync (see idiomorph syncInputValue).
       if (
         (attributeName === "value" || attributeName === "checked") &&
-        node.matches?.("input,textarea,select") &&
-        node.isConnected && !node.readOnly && !node.disabled
+        oldNode.matches?.("input,textarea,select") &&
+        oldNode.isConnected && !oldNode.readOnly && !oldNode.disabled
       ) return false;
       return true;
     },
@@ -17,7 +20,7 @@ const MORPH_OPTIONS = {
       if (newNode.matches("input[type=checkbox],input[type=radio]")) {
         oldNode.checked = newNode.hasAttribute("checked");
       } else {
-        oldNode.value = newNode.getAttribute("value") ?? "";
+        oldNode.value = newNode.value;
       }
     },
   },
