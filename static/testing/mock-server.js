@@ -71,14 +71,18 @@ export async function mockRoutes(routes) {
   }
 
   // Resolve route paths relative to the page and register them with the SW.
-  // Fire-and-forget postMessage — no ack, cannot hang.
+  // Wait for ack so the SW has the routes before the first fetch can happen.
   const resolved = routes.map((r) => ({
     ...r,
     absPath: new URL(r.path, location.href).pathname,
   }));
-  navigator.serviceWorker.controller.postMessage({
-    type: "set-routes",
-    paths: resolved.map((r) => r.absPath),
+  await new Promise((resolve) => {
+    const { port1, port2 } = new MessageChannel();
+    port1.onmessage = resolve;
+    navigator.serviceWorker.controller.postMessage(
+      { type: "set-routes", paths: resolved.map((r) => r.absPath) },
+      [port2]
+    );
   });
 
   // Listen for the SW forwarding intercepted requests

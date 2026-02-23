@@ -7,6 +7,7 @@ self.addEventListener("message", (e) => {
   if (e.data?.type === "claim") self.clients.claim();
   if (e.data?.type === "set-routes") {
     e.data.paths.forEach((p) => routes.add(p));
+    if (e.ports[0]) e.ports[0].postMessage({ type: "routes-ack" });
   }
 });
 
