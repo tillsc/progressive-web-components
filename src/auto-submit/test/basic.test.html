@@ -15,7 +15,7 @@
 <h1>auto-submit: basic</h1>
 
 <pwc-auto-submit id="as-backend" local-reload>
-  <form method="get" action="/mock/auto-submit/basic">
+  <form method="get" action="./mock/basic">
     <label for="first">First</label><br>
     <input id="first" name="first" value="Alice"><br><br>
     <label for="last">Last (with <code>data-auto-submit</code>)</label><br>
@@ -27,13 +27,11 @@
 </pwc-auto-submit>
 
 <script type="module">
-  import { run } from "../../../static/testing/harness.js";
-  import { setValue, waitForEvent } from "../../../static/testing/helpers.js";
   import { mockRoutes, echoElement } from "../../../static/testing/mock-server.js";
 
-  await mockRoutes([
+  window.mockRoutesReady = mockRoutes([
     {
-      path: "/mock/auto-submit/basic",
+      path: "./mock/basic",
       handle(request) {
         const p = new URL(request.url).searchParams;
         return echoElement("#as-backend", {
@@ -47,6 +45,13 @@
       },
     },
   ]);
+</script>
+
+<script type="module">
+  import { run } from "../../../static/testing/harness.js";
+  import { setValue, waitForEvent } from "../../../static/testing/helpers.js";
+
+  await window.mockRoutesReady;
 
   run(async ({ assert, equal, waitFor, log }) => {
 

@@ -16,7 +16,7 @@
 
 
 <pwc-auto-submit id="as-backend" local-reload>
-  <form method="get" action="/mock/auto-submit/morph">
+  <form method="get" action="./mock/morph">
     <label for="first">First</label><br>
     <input id="first" name="first" value="Alice"><br><br>
     <label for="last">Last (with <code>data-auto-submit</code>)</label><br>
@@ -32,8 +32,6 @@
 </pwc-auto-submit>
 
 <script type="module">
-  import { run } from "../../../static/testing/harness.js";
-  import { setValue, waitForEvent } from "../../../static/testing/helpers.js";
   import { mockRoutes, echoElement } from "../../../static/testing/mock-server.js";
   import { Idiomorph } from 'https://cdn.jsdelivr.net/npm/idiomorph@0.7.4/+esm';
 
@@ -41,9 +39,9 @@
     if (e.context === "idiomorph") e.callback(Idiomorph);
   });
 
-  await mockRoutes([
+  window.mockRoutesReady = mockRoutes([
     {
-      path: "/mock/auto-submit/morph",
+      path: "./mock/morph",
       handle(request) {
         const p = new URL(request.url).searchParams;
         return echoElement("#as-backend", {
@@ -59,6 +57,13 @@
       },
     },
   ]);
+</script>
+
+<script type="module">
+  import { run } from "../../../static/testing/harness.js";
+  import { setValue, waitForEvent } from "../../../static/testing/helpers.js";
+
+  await window.mockRoutesReady;
 
   run(async ({ assert, equal, waitFor, log }) => {
 
