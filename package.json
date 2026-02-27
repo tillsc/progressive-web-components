@@ -22,6 +22,7 @@
     "./auto-submit": "./dist/auto-submit.js",
     "./validity": "./dist/validity.js",
     "./validity-bs5": "./dist/validity-bs5.js",
+    "./select-all": "./dist/select-all.js",
     "./zone-transfer": "./dist/zone-transfer.js"
   },
   "scripts": {

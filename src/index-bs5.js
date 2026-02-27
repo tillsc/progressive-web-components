@@ -8,3 +8,4 @@ import './conditional-display';
 import './zone-transfer';
 import './include';
 import './auto-submit';
+import './select-all';

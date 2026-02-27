@@ -17,6 +17,7 @@ const entryPoints = {
   "auto-submit": "src/auto-submit/index.js",
   "validity": "src/validity/index.js",
   "validity-bs5": "src/validity/bs5/index.js",
+  "select-all": "src/select-all/index.js",
   "all": "src/index.js",
   "all-bs5": "src/index-bs5.js",
 };

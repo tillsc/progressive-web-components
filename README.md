@@ -28,6 +28,7 @@ A collection of Custom Elements designed to work with server-rendered HTML and p
 | [`<pwc-include>`](src/include/) | Client-side HTML transclusion — fetches HTML from a URL and inserts it |
 | [`<pwc-modal-dialog>`](src/modal-dialog/) | Low-level building block for modal dialogs from JavaScript |
 | [`<pwc-multiselect-dual-list>`](src/multiselect-dual-list/) | Dual-list multiselect UI that enhances a native `<select>` element |
+| [`<pwc-select-all>`](src/select-all/) | Select-all / deselect-all / invert for a group of checkboxes |
 | [`<pwc-validity>`](src/validity/) | Maps `data-validity` attributes to `setCustomValidity()` with optional auto-clearing |
 | [`<pwc-zone-transfer>`](src/zone-transfer/) | Zone-based drag & drop and keyboard sorting for moving elements between containers |
 
@@ -71,6 +72,7 @@ For more control you can import the unbundled source files directly
 - `include.js` (no Bootstrap variant needed)
 - `modal-dialog.js` / `modal-dialog-bs5.js`
 - `multiselect-dual-list.js` / `multiselect-dual-list-bs5.js`
+- `select-all.js` (no Bootstrap variant needed)
 - `validity.js` / `validity-bs5.js`
 - `zone-transfer.js` (no Bootstrap variant needed)
 - `all.js` / `all-bs5.js` (all components bundled)

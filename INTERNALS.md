@@ -201,7 +201,7 @@ handled with care.
 - `setValue(el, value, { change })` — set value and dispatch input/change events
 - `click(el)` — dispatch click event
 - `clickRadio(radio)` — check radio and dispatch change
-- `toggleCheckbox(cb)` — toggle checkbox and dispatch change
+- `toggleCheckbox(cb, checked?)` — toggle checkbox and dispatch change; if `checked` is provided, set to that value instead of toggling
 - `drag(item, targetZone, { clientY })` — simulate drag-and-drop
 - `key(el, k, opts)` — dispatch keyboard event
 - `waitForEvent(el, name, { timeoutMs })` — returns a Promise that resolves with the event

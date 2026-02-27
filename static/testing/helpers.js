@@ -15,8 +15,8 @@ export function clickRadio(radio) {
   radio.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
-export function toggleCheckbox(cb) {
-  cb.checked = !cb.checked;
+export function toggleCheckbox(cb, checked) {
+  cb.checked = checked === undefined ? !cb.checked : checked;
   cb.dispatchEvent(new Event("change", { bubbles: true }));
 }
 

@@ -7,3 +7,4 @@ import './zone-transfer';
 import './include';
 import './auto-submit';
 import './validity';
+import './select-all';

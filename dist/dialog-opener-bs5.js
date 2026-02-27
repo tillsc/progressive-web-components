@@ -74,7 +74,7 @@ var MORPH_OPTIONS = {
       if (newNode.matches("input[type=checkbox],input[type=radio]")) {
         oldNode.checked = newNode.hasAttribute("checked");
       } else {
-        oldNode.value = newNode.getAttribute("value") ?? "";
+        oldNode.value = newNode.value;
       }
     }
   }
