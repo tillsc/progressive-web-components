@@ -35,7 +35,7 @@ Each option is parsed into an item object:
 { value, label, parent, depth, selected, disabled, warnOnUnselect }
 ```
 
-- `depth` is computed by walking the `data-parent` chain (with cycle protection)
+- `depth` is computed by walking the `data-pwc-parent` chain (with cycle protection)
 - Items are stored in `_items` (array) and `_itemsByValue` (Map)
 
 ## Add / remove logic
@@ -50,7 +50,7 @@ Each option is parsed into an item object:
 - `warnOnUnselect` confirmation before removal
 
 The only variant-specific part is the CSS class name, provided by `get _selectedClass`:
-- Vanilla: `pwc-msdl-item--selected` (default in base)
+- Vanilla: `pwc-multiselect-dual-list-item--selected` (default in base)
 - BS5: `list-group-item-secondary` (override)
 
 ## Filter composition

@@ -11,7 +11,7 @@ submitted natively. With `local-reload` and an `id`, the form is submitted via
 ```html
 <pwc-auto-submit id="color-form" local-reload>
   <form method="get" action="/colors">
-    <select name="color" data-auto-submit>
+    <select name="color" data-pwc-auto-submit>
       <option value="red">Red</option>
       <option value="blue">Blue</option>
     </select>
@@ -21,7 +21,7 @@ submitted natively. With `local-reload` and an `id`, the form is submitted via
 </pwc-auto-submit>
 ```
 
-Only elements with the `data-auto-submit` attribute trigger a submission on `change`.
+Only elements with the `data-pwc-auto-submit` attribute trigger a submission on `change`.
 
 ---
 
@@ -54,7 +54,7 @@ Sends cookies on cross-origin requests (`credentials: "include"`).
 
 ## Data attributes (on form elements)
 
-### `data-auto-submit`
+### `data-pwc-auto-submit`
 
 Place on any form element (`<input>`, `<select>`, `<textarea>`) to opt it into
 auto-submission. Elements without this attribute are ignored.

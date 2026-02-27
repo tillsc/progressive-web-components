@@ -13,7 +13,7 @@ export class PwcAutoSubmit extends PwcElement {
 
   handleEvent(e) {
     const target = e.target;
-    if (!target.hasAttribute("data-auto-submit")) return;
+    if (!target.hasAttribute("data-pwc-auto-submit")) return;
 
     const form = this.querySelector("form") || target.closest("form");
     if (!form) return;

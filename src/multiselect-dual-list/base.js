@@ -5,7 +5,7 @@ import { PwcChildrenObserverElement } from "../core/pwc-children-observer-elemen
  *
  * Enhances a native <select> with a two-column UI:
  * selected items on the left, available items on the right.
- * Hierarchy from data-parent on <option> is shown as indentation.
+ * Hierarchy from data-pwc-parent on <option> is shown as indentation.
  *
  * Subclass contract:
  * - _buildUI() → { availableList, selectedList }
@@ -17,7 +17,7 @@ export class MultiselectDualListBase extends PwcChildrenObserverElement {
   static observeMode = "tree";
   static events = ["click"];
 
-  get _selectedClass() { return "pwc-msdl-item--selected"; }
+  get _selectedClass() { return "pwc-multiselect-dual-list-item--selected"; }
 
   onChildrenChanged() {
     const select = this.querySelector("select");
@@ -62,18 +62,18 @@ export class MultiselectDualListBase extends PwcChildrenObserverElement {
     const options = Array.from(select.options);
     const parentMap = new Map();
     for (const opt of options) {
-      const parent = opt.dataset.parent;
+      const parent = opt.dataset.pwcParent;
       if (parent) parentMap.set(opt.value, parent);
     }
 
     return options.map((opt) => ({
       value: opt.value,
       label: opt.textContent,
-      parent: opt.dataset.parent || null,
+      parent: opt.dataset.pwcParent || null,
       depth: this._calculateDepth(opt.value, parentMap),
       selected: opt.selected,
       disabled: opt.disabled,
-      warnOnUnselect: opt.dataset.warnOnUnselect || null
+      warnOnUnselect: opt.dataset.pwcWarnOnUnselect || null
     }));
   }
 

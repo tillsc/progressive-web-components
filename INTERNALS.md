@@ -78,6 +78,67 @@ observer callbacks during programmatic DOM changes.
 - Stable internal markup with explicit styling hooks
 - Shared runtime helpers are imported, not duplicated
 
+## Naming conventions
+
+All public names are prefixed with `pwc-` to avoid collisions with other libraries.
+Uniqueness within the project is maintained by convention, not by technical enforcement.
+Names are chosen for readability and usability first.
+
+### Element tag names
+
+Always use the full component name: `pwc-zone-transfer`, `pwc-multiselect-dual-list`.
+These are globally registered and must be unique across all libraries.
+
+### Host attributes
+
+Attributes on the component element itself carry no prefix — they're already scoped by
+the element's tag name. Examples: `hide-selected`, `clear-on`, `clear-after`.
+
+### Data attributes on descendant elements
+
+Use `data-pwc-<semantic-name>`. The component element provides the context, so the
+component name is **not** repeated in the attribute name:
+
+```html
+<!-- correct -->
+<pwc-zone-transfer>
+  <div data-pwc-zone="available">
+    <div data-pwc-item>Alice</div>
+  </div>
+</pwc-zone-transfer>
+
+<!-- wrong: component name is redundant in context -->
+<div data-pwc-zone-transfer-zone="available">
+```
+
+Exception: if an attribute's meaning cannot be inferred from context (e.g. it targets
+an element shared across multiple components, or appears far from the component root),
+a qualifier may be added.
+
+### CSS classes on internal elements
+
+Use `pwc-<component-name>-<role>`. The full component name makes classes discoverable
+in DevTools and third-party stylesheets:
+
+```css
+.pwc-multiselect-dual-list-item   /* good */
+.pwc-msdl-item                    /* avoid: abbreviation requires prior knowledge */
+```
+
+### CSS custom properties
+
+Use `--pwc-<component-name>-<property>`. As with classes, the full component name aids
+discoverability when reading a stylesheet:
+
+```css
+--pwc-modal-dialog-backdrop       /* good */
+--pwc-md-backdrop                 /* avoid */
+```
+
+### Event names
+
+Use `<component-name>:<event>` (colon-separated), e.g. `pwc-zone-transfer:change`.
+
 ## Variants (e.g. Bootstrap 5)
 
 - Implemented as separate component variants

@@ -19,7 +19,7 @@
 
 <pwc-validity id="v-both" clear-on="input" clear-after="5000">
     <label for="both-input">Type or wait 5 s</label>
-    <input id="both-input" data-validity="Either way">
+    <input id="both-input" data-pwc-validity="Either way">
 </pwc-validity>
 
 <hr>
@@ -28,7 +28,7 @@
 
 <pwc-validity id="v-no-clear" clear-on="input" clear-after="50">
     <label for="no-clear-input">Both clear channels set to "off"</label>
-    <input id="no-clear-input" data-validity="Stays forever" data-validity-clear-on="off" data-validity-clear-after="off">
+    <input id="no-clear-input" data-pwc-validity="Stays forever" data-pwc-validity-clear-on="off" data-pwc-validity-clear-after="off">
 </pwc-validity>
 
 <hr>
@@ -36,10 +36,10 @@
 <h2>Per-element clear override</h2>
 
 <pwc-validity id="v-override" clear-on="change" clear-after="9999">
-    <label for="override-input">data-validity-clear-on="input" overrides component clear-on="change"</label>
-    <input id="override-input" data-validity="Override me" data-validity-clear-on="input">
-    <label for="override-timeout">data-validity-clear-after="50" overrides component clear-after="9999"</label>
-    <input id="override-timeout" data-validity-clear-after="50">
+    <label for="override-input">data-pwc-validity-clear-on="input" overrides component clear-on="change"</label>
+    <input id="override-input" data-pwc-validity="Override me" data-pwc-validity-clear-on="input">
+    <label for="override-timeout">data-pwc-validity-clear-after="50" overrides component clear-after="9999"</label>
+    <input id="override-timeout" data-pwc-validity-clear-after="50">
 </pwc-validity>
 
 <hr>
@@ -80,7 +80,7 @@
 
     // --- Per-element clear override ---
 
-    await log("override: data-validity-clear-on overrides component clear-on");
+    await log("override: data-pwc-validity-clear-on overrides component clear-on");
     const overrideInput = document.getElementById("override-input");
     await waitFor(() => overrideInput.validationMessage, { label: "override has error" });
 
@@ -92,9 +92,9 @@
     await waitFor(() => !overrideInput.validationMessage, { label: "override cleared by input" });
     equal(overrideInput.validationMessage, "", "input event cleared (per-element override)");
 
-    await log("override: data-validity-clear-after overrides component clear-after");
+    await log("override: data-pwc-validity-clear-after overrides component clear-after");
     const overrideTimeout = document.getElementById("override-timeout");
-    overrideTimeout.setAttribute("data-validity", "Quick timeout");
+    overrideTimeout.setAttribute("data-pwc-validity", "Quick timeout");
     // Element has clear-after="50" overriding component's "9999"
     await waitFor(() => !overrideTimeout.validationMessage, { label: "override-timeout cleared" });
     equal(overrideTimeout.validationMessage, "", "cleared by per-element timeout");
@@ -105,7 +105,7 @@
     const vDynamic = document.getElementById("v-dynamic");
     const dynInput = document.createElement("input");
     dynInput.id = "dyn-input";
-    dynInput.setAttribute("data-validity", "Dynamic error");
+    dynInput.setAttribute("data-pwc-validity", "Dynamic error");
     vDynamic.appendChild(dynInput);
 
     await waitFor(() => dynInput.validationMessage, { label: "dynamic input has error" });

@@ -27,7 +27,7 @@
 
     run(async ({ assert, equal, waitFor, log }) => {
       const host = document.getElementById("demo");
-      await waitFor(() => host.querySelector(".pwc-msdl-container"), { label: "container rendered" });
+      await waitFor(() => host.querySelector(".pwc-multiselect-dual-list-container"), { label: "container rendered" });
 
       assert(host.filter, "host.filter returns pwc-filter element");
 
@@ -60,7 +60,7 @@
       host.select.appendChild(opt);
 
       await waitFor(
-        () => host.querySelectorAll(".pwc-msdl-available [data-value]").length === 5,
+        () => host.querySelectorAll(".pwc-multiselect-dual-list-available [data-value]").length === 5,
         { label: "new option rendered" }
       );
 

@@ -7,7 +7,7 @@
 ## Event handling
 
 The component listens for `change`. `handleEvent` checks that the
-event target has `data-auto-submit` before proceeding. The closest `<form>` is resolved from the
+event target has `data-pwc-auto-submit` before proceeding. The closest `<form>` is resolved from the
 element's children or the target's ancestors.
 
 ## Two submission modes

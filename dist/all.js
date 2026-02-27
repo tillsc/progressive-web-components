@@ -822,7 +822,7 @@ var PwcModalDialog = class extends ModalDialogBase {
 var define4 = () => defineOnce("pwc-modal-dialog", PwcModalDialog);
 
 // src/modal-dialog/modal-dialog.css
-var modal_dialog_default = "pwc-modal-dialog {\n  /* sizing */\n  --pwc-modal-max-width: 720px;\n  --pwc-modal-width: 92vw;\n\n  /* spacing */\n  --pwc-modal-padding-header: 12px 16px;\n  --pwc-modal-padding-body: 16px;\n  --pwc-modal-padding-footer: 12px 16px;\n  --pwc-modal-gap-footer: 8px;\n\n  /* visuals */\n  --pwc-modal-bg: #fff;\n  --pwc-modal-backdrop: rgba(0, 0, 0, 0.45);\n  --pwc-modal-border-radius: 6px;\n  --pwc-modal-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);\n  --pwc-modal-separator: rgba(0, 0, 0, 0.08);\n\n  /* controls */\n  --pwc-modal-close-radius: 4px;\n  --pwc-modal-close-hover-bg: rgba(0, 0, 0, 0.06);\n}\n\npwc-modal-dialog dialog.pwc-modal-dialog {\n  border: none;\n  padding: 0;\n  max-width: min(var(--pwc-modal-max-width), var(--pwc-modal-width));\n  width: var(--pwc-modal-width);\n}\n\npwc-modal-dialog dialog.pwc-modal-dialog::backdrop {\n  background: var(--pwc-modal-backdrop);\n}\n\npwc-modal-dialog .pwc-modal-dialog-surface {\n  background: var(--pwc-modal-bg);\n  border-radius: var(--pwc-modal-border-radius);\n  box-shadow: var(--pwc-modal-shadow);\n  overflow: hidden;\n}\n\n/* Header */\n\npwc-modal-dialog .pwc-modal-dialog-header {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: var(--pwc-modal-padding-header);\n  border-bottom: 1px solid var(--pwc-modal-separator);\n}\n\npwc-modal-dialog .pwc-modal-dialog-title {\n  margin: 0;\n  font-size: 1.1rem;\n  font-weight: 600;\n}\n\n/* Close button */\n\npwc-modal-dialog .pwc-modal-dialog-x {\n  appearance: none;\n  border: none;\n  background: transparent;\n  font: inherit;\n  font-size: 1.25rem;\n  line-height: 1;\n  padding: 4px 6px;\n  cursor: pointer;\n  border-radius: var(--pwc-modal-close-radius);\n}\n\npwc-modal-dialog .pwc-modal-dialog-x:hover {\n  background: var(--pwc-modal-close-hover-bg);\n}\n\n/* Body */\n\npwc-modal-dialog .pwc-modal-dialog-body {\n  padding: var(--pwc-modal-padding-body);\n}\n\n/* Sizes */\n\npwc-modal-dialog dialog.pwc-modal-dialog--sm { --pwc-modal-max-width: 400px; }\npwc-modal-dialog dialog.pwc-modal-dialog--xl { --pwc-modal-max-width: 1000px; }\n\n/* Footer */\n\npwc-modal-dialog .pwc-modal-dialog-footer {\n  display: flex;\n  justify-content: flex-end;\n  gap: var(--pwc-modal-gap-footer);\n  padding: var(--pwc-modal-padding-footer);\n  border-top: 1px solid var(--pwc-modal-separator);\n}\n\n";
+var modal_dialog_default = "pwc-modal-dialog {\n  /* sizing */\n  --pwc-modal-dialog-max-width: 720px;\n  --pwc-modal-dialog-width: 92vw;\n\n  /* spacing */\n  --pwc-modal-dialog-padding-header: 12px 16px;\n  --pwc-modal-dialog-padding-body: 16px;\n  --pwc-modal-dialog-padding-footer: 12px 16px;\n  --pwc-modal-dialog-gap-footer: 8px;\n\n  /* visuals */\n  --pwc-modal-dialog-bg: #fff;\n  --pwc-modal-dialog-backdrop: rgba(0, 0, 0, 0.45);\n  --pwc-modal-dialog-border-radius: 6px;\n  --pwc-modal-dialog-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);\n  --pwc-modal-dialog-separator: rgba(0, 0, 0, 0.08);\n\n  /* controls */\n  --pwc-modal-dialog-close-radius: 4px;\n  --pwc-modal-dialog-close-hover-bg: rgba(0, 0, 0, 0.06);\n}\n\npwc-modal-dialog dialog.pwc-modal-dialog {\n  border: none;\n  padding: 0;\n  max-width: min(var(--pwc-modal-dialog-max-width), var(--pwc-modal-dialog-width));\n  width: var(--pwc-modal-dialog-width);\n}\n\npwc-modal-dialog dialog.pwc-modal-dialog::backdrop {\n  background: var(--pwc-modal-dialog-backdrop);\n}\n\npwc-modal-dialog .pwc-modal-dialog-surface {\n  background: var(--pwc-modal-dialog-bg);\n  border-radius: var(--pwc-modal-dialog-border-radius);\n  box-shadow: var(--pwc-modal-dialog-shadow);\n  overflow: hidden;\n}\n\n/* Header */\n\npwc-modal-dialog .pwc-modal-dialog-header {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: var(--pwc-modal-dialog-padding-header);\n  border-bottom: 1px solid var(--pwc-modal-dialog-separator);\n}\n\npwc-modal-dialog .pwc-modal-dialog-title {\n  margin: 0;\n  font-size: 1.1rem;\n  font-weight: 600;\n}\n\n/* Close button */\n\npwc-modal-dialog .pwc-modal-dialog-x {\n  appearance: none;\n  border: none;\n  background: transparent;\n  font: inherit;\n  font-size: 1.25rem;\n  line-height: 1;\n  padding: 4px 6px;\n  cursor: pointer;\n  border-radius: var(--pwc-modal-dialog-close-radius);\n}\n\npwc-modal-dialog .pwc-modal-dialog-x:hover {\n  background: var(--pwc-modal-dialog-close-hover-bg);\n}\n\n/* Body */\n\npwc-modal-dialog .pwc-modal-dialog-body {\n  padding: var(--pwc-modal-dialog-padding-body);\n}\n\n/* Sizes */\n\npwc-modal-dialog dialog.pwc-modal-dialog--sm { --pwc-modal-dialog-max-width: 400px; }\npwc-modal-dialog dialog.pwc-modal-dialog--xl { --pwc-modal-dialog-max-width: 1000px; }\n\n/* Footer */\n\npwc-modal-dialog .pwc-modal-dialog-footer {\n  display: flex;\n  justify-content: flex-end;\n  gap: var(--pwc-modal-dialog-gap-footer);\n  padding: var(--pwc-modal-dialog-padding-footer);\n  border-top: 1px solid var(--pwc-modal-dialog-separator);\n}\n\n";
 
 // src/modal-dialog/index.js
 function register3() {
@@ -839,7 +839,7 @@ var MultiselectDualListBase = class extends PwcChildrenObserverElement {
   static observeMode = "tree";
   static events = ["click"];
   get _selectedClass() {
-    return "pwc-msdl-item--selected";
+    return "pwc-multiselect-dual-list-item--selected";
   }
   onChildrenChanged() {
     const select = this.querySelector("select");
@@ -875,17 +875,17 @@ var MultiselectDualListBase = class extends PwcChildrenObserverElement {
     const options = Array.from(select.options);
     const parentMap = /* @__PURE__ */ new Map();
     for (const opt of options) {
-      const parent = opt.dataset.parent;
+      const parent = opt.dataset.pwcParent;
       if (parent) parentMap.set(opt.value, parent);
     }
     return options.map((opt) => ({
       value: opt.value,
       label: opt.textContent,
-      parent: opt.dataset.parent || null,
+      parent: opt.dataset.pwcParent || null,
       depth: this._calculateDepth(opt.value, parentMap),
       selected: opt.selected,
       disabled: opt.disabled,
-      warnOnUnselect: opt.dataset.warnOnUnselect || null
+      warnOnUnselect: opt.dataset.pwcWarnOnUnselect || null
     }));
   }
   _calculateDepth(value, parentMap) {
@@ -986,27 +986,27 @@ var PwcMultiselectDualList = class extends MultiselectDualListBase {
   _buildUI() {
     const container = document.createElement("div");
     container.innerHTML = `
-      <div class="pwc-msdl-selected">
-        <div class="pwc-msdl-header">${this.selectedLabel}</div>
-        <ul class="pwc-msdl-list" role="listbox" aria-label="${this.selectedLabel}"></ul>
+      <div class="pwc-multiselect-dual-list-selected">
+        <div class="pwc-multiselect-dual-list-header">${this.selectedLabel}</div>
+        <ul class="pwc-multiselect-dual-list-list" role="listbox" aria-label="${this.selectedLabel}"></ul>
       </div>
-      <div class="pwc-msdl-available">
-        <div class="pwc-msdl-header">${this.availableLabel}</div>
+      <div class="pwc-multiselect-dual-list-available">
+        <div class="pwc-multiselect-dual-list-header">${this.availableLabel}</div>
         <pwc-filter row-selector="[data-value]">
-          <ul class="pwc-msdl-list" role="listbox" aria-label="${this.availableLabel}"></ul>
+          <ul class="pwc-multiselect-dual-list-list" role="listbox" aria-label="${this.availableLabel}"></ul>
         </pwc-filter>
       </div>
     `;
-    container.className = "pwc-msdl-container";
+    container.className = "pwc-multiselect-dual-list-container";
     this.select.after(container);
     return {
-      selectedList: container.querySelector(".pwc-msdl-selected .pwc-msdl-list"),
-      availableList: container.querySelector(".pwc-msdl-available .pwc-msdl-list")
+      selectedList: container.querySelector(".pwc-multiselect-dual-list-selected .pwc-multiselect-dual-list-list"),
+      availableList: container.querySelector(".pwc-multiselect-dual-list-available .pwc-multiselect-dual-list-list")
     };
   }
   _createEntry(item) {
     const li = document.createElement("li");
-    li.className = "pwc-msdl-item";
+    li.className = "pwc-multiselect-dual-list-item";
     li.role = "option";
     li.dataset.value = item.value;
     const label = document.createElement("span");
@@ -1018,15 +1018,15 @@ var PwcMultiselectDualList = class extends MultiselectDualListBase {
     const li = this._createEntry(item);
     li.setAttribute("aria-selected", String(item.selected));
     if (item.disabled) {
-      li.classList.add("pwc-msdl-item--disabled");
+      li.classList.add("pwc-multiselect-dual-list-item--disabled");
       li.setAttribute("aria-disabled", "true");
     }
-    if (item.selected) li.classList.add("pwc-msdl-item--selected");
+    if (item.selected) li.classList.add("pwc-multiselect-dual-list-item--selected");
     if (item.depth > 0) li.style.paddingLeft = `${item.depth * 1.5}em`;
     if (!item.disabled) {
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "pwc-msdl-action";
+      btn.className = "pwc-multiselect-dual-list-action";
       btn.dataset.action = "add";
       btn.textContent = this.addLabel;
       btn.setAttribute("aria-label", `${this.addAriaLabel} ${item.label}`);
@@ -1040,7 +1040,7 @@ var PwcMultiselectDualList = class extends MultiselectDualListBase {
     li.setAttribute("aria-selected", "true");
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "pwc-msdl-action";
+    btn.className = "pwc-multiselect-dual-list-action";
     btn.dataset.action = "remove";
     btn.textContent = this.removeLabel;
     btn.setAttribute("aria-label", `${this.removeAriaLabel} ${item.label}`);
@@ -1051,7 +1051,7 @@ var PwcMultiselectDualList = class extends MultiselectDualListBase {
 var define5 = () => defineOnce("pwc-multiselect-dual-list", PwcMultiselectDualList);
 
 // src/multiselect-dual-list/multiselect-dual-list.css
-var multiselect_dual_list_default = "pwc-multiselect-dual-list {\n  /* sizing */\n  --pwc-msdl-width: 100%;\n\n  /* spacing */\n  --pwc-msdl-gap: 12px;\n  --pwc-msdl-padding: 8px;\n  --pwc-msdl-item-padding: 6px 10px;\n  --pwc-msdl-indent: 1.5em;\n\n  /* list */\n  --pwc-msdl-list-max-height: 20em;\n\n  /* visuals */\n  --pwc-msdl-bg: #fff;\n  --pwc-msdl-border: 1px solid rgba(0, 0, 0, 0.15);\n  --pwc-msdl-border-radius: 4px;\n  --pwc-msdl-separator: rgba(0, 0, 0, 0.08);\n\n  /* item */\n  --pwc-msdl-item-bg: #f8f8f8;\n  --pwc-msdl-item-hover-bg: #f0f0f0;\n  --pwc-msdl-item-selected-bg: #e8e8e8;\n  --pwc-msdl-item-selected-color: #999;\n  --pwc-msdl-item-disabled-color: #bbb;\n\n  /* button */\n  --pwc-msdl-action-bg: transparent;\n  --pwc-msdl-action-hover-bg: rgba(0, 0, 0, 0.06);\n  --pwc-msdl-action-border: 1px solid rgba(0, 0, 0, 0.2);\n  --pwc-msdl-action-radius: 3px;\n\n  display: block;\n  width: var(--pwc-msdl-width);\n}\n\n.pwc-msdl-container {\n  display: flex;\n  gap: var(--pwc-msdl-gap);\n}\n\n.pwc-msdl-selected,\n.pwc-msdl-available {\n  flex: 1;\n  min-width: 0;\n  background: var(--pwc-msdl-bg);\n  border: var(--pwc-msdl-border);\n  border-radius: var(--pwc-msdl-border-radius);\n  padding: var(--pwc-msdl-padding);\n}\n\n.pwc-msdl-header {\n  font-weight: 600;\n  margin-bottom: 6px;\n}\n\n.pwc-msdl-list {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  max-height: var(--pwc-msdl-list-max-height);\n  overflow-y: auto;\n}\n\n.pwc-msdl-item {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: var(--pwc-msdl-item-padding);\n  background: var(--pwc-msdl-item-bg);\n  border-bottom: 1px solid var(--pwc-msdl-separator);\n}\n\n.pwc-msdl-item:last-child {\n  border-bottom: none;\n}\n\n.pwc-msdl-item:hover {\n  background: var(--pwc-msdl-item-hover-bg);\n}\n\n.pwc-msdl-item--selected {\n  background: var(--pwc-msdl-item-selected-bg);\n  color: var(--pwc-msdl-item-selected-color);\n}\n\n.pwc-msdl-item--disabled {\n  color: var(--pwc-msdl-item-disabled-color);\n  cursor: default;\n}\n\n.pwc-msdl-action {\n  appearance: none;\n  border: var(--pwc-msdl-action-border);\n  background: var(--pwc-msdl-action-bg);\n  padding: 2px 8px;\n  border-radius: var(--pwc-msdl-action-radius);\n  cursor: pointer;\n  font: inherit;\n  font-size: 0.85em;\n  flex-shrink: 0;\n  margin-left: 8px;\n}\n\n.pwc-msdl-action:hover {\n  background: var(--pwc-msdl-action-hover-bg);\n}\n\npwc-multiselect-dual-list[hide-selected] .pwc-msdl-item--selected {\n  display: none;\n}\n";
+var multiselect_dual_list_default = "pwc-multiselect-dual-list {\n  /* sizing */\n  --pwc-multiselect-dual-list-width: 100%;\n\n  /* spacing */\n  --pwc-multiselect-dual-list-gap: 12px;\n  --pwc-multiselect-dual-list-padding: 8px;\n  --pwc-multiselect-dual-list-item-padding: 6px 10px;\n  --pwc-multiselect-dual-list-indent: 1.5em;\n\n  /* list */\n  --pwc-multiselect-dual-list-list-max-height: 20em;\n\n  /* visuals */\n  --pwc-multiselect-dual-list-bg: #fff;\n  --pwc-multiselect-dual-list-border: 1px solid rgba(0, 0, 0, 0.15);\n  --pwc-multiselect-dual-list-border-radius: 4px;\n  --pwc-multiselect-dual-list-separator: rgba(0, 0, 0, 0.08);\n\n  /* item */\n  --pwc-multiselect-dual-list-item-bg: #f8f8f8;\n  --pwc-multiselect-dual-list-item-hover-bg: #f0f0f0;\n  --pwc-multiselect-dual-list-item-selected-bg: #e8e8e8;\n  --pwc-multiselect-dual-list-item-selected-color: #999;\n  --pwc-multiselect-dual-list-item-disabled-color: #bbb;\n\n  /* button */\n  --pwc-multiselect-dual-list-action-bg: transparent;\n  --pwc-multiselect-dual-list-action-hover-bg: rgba(0, 0, 0, 0.06);\n  --pwc-multiselect-dual-list-action-border: 1px solid rgba(0, 0, 0, 0.2);\n  --pwc-multiselect-dual-list-action-radius: 3px;\n\n  display: block;\n  width: var(--pwc-multiselect-dual-list-width);\n}\n\n.pwc-multiselect-dual-list-container {\n  display: flex;\n  gap: var(--pwc-multiselect-dual-list-gap);\n}\n\n.pwc-multiselect-dual-list-selected,\n.pwc-multiselect-dual-list-available {\n  flex: 1;\n  min-width: 0;\n  background: var(--pwc-multiselect-dual-list-bg);\n  border: var(--pwc-multiselect-dual-list-border);\n  border-radius: var(--pwc-multiselect-dual-list-border-radius);\n  padding: var(--pwc-multiselect-dual-list-padding);\n}\n\n.pwc-multiselect-dual-list-header {\n  font-weight: 600;\n  margin-bottom: 6px;\n}\n\n.pwc-multiselect-dual-list-list {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n  max-height: var(--pwc-multiselect-dual-list-list-max-height);\n  overflow-y: auto;\n}\n\n.pwc-multiselect-dual-list-item {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: var(--pwc-multiselect-dual-list-item-padding);\n  background: var(--pwc-multiselect-dual-list-item-bg);\n  border-bottom: 1px solid var(--pwc-multiselect-dual-list-separator);\n}\n\n.pwc-multiselect-dual-list-item:last-child {\n  border-bottom: none;\n}\n\n.pwc-multiselect-dual-list-item:hover {\n  background: var(--pwc-multiselect-dual-list-item-hover-bg);\n}\n\n.pwc-multiselect-dual-list-item--selected {\n  background: var(--pwc-multiselect-dual-list-item-selected-bg);\n  color: var(--pwc-multiselect-dual-list-item-selected-color);\n}\n\n.pwc-multiselect-dual-list-item--disabled {\n  color: var(--pwc-multiselect-dual-list-item-disabled-color);\n  cursor: default;\n}\n\n.pwc-multiselect-dual-list-action {\n  appearance: none;\n  border: var(--pwc-multiselect-dual-list-action-border);\n  background: var(--pwc-multiselect-dual-list-action-bg);\n  padding: 2px 8px;\n  border-radius: var(--pwc-multiselect-dual-list-action-radius);\n  cursor: pointer;\n  font: inherit;\n  font-size: 0.85em;\n  flex-shrink: 0;\n  margin-left: 8px;\n}\n\n.pwc-multiselect-dual-list-action:hover {\n  background: var(--pwc-multiselect-dual-list-action-hover-bg);\n}\n\npwc-multiselect-dual-list[hide-selected] .pwc-multiselect-dual-list-item--selected {\n  display: none;\n}\n";
 
 // src/multiselect-dual-list/index.js
 function register4() {
@@ -1452,7 +1452,7 @@ var PwcAutoSubmit = class extends PwcElement {
   static events = ["change"];
   handleEvent(e) {
     const target = e.target;
-    if (!target.hasAttribute("data-auto-submit")) return;
+    if (!target.hasAttribute("data-pwc-auto-submit")) return;
     const form = this.querySelector("form") || target.closest("form");
     if (!form) return;
     if (this.hasAttribute("local-reload") && this.id) {
@@ -1534,22 +1534,22 @@ register7();
 // src/validity/base.js
 var BaseValidity = class extends PwcChildrenObserverElement {
   static observeMode = "tree";
-  static observeAttributes = ["data-validity"];
+  static observeAttributes = ["data-pwc-validity"];
   _cleanups = [];
   onChildrenChanged(mutations) {
     if (!mutations.length) {
-      for (const el of this.querySelectorAll("[data-validity]")) {
+      for (const el of this.querySelectorAll("[data-pwc-validity]")) {
         this._applyValidity(el);
       }
       return;
     }
     const affected = mutations.flatMap(
-      (m) => m.type === "attributes" ? [m.target] : [...m.addedNodes].filter((n) => n.nodeType === Node.ELEMENT_NODE).flatMap((n) => [n, ...n.querySelectorAll("[data-validity]")]).filter((n) => n.hasAttribute("data-validity"))
+      (m) => m.type === "attributes" ? [m.target] : [...m.addedNodes].filter((n) => n.nodeType === Node.ELEMENT_NODE).flatMap((n) => [n, ...n.querySelectorAll("[data-pwc-validity]")]).filter((n) => n.hasAttribute("data-pwc-validity"))
     );
     for (const el of affected) this._applyValidity(el);
   }
   _applyValidity(el) {
-    const value = el.getAttribute("data-validity");
+    const value = el.getAttribute("data-pwc-validity");
     if (value) {
       el.setCustomValidity(value);
       this._updateMessage(el, value);
@@ -1562,8 +1562,8 @@ var BaseValidity = class extends PwcChildrenObserverElement {
   _updateMessage(_el, _text) {
   }
   _setupClearing(el) {
-    let clearOn = el.dataset.validityClearOn ?? this.getAttribute("clear-on");
-    let clearAfter = el.dataset.validityClearAfter ?? this.getAttribute("clear-after");
+    let clearOn = el.dataset.pwcValidityClearOn ?? this.getAttribute("clear-on");
+    let clearAfter = el.dataset.pwcValidityClearAfter ?? this.getAttribute("clear-after");
     if (clearOn === "off") clearOn = null;
     if (clearAfter === "off") clearAfter = null;
     if (!clearOn && !clearAfter) return;
@@ -1578,7 +1578,7 @@ var BaseValidity = class extends PwcChildrenObserverElement {
         clearTimeout(timeoutId);
         timeoutId = void 0;
       }
-      el.removeAttribute("data-validity");
+      el.removeAttribute("data-pwc-validity");
     };
     if (clearOn) {
       for (const event of tokenList(clearOn)) {

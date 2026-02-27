@@ -19,14 +19,14 @@
 
 <pwc-validity id="v-initial">
     <label for="name">Name</label>
-    <input id="name" data-validity="Name is required">
+    <input id="name" data-pwc-validity="Name is required">
     <label for="role">Role</label>
-    <select id="role" data-validity="Pick a role">
+    <select id="role" data-pwc-validity="Pick a role">
         <option value="">--</option>
         <option value="admin">Admin</option>
     </select>
     <label for="bio">Bio</label>
-    <textarea id="bio" data-validity="Bio too short"></textarea>
+    <textarea id="bio" data-pwc-validity="Bio too short"></textarea>
     <label for="clean">Clean field</label>
     <input id="clean" placeholder="no error">
 </pwc-validity>
@@ -37,7 +37,7 @@
 
 <pwc-validity id="v-clear-on" clear-on="input">
     <label for="clear-on-input">Type to clear the error</label>
-    <input id="clear-on-input" data-validity="Fix this">
+    <input id="clear-on-input" data-pwc-validity="Fix this">
 </pwc-validity>
 
 <hr>
@@ -46,7 +46,7 @@
 
 <pwc-validity id="v-clear-after" clear-after="50">
     <label for="clear-after-input">Error disappears after timeout</label>
-    <input id="clear-after-input" data-validity="Goes away soon">
+    <input id="clear-after-input" data-pwc-validity="Goes away soon">
 </pwc-validity>
 
 <script type="module">

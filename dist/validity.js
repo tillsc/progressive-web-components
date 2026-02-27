@@ -86,22 +86,22 @@ function tokenList(str) {
 // src/validity/base.js
 var BaseValidity = class extends PwcChildrenObserverElement {
   static observeMode = "tree";
-  static observeAttributes = ["data-validity"];
+  static observeAttributes = ["data-pwc-validity"];
   _cleanups = [];
   onChildrenChanged(mutations) {
     if (!mutations.length) {
-      for (const el of this.querySelectorAll("[data-validity]")) {
+      for (const el of this.querySelectorAll("[data-pwc-validity]")) {
         this._applyValidity(el);
       }
       return;
     }
     const affected = mutations.flatMap(
-      (m) => m.type === "attributes" ? [m.target] : [...m.addedNodes].filter((n) => n.nodeType === Node.ELEMENT_NODE).flatMap((n) => [n, ...n.querySelectorAll("[data-validity]")]).filter((n) => n.hasAttribute("data-validity"))
+      (m) => m.type === "attributes" ? [m.target] : [...m.addedNodes].filter((n) => n.nodeType === Node.ELEMENT_NODE).flatMap((n) => [n, ...n.querySelectorAll("[data-pwc-validity]")]).filter((n) => n.hasAttribute("data-pwc-validity"))
     );
     for (const el of affected) this._applyValidity(el);
   }
   _applyValidity(el) {
-    const value = el.getAttribute("data-validity");
+    const value = el.getAttribute("data-pwc-validity");
     if (value) {
       el.setCustomValidity(value);
       this._updateMessage(el, value);
@@ -114,8 +114,8 @@ var BaseValidity = class extends PwcChildrenObserverElement {
   _updateMessage(_el, _text) {
   }
   _setupClearing(el) {
-    let clearOn = el.dataset.validityClearOn ?? this.getAttribute("clear-on");
-    let clearAfter = el.dataset.validityClearAfter ?? this.getAttribute("clear-after");
+    let clearOn = el.dataset.pwcValidityClearOn ?? this.getAttribute("clear-on");
+    let clearAfter = el.dataset.pwcValidityClearAfter ?? this.getAttribute("clear-after");
     if (clearOn === "off") clearOn = null;
     if (clearAfter === "off") clearAfter = null;
     if (!clearOn && !clearAfter) return;
@@ -130,7 +130,7 @@ var BaseValidity = class extends PwcChildrenObserverElement {
         clearTimeout(timeoutId);
         timeoutId = void 0;
       }
-      el.removeAttribute("data-validity");
+      el.removeAttribute("data-pwc-validity");
     };
     if (clearOn) {
       for (const event of tokenList(clearOn)) {

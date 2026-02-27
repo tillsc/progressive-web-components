@@ -4,7 +4,7 @@ import { tokenList } from "../core/utils.js";
 /**
  * Base class for validity components.
  *
- * Applies `data-validity` attributes on form elements as custom validity
+ * Applies `data-pwc-validity` attributes on form elements as custom validity
  * messages via `setCustomValidity()`. Observes the subtree for changes and
  * optionally clears errors after an event or timeout.
  *
@@ -13,13 +13,13 @@ import { tokenList } from "../core/utils.js";
  */
 export class BaseValidity extends PwcChildrenObserverElement {
   static observeMode = "tree";
-  static observeAttributes = ["data-validity"];
+  static observeAttributes = ["data-pwc-validity"];
 
   _cleanups = [];
 
   onChildrenChanged(mutations) {
     if (!mutations.length) {
-      for (const el of this.querySelectorAll("[data-validity]")) {
+      for (const el of this.querySelectorAll("[data-pwc-validity]")) {
         this._applyValidity(el);
       }
       return;
@@ -29,14 +29,14 @@ export class BaseValidity extends PwcChildrenObserverElement {
       m.type === "attributes"
         ? [m.target]
         : [...m.addedNodes].filter((n) => n.nodeType === Node.ELEMENT_NODE)
-            .flatMap((n) => [n, ...n.querySelectorAll("[data-validity]")])
-            .filter((n) => n.hasAttribute("data-validity"))
+            .flatMap((n) => [n, ...n.querySelectorAll("[data-pwc-validity]")])
+            .filter((n) => n.hasAttribute("data-pwc-validity"))
     );
     for (const el of affected) this._applyValidity(el);
   }
 
   _applyValidity(el) {
-    const value = el.getAttribute("data-validity");
+    const value = el.getAttribute("data-pwc-validity");
     if (value) {
       el.setCustomValidity(value);
       this._updateMessage(el, value);
@@ -50,8 +50,8 @@ export class BaseValidity extends PwcChildrenObserverElement {
   _updateMessage(_el, _text) {}
 
   _setupClearing(el) {
-    let clearOn = el.dataset.validityClearOn ?? this.getAttribute("clear-on");
-    let clearAfter = el.dataset.validityClearAfter ?? this.getAttribute("clear-after");
+    let clearOn = el.dataset.pwcValidityClearOn ?? this.getAttribute("clear-on");
+    let clearAfter = el.dataset.pwcValidityClearAfter ?? this.getAttribute("clear-after");
     if (clearOn === "off") clearOn = null;
     if (clearAfter === "off") clearAfter = null;
 
@@ -69,7 +69,7 @@ export class BaseValidity extends PwcChildrenObserverElement {
         clearTimeout(timeoutId);
         timeoutId = undefined;
       }
-      el.removeAttribute("data-validity");
+      el.removeAttribute("data-pwc-validity");
     };
 
     if (clearOn) {

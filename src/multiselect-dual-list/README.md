@@ -66,21 +66,21 @@ When present, selected items are hidden in the available list instead of being g
 
 Options on the native `<select>` support additional data attributes:
 
-### `data-parent`
+### `data-pwc-parent`
 Establishes a parent-child relationship. The value must be another option's `value`.
 Child options are indented according to their depth.
 
 ```html
 <option value="parent">Parent</option>
-<option value="child" data-parent="parent">Child</option>
+<option value="child" data-pwc-parent="parent">Child</option>
 ```
 
-### `data-warn-on-unselect`
+### `data-pwc-warn-on-unselect`
 When set, a `confirm()` dialog is shown before removing the item.
 The attribute value is used as the confirmation message.
 
 ```html
-<option value="critical" data-warn-on-unselect="Are you sure?">Critical Item</option>
+<option value="critical" data-pwc-warn-on-unselect="Are you sure?">Critical Item</option>
 ```
 
 ### `selected`
@@ -139,32 +139,32 @@ See the [`<pwc-filter>` documentation](../filter/README.md) for full API details
 Key CSS hooks:
 
 - `pwc-multiselect-dual-list` — host element
-- `.pwc-msdl-container` — flex container for both columns
-- `.pwc-msdl-selected` / `.pwc-msdl-available` — column wrappers
-- `.pwc-msdl-header` — column headers
-- `.pwc-msdl-list` — scrollable item lists
-- `.pwc-msdl-item` — individual items
-- `.pwc-msdl-item--selected` — available item that is currently selected
-- `.pwc-msdl-item--disabled` — disabled item
-- `.pwc-msdl-action` — add/remove buttons
+- `.pwc-multiselect-dual-list-container` — flex container for both columns
+- `.pwc-multiselect-dual-list-selected` / `.pwc-multiselect-dual-list-available` — column wrappers
+- `.pwc-multiselect-dual-list-header` — column headers
+- `.pwc-multiselect-dual-list-list` — scrollable item lists
+- `.pwc-multiselect-dual-list-item` — individual items
+- `.pwc-multiselect-dual-list-item--selected` — available item that is currently selected
+- `.pwc-multiselect-dual-list-item--disabled` — disabled item
+- `.pwc-multiselect-dual-list-action` — add/remove buttons
 
 Custom properties on the host element:
 
 ```css
 pwc-multiselect-dual-list {
-  --pwc-msdl-width: 100%;
-  --pwc-msdl-gap: 12px;
-  --pwc-msdl-padding: 8px;
-  --pwc-msdl-item-padding: 6px 10px;
-  --pwc-msdl-list-max-height: 20em;
-  --pwc-msdl-bg: #fff;
-  --pwc-msdl-border: 1px solid rgba(0, 0, 0, 0.15);
-  --pwc-msdl-border-radius: 4px;
-  --pwc-msdl-item-bg: #f8f8f8;
-  --pwc-msdl-item-hover-bg: #f0f0f0;
-  --pwc-msdl-item-selected-bg: #e8e8e8;
-  --pwc-msdl-item-selected-color: #999;
-  --pwc-msdl-item-disabled-color: #bbb;
+  --pwc-multiselect-dual-list-width: 100%;
+  --pwc-multiselect-dual-list-gap: 12px;
+  --pwc-multiselect-dual-list-padding: 8px;
+  --pwc-multiselect-dual-list-item-padding: 6px 10px;
+  --pwc-multiselect-dual-list-list-max-height: 20em;
+  --pwc-multiselect-dual-list-bg: #fff;
+  --pwc-multiselect-dual-list-border: 1px solid rgba(0, 0, 0, 0.15);
+  --pwc-multiselect-dual-list-border-radius: 4px;
+  --pwc-multiselect-dual-list-item-bg: #f8f8f8;
+  --pwc-multiselect-dual-list-item-hover-bg: #f0f0f0;
+  --pwc-multiselect-dual-list-item-selected-bg: #e8e8e8;
+  --pwc-multiselect-dual-list-item-selected-color: #999;
+  --pwc-multiselect-dual-list-item-disabled-color: #bbb;
 }
 ```
 

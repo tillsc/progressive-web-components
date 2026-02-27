@@ -1,6 +1,6 @@
 # `<pwc-validity>`
 
-Maps `data-validity` attributes on form elements to `setCustomValidity()`. Observes
+Maps `data-pwc-validity` attributes on form elements to `setCustomValidity()`. Observes
 the subtree for changes via MutationObserver and optionally clears errors after a
 DOM event or a timeout.
 
@@ -11,8 +11,8 @@ DOM event or a timeout.
 ```html
 <pwc-validity clear-on="input" clear-after="5000">
   <form>
-    <input name="email" data-validity="Invalid email address">
-    <select name="role" data-validity="Please select a role">
+    <input name="email" data-pwc-validity="Invalid email address">
+    <select name="role" data-pwc-validity="Please select a role">
       <option value="">--</option>
       <option value="admin">Admin</option>
     </select>
@@ -20,7 +20,7 @@ DOM event or a timeout.
 </pwc-validity>
 ```
 
-The server renders `data-validity` on elements that failed validation.
+The server renders `data-pwc-validity` on elements that failed validation.
 `<pwc-validity>` picks them up and calls `setCustomValidity()`.
 
 ---
@@ -50,30 +50,30 @@ Both attributes are combinable. The error clears on whichever happens first.
 
 ## Data attributes (on form elements)
 
-### `data-validity`
+### `data-pwc-validity`
 
 The custom validation message. Set by the server on elements that failed validation.
 
 ```html
-<input name="email" data-validity="Invalid email address">
+<input name="email" data-pwc-validity="Invalid email address">
 ```
 
-### `data-validity-clear-on`
+### `data-pwc-validity-clear-on`
 
 Per-element override for `clear-on`. Set to `"off"` to disable event-based clearing for this element.
 
 ```html
-<input name="email" data-validity="Invalid" data-validity-clear-on="input">
-<input name="token" data-validity="Expired" data-validity-clear-on="off">
+<input name="email" data-pwc-validity="Invalid" data-pwc-validity-clear-on="input">
+<input name="token" data-pwc-validity="Expired" data-pwc-validity-clear-on="off">
 ```
 
-### `data-validity-clear-after`
+### `data-pwc-validity-clear-after`
 
 Per-element override for `clear-after`. Set to `"off"` to disable timeout-based clearing for this element.
 
 ```html
-<input name="token" data-validity="Expired" data-validity-clear-after="10000">
-<input name="pin" data-validity="Wrong PIN" data-validity-clear-after="off">
+<input name="token" data-pwc-validity="Expired" data-pwc-validity-clear-after="10000">
+<input name="pin" data-pwc-validity="Wrong PIN" data-pwc-validity-clear-after="off">
 ```
 
 ---
@@ -99,7 +99,7 @@ A Bootstrap 5 styled variant is provided with the same API:
 ```html
 <pwc-validity-bs5 clear-on="input">
   <form>
-    <input name="email" class="form-control" data-validity="Invalid email address">
+    <input name="email" class="form-control" data-pwc-validity="Invalid email address">
   </form>
 </pwc-validity-bs5>
 ```

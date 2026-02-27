@@ -27,17 +27,17 @@
 
     run(async ({ assert, equal, waitFor, log }) => {
       const host = document.getElementById("demo");
-      await waitFor(() => host.querySelector(".pwc-msdl-container"), { label: "container rendered" });
+      await waitFor(() => host.querySelector(".pwc-multiselect-dual-list-container"), { label: "container rendered" });
 
-      const container = host.querySelector(".pwc-msdl-container");
+      const container = host.querySelector(".pwc-multiselect-dual-list-container");
       const select = host.querySelector("select");
 
       // Modify selection before chunking: select a1, deselect a2
       await log("modifying selection before chunking");
       click(container.querySelector("[data-value='a1'] [data-action='add']"));
-      click(container.querySelector(".pwc-msdl-selected [data-value='a2'] [data-action='remove']"));
+      click(container.querySelector(".pwc-multiselect-dual-list-selected [data-value='a2'] [data-action='remove']"));
       await waitFor(
-        () => container.querySelectorAll(".pwc-msdl-selected [data-value]").length === 1,
+        () => container.querySelectorAll(".pwc-multiselect-dual-list-selected [data-value]").length === 1,
         { label: "selection modified" }
       );
 
@@ -53,22 +53,22 @@
 
       // Wait for observer to rebuild
       await waitFor(
-        () => container.querySelectorAll(".pwc-msdl-available [data-value]").length === 7,
+        () => container.querySelectorAll(".pwc-multiselect-dual-list-available [data-value]").length === 7,
         { label: "new options rendered" }
       );
 
       // Existing selection preserved
       await log("checking selection preserved");
-      assert(container.querySelector(".pwc-msdl-selected [data-value='a1']"), "a1 still selected");
-      assert(!container.querySelector(".pwc-msdl-selected [data-value='a2']"), "a2 still deselected");
+      assert(container.querySelector(".pwc-multiselect-dual-list-selected [data-value='a1']"), "a1 still selected");
+      assert(!container.querySelector(".pwc-multiselect-dual-list-selected [data-value='a2']"), "a2 still deselected");
 
       // New options placed correctly
       await log("checking new options placement");
-      assert(!container.querySelector(".pwc-msdl-selected [data-value='b1']"), "b1 not selected");
-      assert(container.querySelector(".pwc-msdl-selected [data-value='b2']"), "b2 selected");
-      assert(!container.querySelector(".pwc-msdl-selected [data-value='b3']"), "b3 not selected");
+      assert(!container.querySelector(".pwc-multiselect-dual-list-selected [data-value='b1']"), "b1 not selected");
+      assert(container.querySelector(".pwc-multiselect-dual-list-selected [data-value='b2']"), "b2 selected");
+      assert(!container.querySelector(".pwc-multiselect-dual-list-selected [data-value='b3']"), "b3 not selected");
 
-      equal(container.querySelectorAll(".pwc-msdl-selected [data-value]").length, 2, "2 selected (a1 + b2)");
+      equal(container.querySelectorAll(".pwc-multiselect-dual-list-selected [data-value]").length, 2, "2 selected (a1 + b2)");
 
       await log("done");
     });

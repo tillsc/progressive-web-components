@@ -122,15 +122,15 @@ Custom properties are defined on the host element:
 
 ```css
 pwc-modal-dialog {
-  --pwc-modal-max-width: 720px;
-  --pwc-modal-width: 92vw;
-  --pwc-modal-padding-header: 12px 16px;
-  --pwc-modal-padding-body: 16px;
-  --pwc-modal-padding-footer: 12px 16px;
-  --pwc-modal-bg: #fff;
-  --pwc-modal-backdrop: rgba(0, 0, 0, 0.45);
-  --pwc-modal-border-radius: 6px;
-  --pwc-modal-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  --pwc-modal-dialog-max-width: 720px;
+  --pwc-modal-dialog-width: 92vw;
+  --pwc-modal-dialog-padding-header: 12px 16px;
+  --pwc-modal-dialog-padding-body: 16px;
+  --pwc-modal-dialog-padding-footer: 12px 16px;
+  --pwc-modal-dialog-bg: #fff;
+  --pwc-modal-dialog-backdrop: rgba(0, 0, 0, 0.45);
+  --pwc-modal-dialog-border-radius: 6px;
+  --pwc-modal-dialog-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
 }
 ```
 

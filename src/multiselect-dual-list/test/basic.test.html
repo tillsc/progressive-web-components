@@ -15,8 +15,8 @@
   <pwc-multiselect-dual-list id="demo" available-label="Available" selected-label="Selected">
     <select multiple name="items">
       <option value="1">Root A</option>
-      <option value="2" data-parent="1">Child A1</option>
-      <option value="3" data-parent="1">Child A2</option>
+      <option value="2" data-pwc-parent="1">Child A1</option>
+      <option value="3" data-pwc-parent="1">Child A2</option>
       <option value="4" selected>Pre-selected</option>
       <option value="5" disabled>Disabled Item</option>
       <option value="6">Root B</option>
@@ -32,11 +32,11 @@
 
       await log("waiting for UI to build");
       await waitFor(
-        () => host.querySelector(".pwc-msdl-container"),
+        () => host.querySelector(".pwc-multiselect-dual-list-container"),
         { label: "container rendered" }
       );
 
-      const container = host.querySelector(".pwc-msdl-container");
+      const container = host.querySelector(".pwc-multiselect-dual-list-container");
       assert(container, "container exists");
 
       // Check select is hidden
@@ -44,45 +44,45 @@
       equal(select.style.display, "none", "select is hidden");
 
       // Check available list has all items
-      const availableItems = container.querySelectorAll(".pwc-msdl-available [data-value]");
+      const availableItems = container.querySelectorAll(".pwc-multiselect-dual-list-available [data-value]");
       equal(availableItems.length, 6, "6 available items rendered");
 
       // Check pre-selected item is in selected list
-      const selectedItems = container.querySelectorAll(".pwc-msdl-selected [data-value]");
+      const selectedItems = container.querySelectorAll(".pwc-multiselect-dual-list-selected [data-value]");
       equal(selectedItems.length, 1, "1 pre-selected item");
       equal(selectedItems[0].dataset.value, "4", "pre-selected item has value 4");
 
       // Check disabled item has no add button
       const disabledItem = container.querySelector("[data-value='5']");
-      assert(disabledItem.classList.contains("pwc-msdl-item--disabled"), "disabled item has disabled class");
+      assert(disabledItem.classList.contains("pwc-multiselect-dual-list-item--disabled"), "disabled item has disabled class");
       assert(!disabledItem.querySelector("[data-action='add']"), "disabled item has no add button");
 
       // Check hierarchy indentation
-      const child = container.querySelector(".pwc-msdl-available [data-value='2']");
+      const child = container.querySelector(".pwc-multiselect-dual-list-available [data-value='2']");
       assert(child.style.paddingLeft, "child item has indentation");
 
       // Test adding an item
       await log("adding item via click");
-      const addBtn = container.querySelector(".pwc-msdl-available [data-value='1'] [data-action='add']");
+      const addBtn = container.querySelector(".pwc-multiselect-dual-list-available [data-value='1'] [data-action='add']");
       click(addBtn);
 
       await waitFor(
-        () => container.querySelectorAll(".pwc-msdl-selected [data-value]").length === 2,
+        () => container.querySelectorAll(".pwc-multiselect-dual-list-selected [data-value]").length === 2,
         { label: "item added to selected" }
       );
       equal(select.querySelector("option[value='1']").selected, true, "option 1 is selected in native select");
 
       // Available entry should be marked as selected
-      const availEntry = container.querySelector(".pwc-msdl-available [data-value='1']");
-      assert(availEntry.classList.contains("pwc-msdl-item--selected"), "available entry marked as selected");
+      const availEntry = container.querySelector(".pwc-multiselect-dual-list-available [data-value='1']");
+      assert(availEntry.classList.contains("pwc-multiselect-dual-list-item--selected"), "available entry marked as selected");
 
       // Test removing an item
       await log("removing item via click");
-      const removeBtn = container.querySelector(".pwc-msdl-selected [data-value='4'] [data-action='remove']");
+      const removeBtn = container.querySelector(".pwc-multiselect-dual-list-selected [data-value='4'] [data-action='remove']");
       click(removeBtn);
 
       await waitFor(
-        () => container.querySelectorAll(".pwc-msdl-selected [data-value]").length === 1,
+        () => container.querySelectorAll(".pwc-multiselect-dual-list-selected [data-value]").length === 1,
         { label: "item removed from selected" }
       );
       equal(select.querySelector("option[value='4']").selected, false, "option 4 is deselected in native select");

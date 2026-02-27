@@ -77,7 +77,7 @@ var MultiselectDualListBase = class extends PwcChildrenObserverElement {
   static observeMode = "tree";
   static events = ["click"];
   get _selectedClass() {
-    return "pwc-msdl-item--selected";
+    return "pwc-multiselect-dual-list-item--selected";
   }
   onChildrenChanged() {
     const select = this.querySelector("select");
@@ -113,17 +113,17 @@ var MultiselectDualListBase = class extends PwcChildrenObserverElement {
     const options = Array.from(select.options);
     const parentMap = /* @__PURE__ */ new Map();
     for (const opt of options) {
-      const parent = opt.dataset.parent;
+      const parent = opt.dataset.pwcParent;
       if (parent) parentMap.set(opt.value, parent);
     }
     return options.map((opt) => ({
       value: opt.value,
       label: opt.textContent,
-      parent: opt.dataset.parent || null,
+      parent: opt.dataset.pwcParent || null,
       depth: this._calculateDepth(opt.value, parentMap),
       selected: opt.selected,
       disabled: opt.disabled,
-      warnOnUnselect: opt.dataset.warnOnUnselect || null
+      warnOnUnselect: opt.dataset.pwcWarnOnUnselect || null
     }));
   }
   _calculateDepth(value, parentMap) {
