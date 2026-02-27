@@ -8,3 +8,4 @@ import './include';
 import './auto-submit';
 import './validity';
 import './select-all';
+import './auto-grid';

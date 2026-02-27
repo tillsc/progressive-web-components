@@ -21,6 +21,7 @@ A collection of Custom Elements designed to work with server-rendered HTML and p
 
 | Component | Description |
 |---|---|
+| [`<pwc-auto-grid>`](src/auto-grid/) | Responsive auto-fitting CSS grid layout with optional switcher variant |
 | [`<pwc-auto-submit>`](src/auto-submit/) | Auto-submits a form on `change` events, with optional local reload via fetch + transclusion |
 | [`<pwc-shown-if>`](src/conditional-display/) / [`<pwc-hidden-if>`](src/conditional-display/) / [`<pwc-enabled-if>`](src/conditional-display/) / [`<pwc-disabled-if>`](src/conditional-display/) | Conditionally show/hide or enable/disable DOM sections based on a form input |
 | [`<pwc-dialog-opener>`](src/dialog-opener/) | Enhances links to open their targets in a modal dialog |
@@ -65,6 +66,7 @@ For more control you can import the unbundled source files directly
 
 `dist/` contains one JavaScript file per component (and variant). No build step is required for consumers.
 
+- `auto-grid.js` (no Bootstrap variant needed)
 - `auto-submit.js` (no Bootstrap variant needed)
 - `conditional-display.js` (no Bootstrap variant needed)
 - `dialog-opener.js` / `dialog-opener-bs5.js`

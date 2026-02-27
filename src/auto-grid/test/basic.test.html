@@ -1,0 +1,184 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>pwc-auto-grid: basic</title>
+  <script type="module" src="../../../dist/auto-grid.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    pwc-auto-grid > * {
+      background: #e8f0fe;
+      border: 1px solid #9fb8e8;
+      padding: 0.4rem 0.8rem;
+    }
+    pwc-auto-grid > .pwc-auto-grid-wide {
+      background: #fce8c8;
+      border-color: #e0aa5a;
+    }
+
+    /* Visible boundary for 300px demo containers */
+    .w300 { width: 300px; outline: 1px dashed #bbb; }
+
+    h2 { margin-top: 1.5rem; margin-bottom: 0.2rem; }
+  </style>
+</head>
+
+<body>
+
+<h1>pwc-auto-grid: basic</h1>
+
+<!-- ── Auto-fit default ────────────────────────────────────────────────────── -->
+
+<h2>Auto-fit (default)</h2>
+<p>Columns are at least 100px wide and grow to fill the available space.</p>
+
+<pwc-auto-grid id="probe">
+  <div>Item 1</div>
+  <div>Item 2</div>
+  <div>Item 3</div>
+  <div>Item 4</div>
+  <div>Item 5</div>
+  <div>Item 6</div>
+</pwc-auto-grid>
+
+<!-- ── Fixed columns ──────────────────────────────────────────────────────── -->
+
+<h2>Fixed columns — 3 cols in 300px (items 1–3 share a row, item 4 wraps)</h2>
+
+<div class="w300">
+  <pwc-auto-grid id="grid-fixed"
+    style="--pwc-auto-grid-cols: 3; --pwc-auto-grid-gap: 0px; --pwc-auto-grid-min-width: 1px">
+    <div id="fixed-1">Item 1</div>
+    <div id="fixed-2">Item 2</div>
+    <div id="fixed-3">Item 3</div>
+    <div id="fixed-4">Item 4 (wraps)</div>
+  </pwc-auto-grid>
+</div>
+
+<!-- ── Full-width item ────────────────────────────────────────────────────── -->
+
+<h2>Full-width item — <code>.pwc-auto-grid-wide</code> spans all columns</h2>
+
+<div class="w300">
+  <pwc-auto-grid id="grid-wide"
+    style="--pwc-auto-grid-cols: 3; --pwc-auto-grid-gap: 0px; --pwc-auto-grid-min-width: 1px">
+    <div id="wide-item" class="pwc-auto-grid-wide">⟵ spans all 3 columns ⟶</div>
+    <div id="wide-rest-1">Item 1</div>
+    <div id="wide-rest-2">Item 2</div>
+    <div id="wide-rest-3">Item 3</div>
+  </pwc-auto-grid>
+</div>
+
+<!-- ── Attribute shorthand ────────────────────────────────────────────────── -->
+
+<h2>Attribute shorthand — same result as above via <code>cols="3"</code></h2>
+
+<div class="w300">
+  <pwc-auto-grid id="grid-attr" cols="3" gap="0px" min-width="1px">
+    <div id="attr-1">Item 1</div>
+    <div id="attr-2">Item 2</div>
+    <div id="attr-3">Item 3</div>
+    <div id="attr-4">Item 4 (wraps)</div>
+  </pwc-auto-grid>
+</div>
+
+<!-- ── Switcher ───────────────────────────────────────────────────────────── -->
+
+<h2>Switcher — fits (3 × 80px = 240px ≤ 300px → one row)</h2>
+
+<div class="w300">
+  <pwc-auto-grid id="switcher-fits" class="switcher"
+    style="--pwc-auto-grid-cols: 3; --pwc-auto-grid-gap: 0px; --pwc-auto-grid-min-width: 80px">
+    <div id="sw-fit-1">Item 1</div>
+    <div id="sw-fit-2">Item 2</div>
+    <div id="sw-fit-3">Item 3</div>
+  </pwc-auto-grid>
+</div>
+
+<h2>Switcher — breaks (3 × 120px = 360px &gt; 300px → each item full width)</h2>
+
+<div class="w300">
+  <pwc-auto-grid id="switcher-breaks" class="switcher"
+    style="--pwc-auto-grid-cols: 3; --pwc-auto-grid-gap: 0px; --pwc-auto-grid-min-width: 120px">
+    <div id="sw-brk-1">Item 1</div>
+    <div id="sw-brk-2">Item 2</div>
+    <div id="sw-brk-3">Item 3</div>
+  </pwc-auto-grid>
+</div>
+
+<script type="module">
+  import { run } from "../../../static/testing/harness.js";
+
+  run(async ({ assert, equal, log, nextTick }) => {
+    await nextTick("wait for CSS");
+
+    // ── CSS registered ─────────────────────────────────────────────────────
+
+    await log("CSS injected: display:grid applied");
+    equal(getComputedStyle(document.getElementById("probe")).display, "grid", "display is grid");
+
+    // ── Fixed columns ──────────────────────────────────────────────────────
+
+    await log("fixed cols: items 1–3 share a row, item 4 wraps");
+    const f1 = document.getElementById("fixed-1");
+    const f2 = document.getElementById("fixed-2");
+    const f3 = document.getElementById("fixed-3");
+    const f4 = document.getElementById("fixed-4");
+
+    equal(Math.round(f1.getBoundingClientRect().width), 100, "each of 3 cols is 100px");
+    assert(f1.getBoundingClientRect().top === f2.getBoundingClientRect().top, "items 1–2 same row");
+    assert(f1.getBoundingClientRect().top === f3.getBoundingClientRect().top, "items 1–3 same row");
+    assert(f4.getBoundingClientRect().top > f1.getBoundingClientRect().top,   "item 4 wraps");
+
+    // ── Full-width item ────────────────────────────────────────────────────
+
+    await log("wide item spans full container width");
+    const wide = document.getElementById("wide-item");
+    const rest = document.getElementById("wide-rest-1");
+
+    equal(Math.round(wide.getBoundingClientRect().width), 300, "wide item fills 300px");
+    assert(wide.getBoundingClientRect().top < rest.getBoundingClientRect().top, "wide item is above the rest");
+
+    // ── Attribute shorthand ────────────────────────────────────────────────
+    if (CSS.supports("width", "attr(x length, 0px)")) {
+      await log("attribute shorthand: cols=3 produces same layout");
+      const a1 = document.getElementById("attr-1");
+      const a2 = document.getElementById("attr-2");
+      const a3 = document.getElementById("attr-3");
+      const a4 = document.getElementById("attr-4");
+
+      equal(Math.round(a1.getBoundingClientRect().width), 100, "attr: each of 3 cols is 100px");
+      assert(a1.getBoundingClientRect().top === a2.getBoundingClientRect().top, "attr: items 1–2 same row");
+      assert(a1.getBoundingClientRect().top === a3.getBoundingClientRect().top, "attr: items 1–3 same row");
+      assert(a4.getBoundingClientRect().top > a1.getBoundingClientRect().top,   "attr: item 4 wraps");
+    }
+    else {
+      await log("skipping attribute shorthand tests: no CSS attr() support");
+    }
+
+    // ── Switcher ───────────────────────────────────────────────────────────
+
+    await log("switcher fits: all 3 items in one row");
+    const sf1 = document.getElementById("sw-fit-1");
+    const sf2 = document.getElementById("sw-fit-2");
+    const sf3 = document.getElementById("sw-fit-3");
+
+    assert(sf1.getBoundingClientRect().top === sf2.getBoundingClientRect().top, "switcher fit: items 1–2 same row");
+    assert(sf1.getBoundingClientRect().top === sf3.getBoundingClientRect().top, "switcher fit: items 1–3 same row");
+
+    await log("switcher breaks: each item takes full width");
+    const sb1 = document.getElementById("sw-brk-1");
+    const sb2 = document.getElementById("sw-brk-2");
+    const sb3 = document.getElementById("sw-brk-3");
+
+    equal(Math.round(sb1.getBoundingClientRect().width), 300, "switcher break: item 1 is 300px wide");
+    assert(sb1.getBoundingClientRect().top < sb2.getBoundingClientRect().top, "switcher break: items stack");
+    assert(sb2.getBoundingClientRect().top < sb3.getBoundingClientRect().top, "switcher break: items stack");
+
+    await log("done");
+  });
+</script>
+</body>
+</html>

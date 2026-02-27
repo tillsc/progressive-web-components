@@ -19,6 +19,7 @@
     "./modal-dialog-bs5": "./dist/modal-dialog-bs5.js",
     "./multiselect-dual-list": "./dist/multiselect-dual-list.js",
     "./multiselect-dual-list-bs5": "./dist/multiselect-dual-list-bs5.js",
+    "./auto-grid": "./dist/auto-grid.js",
     "./auto-submit": "./dist/auto-submit.js",
     "./validity": "./dist/validity.js",
     "./validity-bs5": "./dist/validity-bs5.js",

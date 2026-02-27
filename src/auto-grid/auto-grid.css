@@ -1,0 +1,59 @@
+pwc-auto-grid {
+  --pwc-auto-grid-cols: -1;
+  --pwc-auto-grid-gap: 10px;
+  --pwc-auto-grid-min-width: 100px;
+  --pwc-auto-grid-max-width: 1fr;
+
+  /* Total width consumed by gaps (garbage when --cols is -1, but max() below saves it) */
+  --pwc-auto-grid-gap-total: calc((var(--pwc-auto-grid-cols) - 1) * var(--pwc-auto-grid-gap));
+  /* Width each column would have if all cols fit in one row */
+  --pwc-auto-grid-col-optimistic: calc((100% - var(--pwc-auto-grid-gap-total)) / var(--pwc-auto-grid-cols));
+  /* At least --min-width; the max() degrades gracefully when --cols is -1 */
+  --pwc-auto-grid-col-realistic: max(var(--pwc-auto-grid-min-width), var(--pwc-auto-grid-col-optimistic));
+  /* Final column sizing */
+  --pwc-auto-grid-col: minmax(var(--pwc-auto-grid-col-realistic), var(--pwc-auto-grid-max-width));
+
+  display: grid;
+  gap: var(--pwc-auto-grid-gap);
+  grid-template-columns: repeat(auto-fit, var(--pwc-auto-grid-col));
+}
+
+pwc-auto-grid > .pwc-auto-grid-wide {
+  grid-column: 1 / -1;
+}
+
+/* Maps cols, gap, and min-width attributes to their CSS custom properties.
+ * Guarded so older browsers fall back silently to the defaults above. */
+@supports (width: attr(x length, 0px)) {
+  pwc-auto-grid {
+    --pwc-auto-grid-cols: attr(cols integer, -1);
+    --pwc-auto-grid-gap: attr(gap length, 10px);
+    --pwc-auto-grid-min-width: attr(min-width length, 100px);
+  }
+}
+
+/* ── Switcher variant (experimental) ──────────────────────────────────────────
+ *
+ * Requires cols to be set to the intended number of columns.
+ *
+ * Places all items in one row when the container is wide enough for each item
+ * to reach --pwc-auto-grid-min-width. Otherwise each item takes the full width.
+ *
+ * Technique: produces a CSS "boolean" (0px / 1px) via clamp(), then multiplies
+ * by a large factor to force a binary column-width choice — no media queries.
+ */
+pwc-auto-grid.switcher {
+  /* 1px when items are too wide to fit, 0px when they fit */
+  --pwc-auto-grid-col-should-break: clamp(
+    0px,
+    var(--pwc-auto-grid-min-width) - var(--pwc-auto-grid-col-optimistic),
+    1px
+  );
+  --pwc-auto-grid-col-should-not-break: calc(1px - var(--pwc-auto-grid-col-should-break));
+
+  /* When breaking: 100% width. When not breaking: equal share of available width. */
+  --pwc-auto-grid-col: calc(
+    min(100%, var(--pwc-auto-grid-col-should-break) * 9999) +
+    min(var(--pwc-auto-grid-col-optimistic), var(--pwc-auto-grid-col-should-not-break) * 9999)
+  );
+}
