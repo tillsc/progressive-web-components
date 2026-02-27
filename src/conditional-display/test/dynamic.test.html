@@ -41,8 +41,9 @@
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
   import { setValue } from "../../../static/testing/helpers.js";
+  import * as assert from "../../../static/testing/assert.js";
 
-  run(async ({ assert, equal, waitFor, log }) => {
+  run(async ({ waitFor, log }) => {
 
     // --- Dynamic children ---
 
@@ -63,13 +64,13 @@
     section.appendChild(added);
 
     await waitFor(() => added.disabled, { label: "added input gets disabled" });
-    assert(added.hasAttribute("data-pwc-temporarily-disabled"), "added input should be marked as temporarily disabled");
+    assert.hasAttr(added, "data-pwc-temporarily-disabled");
 
     await log("dynamic children: show section again");
     setValue(method, "a");
     await waitFor(() => !section.hidden, { label: "section visible again" });
-    equal(added.disabled, false, "added input should be re-enabled");
-    equal(section.querySelector("[name=original]").disabled, false, "original input should be re-enabled");
+    assert.equal(added.disabled, false, "added input should be re-enabled");
+    assert.equal(section.querySelector("[name=original]").disabled, false, "original input should be re-enabled");
 
     await log("dynamic children: add input while visible + hidden");
     setValue(method, "a");
@@ -80,7 +81,7 @@
 
     setValue(method, "b");
     await waitFor(() => section.hidden, { label: "section hidden again" });
-    equal(added2.disabled, true, "added2 should be disabled when hidden");
+    assert.equal(added2.disabled, true, "added2 should be disabled when hidden");
 
     // --- Dynamic selector change ---
 

@@ -38,11 +38,12 @@
 
   <script type="module">
     import { run } from "../../../static/testing/harness.js";
+    import * as assert from "../../../static/testing/assert.js";
     import { click } from "../../../static/testing/helpers.js";
 
-    run(async ({ assert, equal, waitFor, log, nextTick }) => {
+    run(async ({ waitFor, log }) => {
       const BsModal = window.bootstrap?.Modal;
-      assert(BsModal, "Bootstrap Modal missing on window.bootstrap.Modal");
+      assert.ok(BsModal, "Bootstrap Modal missing on window.bootstrap.Modal");
 
       const waitForShownStable = async (el, label) => {
         await waitFor(() => {
@@ -63,7 +64,7 @@
       const parent = document.querySelector("pwc-modal-dialog-bs5.show");
       await waitForShownStable(parent, "parent");
 
-      equal(
+      assert.equal(
         document.querySelectorAll(".modal.show").length, 1,
         "exactly one shown modal (parent)"
       );
@@ -79,11 +80,11 @@
       const child = document.querySelector(".modal.show");
       await waitForShownStable(child, "child");
 
-      equal(
+      assert.equal(
         document.querySelectorAll(".modal.show").length, 1,
         "exactly one shown modal (child)"
       );
-      assert(
+      assert.ok(
         document.querySelector(".modal.show") === child,
         "child should be the shown modal"
       );
@@ -97,11 +98,11 @@
       );
       await waitForShownStable(parent, "parent restored");
 
-      equal(
+      assert.equal(
         document.querySelectorAll(".modal.show").length, 1,
         "exactly one shown modal (restored parent)"
       );
-      assert(
+      assert.ok(
         document.querySelector(".modal.show") === parent,
         "parent should be shown again"
       );

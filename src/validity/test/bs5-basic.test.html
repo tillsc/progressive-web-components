@@ -48,10 +48,11 @@
 
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
+  import * as assert from "../../../static/testing/assert.js";
 
   const feedbackOf = (el) => el.nextElementSibling?.matches(".invalid-feedback") ? el.nextElementSibling : null;
 
-  run(async ({ assert, equal, waitFor, log }) => {
+  run(async ({ waitFor, log }) => {
 
     // --- Initial validity with BS5 classes ---
 
@@ -61,30 +62,30 @@
     const clean = document.getElementById("clean");
 
     await waitFor(() => email.validationMessage, { label: "email has validation message" });
-    equal(email.validationMessage, "Invalid email address", "email message");
-    assert(email.classList.contains("is-invalid"), "email has is-invalid class");
-    equal(feedbackOf(email)?.textContent, "Invalid email address", "email feedback div");
+    assert.equal(email.validationMessage, "Invalid email address", "email message");
+    assert.hasClass(email, "is-invalid");
+    assert.equal(feedbackOf(email)?.textContent, "Invalid email address", "email feedback div");
 
-    equal(role.validationMessage, "Pick a role", "role message");
-    assert(role.classList.contains("is-invalid"), "role has is-invalid class");
-    equal(feedbackOf(role)?.textContent, "Pick a role", "role feedback div");
+    assert.equal(role.validationMessage, "Pick a role", "role message");
+    assert.hasClass(role, "is-invalid");
+    assert.equal(feedbackOf(role)?.textContent, "Pick a role", "role feedback div");
 
-    equal(clean.validationMessage, "", "clean input has no error");
-    assert(!clean.classList.contains("is-invalid"), "clean has no is-invalid class");
-    equal(feedbackOf(clean), null, "clean has no feedback div");
+    assert.equal(clean.validationMessage, "", "clean input has no error");
+    assert.noClass(clean, "is-invalid");
+    assert.equal(feedbackOf(clean), null, "clean has no feedback div");
 
     // --- clear-on removes BS5 classes ---
 
     await log("clear-on: is-invalid class and feedback div removed on input");
     const clearOnInput = document.getElementById("clear-on-input");
     await waitFor(() => clearOnInput.validationMessage, { label: "clear-on has error" });
-    assert(clearOnInput.classList.contains("is-invalid"), "is-invalid present before clear");
-    assert(feedbackOf(clearOnInput), "feedback div present before clear");
+    assert.hasClass(clearOnInput, "is-invalid");
+    assert.ok(feedbackOf(clearOnInput), "feedback div present before clear");
 
     clearOnInput.dispatchEvent(new Event("input", { bubbles: true }));
     await waitFor(() => !clearOnInput.validationMessage, { label: "clear-on error cleared" });
-    assert(!clearOnInput.classList.contains("is-invalid"), "is-invalid removed");
-    equal(feedbackOf(clearOnInput), null, "feedback div removed");
+    assert.noClass(clearOnInput, "is-invalid");
+    assert.equal(feedbackOf(clearOnInput), null, "feedback div removed");
 
     await log("done");
   });

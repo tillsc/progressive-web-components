@@ -24,28 +24,29 @@
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
   import { setValue } from "../../../static/testing/helpers.js";
+  import * as assert from "../../../static/testing/assert.js";
 
-  run(async ({ assert, equal, waitFor, log, nextTick }) => {
+  run(async ({ waitFor, log, nextTick }) => {
     await log("checking element definition");
-    assert(customElements.get("pwc-filter"), "pwc-filter not defined");
+    assert.customElement("pwc-filter");
 
     const el = document.getElementById("filter");
-    assert(el, "missing <pwc-filter>");
+    assert.ok(el, "missing <pwc-filter>");
 
     const rows = Array.from(el.querySelectorAll("[data-pwc-filter-row]"));
-    equal(rows.length, 3, "expected 3 rows");
+    assert.equal(rows.length, 3, "expected 3 rows");
 
     const input = el.querySelector("input[type=search]");
-    assert(input, "search input not created");
+    assert.ok(input, "search input not created");
 
     await log("precondition: all rows visible");
-    equal(rows.filter((r) => !r.hidden).length, 3, "expected all rows visible");
+    assert.equal(rows.filter((r) => !r.hidden).length, 3, "expected all rows visible");
 
     await log("filtering for 'bob'");
     setValue(input, "bob", { change: false });
 
     await waitFor(() => rows.filter((r) => !r.hidden).length === 1, { label: "bob filtered" });
-    equal(rows.find((r) => !r.hidden)?.textContent.trim(), "BobBrown", "expected Bob Brown to remain visible");
+    assert.equal(rows.find((r) => !r.hidden)?.textContent.trim(), "BobBrown", "expected Bob Brown to remain visible");
 
     await log("clearing filter");
     setValue(input, "", { change: false });
@@ -54,28 +55,28 @@
 
     await log("filtering via filterText setter");
     el.filterText = "charlie";
-    equal(rows.filter((r) => !r.hidden).length, 1, "expected 1 row for charlie");
-    equal(rows.find((r) => !r.hidden)?.textContent.trim(), "CharlieChaplin", "expected Charlie Chaplin");
+    assert.equal(rows.filter((r) => !r.hidden).length, 1, "expected 1 row for charlie");
+    assert.equal(rows.find((r) => !r.hidden)?.textContent.trim(), "CharlieChaplin", "expected Charlie Chaplin");
 
     await log("pwc-filter:change event");
     let lastEvent = null;
     el.addEventListener("pwc-filter:change", (e) => (lastEvent = e));
     el.filterText = "bob";
-    assert(lastEvent, "expected pwc-filter:change event");
-    equal(lastEvent.detail.matchCount, 1, "matchCount should be 1");
-    equal(lastEvent.detail.totalCount, 3, "totalCount should be 3");
+    assert.ok(lastEvent, "expected pwc-filter:change event");
+    assert.equal(lastEvent.detail.matchCount, 1, "matchCount should be 1");
+    assert.equal(lastEvent.detail.totalCount, 3, "totalCount should be 3");
 
     await log("clearing via filterText");
     el.filterText = "";
-    equal(rows.filter((r) => !r.hidden).length, 3, "all rows visible after clearing");
+    assert.equal(rows.filter((r) => !r.hidden).length, 3, "all rows visible after clearing");
 
     await log("applyFilter() re-evaluates after content change");
     el.filterText = "alice";
-    equal(rows.filter((r) => !r.hidden).length, 1, "1 row for alice");
+    assert.equal(rows.filter((r) => !r.hidden).length, 1, "1 row for alice");
     // Change Bob's content to include "alice"
     rows[1].querySelector("td").textContent = "Alice-Bob";
     el.applyFilter();
-    equal(rows.filter((r) => !r.hidden).length, 2, "2 rows match after content change and applyFilter()");
+    assert.equal(rows.filter((r) => !r.hidden).length, 2, "2 rows match after content change and applyFilter()");
 
     await log("done");
   });

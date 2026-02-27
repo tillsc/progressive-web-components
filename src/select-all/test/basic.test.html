@@ -75,58 +75,59 @@
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
   import { click, toggleCheckbox } from "../../../static/testing/helpers.js";
+  import * as assert from "../../../static/testing/assert.js";
 
-  run(async ({ assert, equal, log }) => {
+  run(async ({ log }) => {
     await log("checking element definition");
-    assert(customElements.get("pwc-select-all"), "pwc-select-all not defined");
+    assert.customElement("pwc-select-all");
 
     // ── Action buttons ──────────────────────────────────────────────────
 
     const el = document.getElementById("container");
     const boxes = Array.from(el.querySelectorAll("input[type=checkbox]"));
-    equal(boxes.length, 3, "expected 3 checkboxes");
+    assert.equal(boxes.length, 3, "expected 3 checkboxes");
 
     await log("select-all");
     click(el.querySelector("[data-pwc-action='select-all']"));
-    equal(boxes.filter((cb) => cb.checked).length, 3, "all checked after select-all");
+    assert.equal(boxes.filter((cb) => cb.checked).length, 3, "all checked after select-all");
 
     await log("deselect-all");
     click(el.querySelector("[data-pwc-action='deselect-all']"));
-    equal(boxes.filter((cb) => cb.checked).length, 0, "none checked after deselect-all");
+    assert.equal(boxes.filter((cb) => cb.checked).length, 0, "none checked after deselect-all");
 
     await log("invert");
     boxes[0].checked = true;
     click(el.querySelector("[data-pwc-action='invert']"));
-    equal(boxes[0].checked, false, "first inverted to false");
-    equal(boxes[1].checked, true,  "second inverted to true");
-    equal(boxes[2].checked, true,  "third inverted to true");
+    assert.equal(boxes[0].checked, false, "first inverted to false");
+    assert.equal(boxes[1].checked, true,  "second inverted to true");
+    assert.equal(boxes[2].checked, true,  "third inverted to true");
 
     await log("checked / total display");
     const checked = el.querySelector("pwc-select-all-checked");
     const total   = el.querySelector("pwc-select-all-total");
     click(el.querySelector("[data-pwc-action='select-all']"));
-    equal(checked.textContent, "3", "checked shows 3 after select-all");
-    equal(total.textContent,   "3", "total shows 3");
+    assert.equal(checked.textContent, "3", "checked shows 3 after select-all");
+    assert.equal(total.textContent,   "3", "total shows 3");
     click(el.querySelector("[data-pwc-action='deselect-all']"));
-    equal(checked.textContent, "0", "checked shows 0 after deselect-all");
-    equal(total.textContent,   "3", "total unchanged");
+    assert.equal(checked.textContent, "0", "checked shows 0 after deselect-all");
+    assert.equal(total.textContent,   "3", "total unchanged");
 
     await log("pwc-select-all:change on action");
     let lastEvent = null;
     el.addEventListener("pwc-select-all:change", (e) => (lastEvent = e));
     click(el.querySelector("[data-pwc-action='select-all']"));
-    assert(lastEvent, "expected pwc-select-all:change");
-    equal(lastEvent.detail.action, "select-all", "action === select-all");
+    assert.ok(lastEvent, "expected pwc-select-all:change");
+    assert.equal(lastEvent.detail.action, "select-all", "action === select-all");
 
     await log("programmatic API");
     el.selectAll();
-    equal(checked.textContent, "3", "selectAll() → checked 3");
+    assert.equal(checked.textContent, "3", "selectAll() → checked 3");
     el.deselectAll();
-    equal(checked.textContent, "0", "deselectAll() → checked 0");
+    assert.equal(checked.textContent, "0", "deselectAll() → checked 0");
     boxes[0].checked = true;
     el.invertSelection();
-    equal(boxes[0].checked, false, "invertSelection() flipped first");
-    equal(boxes[1].checked, true,  "invertSelection() flipped second");
+    assert.equal(boxes[0].checked, false, "invertSelection() flipped first");
+    assert.equal(boxes[1].checked, true,  "invertSelection() flipped second");
 
     // ── Trigger checkbox ────────────────────────────────────────────────
 
@@ -134,30 +135,30 @@
     const tel = document.getElementById("trigger");
     const triggerCb = tel.querySelector("input[data-pwc-select-all]");
     const items = Array.from(tel.querySelectorAll("input[name='item']"));
-    equal(items.length, 3, "3 managed checkboxes");
+    assert.equal(items.length, 3, "3 managed checkboxes");
 
     await log("trigger: indeterminate when some checked");
     tel.deselectAll();
     toggleCheckbox(items[0], true);
-    assert(triggerCb.indeterminate, "trigger indeterminate when some checked");
+    assert.ok(triggerCb.indeterminate, "trigger indeterminate when some checked");
 
     await log("trigger: checked when all checked");
     tel.selectAll();
-    equal(triggerCb.checked, true,  "trigger checked when all selected");
-    equal(triggerCb.indeterminate, false, "trigger not indeterminate when all selected");
+    assert.equal(triggerCb.checked, true,  "trigger checked when all selected");
+    assert.equal(triggerCb.indeterminate, false, "trigger not indeterminate when all selected");
 
     await log("trigger: unchecked when none checked");
     tel.deselectAll();
-    equal(triggerCb.checked, false, "trigger unchecked when none selected");
-    equal(triggerCb.indeterminate, false, "trigger not indeterminate when none selected");
+    assert.equal(triggerCb.checked, false, "trigger unchecked when none selected");
+    assert.equal(triggerCb.indeterminate, false, "trigger not indeterminate when none selected");
 
     await log("trigger: clicking unchecked checkbox selects all");
     toggleCheckbox(triggerCb, true);
-    equal(items.filter((cb) => cb.checked).length, 3, "all selected after trigger checked");
+    assert.equal(items.filter((cb) => cb.checked).length, 3, "all selected after trigger checked");
 
     await log("trigger: clicking checked checkbox deselects all");
     toggleCheckbox(triggerCb, false);
-    equal(items.filter((cb) => cb.checked).length, 0, "all deselected after trigger unchecked");
+    assert.equal(items.filter((cb) => cb.checked).length, 0, "all deselected after trigger unchecked");
 
     // ── Per-column trigger checkboxes ───────────────────────────────────
 
@@ -170,31 +171,31 @@
     const bBoxes = Array.from(mel.querySelectorAll("input[name='b']"));
 
     toggleCheckbox(triggerA, true);
-    equal(aBoxes.filter((cb) => cb.checked).length, 2, "both A checked");
-    equal(bBoxes.filter((cb) => cb.checked).length, 0, "B untouched");
+    assert.equal(aBoxes.filter((cb) => cb.checked).length, 2, "both A checked");
+    assert.equal(bBoxes.filter((cb) => cb.checked).length, 0, "B untouched");
 
     await log("per-column: triggerA indeterminate after unchecking one A");
     toggleCheckbox(aBoxes[0], false);
-    assert(triggerA.indeterminate, "triggerA indeterminate when one A unchecked");
-    equal(triggerB.indeterminate, false, "triggerB unaffected");
+    assert.ok(triggerA.indeterminate, "triggerA indeterminate when one A unchecked");
+    assert.equal(triggerB.indeterminate, false, "triggerB unaffected");
 
     await log("per-column: checking trigger B selects column B only");
     toggleCheckbox(triggerB, true);
-    equal(bBoxes.filter((cb) => cb.checked).length, 2, "both B checked");
-    equal(aBoxes.filter((cb) => cb.checked).length, 1, "A unchanged");
+    assert.equal(bBoxes.filter((cb) => cb.checked).length, 2, "both B checked");
+    assert.equal(aBoxes.filter((cb) => cb.checked).length, 1, "A unchanged");
 
     await log("per-column: unchecking trigger A deselects column A only");
     toggleCheckbox(triggerA, false);
-    equal(aBoxes.filter((cb) => cb.checked).length, 0, "A cleared");
-    equal(bBoxes.filter((cb) => cb.checked).length, 2, "B still checked");
+    assert.equal(aBoxes.filter((cb) => cb.checked).length, 0, "A cleared");
+    assert.equal(bBoxes.filter((cb) => cb.checked).length, 2, "B still checked");
 
     await log("per-column: scoped checked/total displays");
     const checkedA = mel.querySelector("[data-pwc-select-all-checked][data-pwc-select-all-selector=\"input[name='a']\"]");
     const totalA   = mel.querySelector("[data-pwc-select-all-total][data-pwc-select-all-selector=\"input[name='a']\"]");
     const checkedB = mel.querySelector("[data-pwc-select-all-checked][data-pwc-select-all-selector=\"input[name='b']\"]");
-    equal(checkedA.textContent, "0", "checked A shows 0");
-    equal(totalA.textContent,   "2", "total A shows 2");
-    equal(checkedB.textContent, "2", "checked B shows 2");
+    assert.equal(checkedA.textContent, "0", "checked A shows 0");
+    assert.equal(totalA.textContent,   "2", "total A shows 2");
+    assert.equal(checkedB.textContent, "2", "checked B shows 2");
 
     await log("done");
   });

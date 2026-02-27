@@ -51,10 +51,11 @@
 
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
+  import * as assert from "../../../static/testing/assert.js";
 
   const msgOf = (el) => el.nextElementSibling?.matches(".pwc-validity-message") ? el.nextElementSibling : null;
 
-  run(async ({ assert, equal, waitFor, log }) => {
+  run(async ({ waitFor, log }) => {
 
     // --- Initial validity ---
 
@@ -65,34 +66,34 @@
     const clean = document.getElementById("clean");
 
     await waitFor(() => name.validationMessage, { label: "name has validation message" });
-    equal(name.validationMessage, "Name is required", "name message");
-    equal(msgOf(name)?.textContent, "Name is required", "name message span");
-    equal(role.validationMessage, "Pick a role", "role message");
-    equal(msgOf(role)?.textContent, "Pick a role", "role message span");
-    equal(bio.validationMessage, "Bio too short", "bio message");
-    equal(msgOf(bio)?.textContent, "Bio too short", "bio message span");
-    equal(clean.validationMessage, "", "clean input has no error");
-    equal(msgOf(clean), null, "clean input has no message span");
+    assert.equal(name.validationMessage, "Name is required", "name message");
+    assert.equal(msgOf(name)?.textContent, "Name is required", "name message span");
+    assert.equal(role.validationMessage, "Pick a role", "role message");
+    assert.equal(msgOf(role)?.textContent, "Pick a role", "role message span");
+    assert.equal(bio.validationMessage, "Bio too short", "bio message");
+    assert.equal(msgOf(bio)?.textContent, "Bio too short", "bio message span");
+    assert.equal(clean.validationMessage, "", "clean input has no error");
+    assert.equal(msgOf(clean), null, "clean input has no message span");
 
     // --- clear-on ---
 
     await log("clear-on: error and message span clear on input event");
     const clearOnInput = document.getElementById("clear-on-input");
     await waitFor(() => clearOnInput.validationMessage, { label: "clear-on has error" });
-    assert(msgOf(clearOnInput), "message span present before clear");
+    assert.ok(msgOf(clearOnInput), "message span present before clear");
 
     clearOnInput.dispatchEvent(new Event("input", { bubbles: true }));
     await waitFor(() => !clearOnInput.validationMessage, { label: "clear-on error cleared" });
-    equal(clearOnInput.validationMessage, "", "error cleared after input event");
-    equal(msgOf(clearOnInput), null, "message span removed");
+    assert.equal(clearOnInput.validationMessage, "", "error cleared after input event");
+    assert.equal(msgOf(clearOnInput), null, "message span removed");
 
     // --- clear-after ---
 
     await log("clear-after: error cleared after timeout");
     const clearAfterInput = document.getElementById("clear-after-input");
     await waitFor(() => !clearAfterInput.validationMessage, { label: "clear-after error cleared" });
-    equal(clearAfterInput.validationMessage, "", "error cleared");
-    equal(msgOf(clearAfterInput), null, "message span removed");
+    assert.equal(clearAfterInput.validationMessage, "", "error cleared");
+    assert.equal(msgOf(clearAfterInput), null, "message span removed");
 
     await log("done");
   });

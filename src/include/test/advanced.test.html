@@ -41,18 +41,19 @@
 
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
+  import * as assert from "../../../static/testing/assert.js";
   import { waitForEvent } from "../../../static/testing/helpers.js";
 
-  run(async ({ assert, equal, waitFor, log, suppressErrors }) => {
+  run(async ({ waitFor, log, suppressErrors }) => {
 
     // --- extract-styles  ---
 
     await log("extract-styles: styles go to document.adoptedStyleSheets");
     const noShadow = document.getElementById("extract-styles");
     await waitFor(() => noShadow.querySelector(".styled"), { label: "extract-styles content loaded" });
-    assert(!noShadow.querySelector("style"), "no <style> element in DOM");
+    assert.ok(!noShadow.querySelector("style"), "no <style> element in DOM");
     const docSheets = document.adoptedStyleSheets;
-    assert(docSheets.length > 0, "document has adoptedStyleSheets");
+    assert.ok(docSheets.length > 0, "document has adoptedStyleSheets");
 
     // --- alt (fallback) ---
 
@@ -63,7 +64,7 @@
       altEl.setAttribute("alt", "./fragment.html");
       document.getElementById("alt-wrapper").appendChild(altEl);
       await waitFor(() => altEl.querySelector(".greeting"), { label: "alt content loaded" });
-      assert(altEl.querySelector(".greeting"), "fallback content loaded from alt");
+      assert.ok(altEl.querySelector(".greeting"), "fallback content loaded from alt");
     });
 
     // --- Error event ---
@@ -75,18 +76,18 @@
       errorEl.setAttribute("src", "./does-not-exist.html");
       document.getElementById("error-wrapper").appendChild(errorEl);
       const e = await eventPromise;
-      assert(e.detail.error, "error event has detail.error");
-      assert(e.detail.error.message.includes("404"), "error message contains status code");
+      assert.ok(e.detail.error, "error event has detail.error");
+      assert.ok(e.detail.error.message.includes("404"), "error message contains status code");
     });
 
     // --- Dynamic src change ---
 
     await log("dynamic: setting src triggers fetch");
     const dynamic = document.getElementById("dynamic");
-    assert(!dynamic.querySelector(".greeting"), "no content before src is set");
+    assert.ok(!dynamic.querySelector(".greeting"), "no content before src is set");
     dynamic.setAttribute("src", "./fragment.html");
     await waitFor(() => dynamic.querySelector(".greeting"), { label: "dynamic content loaded" });
-    assert(dynamic.querySelector(".greeting"), "content loaded after src change");
+    assert.ok(dynamic.querySelector(".greeting"), "content loaded after src change");
 
     // --- refresh() ---
 
@@ -96,7 +97,7 @@
     const loadPromise = waitForEvent(refreshable, "pwc-include:load");
     refreshable.refresh();
     await loadPromise;
-    assert(refreshable.querySelector(".greeting"), "content present after refresh");
+    assert.ok(refreshable.querySelector(".greeting"), "content present after refresh");
 
     await log("done");
   });

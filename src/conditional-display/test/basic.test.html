@@ -85,14 +85,15 @@
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
   import { setValue, clickRadio, toggleCheckbox } from "../../../static/testing/helpers.js";
+  import * as assert from "../../../static/testing/assert.js";
 
-  run(async ({ assert, equal, waitFor, log }) => {
+  run(async ({ waitFor, log }) => {
 
     await log("checking element definitions");
-    assert(customElements.get("pwc-shown-if"), "pwc-shown-if not defined");
-    assert(customElements.get("pwc-hidden-if"), "pwc-hidden-if not defined");
-    assert(customElements.get("pwc-enabled-if"), "pwc-enabled-if not defined");
-    assert(customElements.get("pwc-disabled-if"), "pwc-disabled-if not defined");
+    assert.customElement("pwc-shown-if");
+    assert.customElement("pwc-hidden-if");
+    assert.customElement("pwc-enabled-if");
+    assert.customElement("pwc-disabled-if");
 
     const payment = document.getElementById("payment");
 
@@ -101,17 +102,17 @@
     await log("shown-if: initial state (card selected)");
     const shownCard = document.getElementById("shown-card");
     await waitFor(() => !shownCard.hidden, { label: "shown-card visible" });
-    equal(shownCard.hidden, false, "shown-card should be visible for card");
+    assert.equal(shownCard.hidden, false, "shown-card should be visible for card");
 
     await log("shown-if: switch to paypal");
     setValue(payment, "paypal");
     await waitFor(() => shownCard.hidden, { label: "shown-card hidden" });
-    equal(shownCard.querySelector("input").disabled, true, "contained input should be disabled when hidden");
+    assert.equal(shownCard.querySelector("input").disabled, true, "contained input should be disabled when hidden");
 
     await log("shown-if: switch back to card");
     setValue(payment, "card");
     await waitFor(() => !shownCard.hidden, { label: "shown-card visible again" });
-    equal(shownCard.querySelector("input").disabled, false, "contained input should be re-enabled");
+    assert.equal(shownCard.querySelector("input").disabled, false, "contained input should be re-enabled");
 
     // --- pwc-hidden-if with select ---
 
@@ -206,22 +207,22 @@
     await waitFor(() => !preDisabled.hidden, { label: "pre-disabled section visible" });
     const alwaysDisabled = preDisabled.querySelector("[name=always_disabled]");
     const normalField = preDisabled.querySelector("[name=normal_field]");
-    equal(alwaysDisabled.disabled, true, "always_disabled stays disabled");
-    equal(normalField.disabled, false, "normal_field is enabled");
+    assert.equal(alwaysDisabled.disabled, true, "always_disabled stays disabled");
+    assert.equal(normalField.disabled, false, "normal_field is enabled");
 
     await log("pre-disabled: hide section (value=b)");
     setValue(preDisabledSelect, "b");
     await waitFor(() => preDisabled.hidden, { label: "pre-disabled section hidden" });
-    equal(alwaysDisabled.disabled, true, "always_disabled still disabled");
-    assert(!alwaysDisabled.hasAttribute("data-pwc-temporarily-disabled"), "always_disabled should not be marked as temporarily disabled");
-    equal(normalField.disabled, true, "normal_field disabled when hidden");
-    assert(normalField.hasAttribute("data-pwc-temporarily-disabled"), "normal_field should be marked as temporarily disabled");
+    assert.equal(alwaysDisabled.disabled, true, "always_disabled still disabled");
+    assert.noAttr(alwaysDisabled, "data-pwc-temporarily-disabled");
+    assert.equal(normalField.disabled, true, "normal_field disabled when hidden");
+    assert.hasAttr(normalField, "data-pwc-temporarily-disabled");
 
     await log("pre-disabled: show section again (value=a)");
     setValue(preDisabledSelect, "a");
     await waitFor(() => !preDisabled.hidden, { label: "pre-disabled section visible again" });
-    equal(alwaysDisabled.disabled, true, "always_disabled still disabled after re-show");
-    equal(normalField.disabled, false, "normal_field re-enabled after re-show");
+    assert.equal(alwaysDisabled.disabled, true, "always_disabled still disabled after re-show");
+    assert.equal(normalField.disabled, false, "normal_field re-enabled after re-show");
 
     await log("done");
   });

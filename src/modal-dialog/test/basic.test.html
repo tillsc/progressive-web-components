@@ -34,9 +34,10 @@
 
   <script type="module">
     import { run } from "../../../static/testing/harness.js";
+    import * as assert from "../../../static/testing/assert.js";
     import { click } from "../../../static/testing/helpers.js";
 
-    run(async ({ assert, equal, waitFor, log }) => {
+    run(async ({ waitFor, log }) => {
       await log("clicking open-parent link");
       click(document.getElementById("open-parent"));
 
@@ -46,7 +47,7 @@
       );
       const parentDlg = document.querySelector("dialog.pwc-modal-dialog[open]");
 
-      equal(
+      assert.equal(
         document.querySelectorAll("dialog.pwc-modal-dialog[open]").length, 1,
         "exactly one open dialog (parent)"
       );
@@ -61,7 +62,7 @@
 
       const childDlg = document.querySelector("dialog.pwc-modal-dialog[open]");
 
-      equal(
+      assert.equal(
         document.querySelectorAll("dialog.pwc-modal-dialog[open]").length, 1,
         "exactly one open dialog (child)"
       );
@@ -71,7 +72,7 @@
 
       await waitFor(() => parentDlg.open === true, { label: "parent restored" });
 
-      equal(
+      assert.equal(
         document.querySelectorAll("dialog.pwc-modal-dialog[open]").length, 1,
         "exactly one open dialog (restored parent)"
       );

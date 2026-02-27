@@ -37,25 +37,26 @@
 
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
+  import * as assert from "../../../static/testing/assert.js";
 
-  run(async ({ assert, equal, waitFor, log }) => {
+  run(async ({ waitFor, log }) => {
 
     // --- Basic src ---
 
     await log("basic: loads content from src");
     const basic = document.getElementById("basic");
     await waitFor(() => basic.querySelector(".greeting"), { label: "basic content loaded" });
-    assert(basic.querySelector(".greeting").textContent.includes("Hello from fragment!"), "greeting text");
-    assert(basic.querySelector(".detail"), "detail paragraph present");
-    equal(basic.getAttribute("aria-busy"), null, "aria-busy removed after load");
+    assert.ok(basic.querySelector(".greeting").textContent.includes("Hello from fragment!"), "greeting text");
+    assert.ok(basic.querySelector(".detail"), "detail paragraph present");
+    assert.equal(basic.getAttribute("aria-busy"), null, "aria-busy removed after load");
 
     // --- Fragment selector (single match) ---
 
     await log("fragment: single match (.sidebar)");
     const fragSingle = document.getElementById("frag-single");
     await waitFor(() => fragSingle.querySelector(".sidebar"), { label: "sidebar loaded" });
-    assert(fragSingle.querySelector(".sidebar p"), "sidebar has children");
-    assert(!fragSingle.querySelector(".greeting"), "greeting not present in sidebar fragment");
+    assert.ok(fragSingle.querySelector(".sidebar p"), "sidebar has children");
+    assert.ok(!fragSingle.querySelector(".greeting"), "greeting not present in sidebar fragment");
 
     // --- Fragment selector (multiple matches) ---
 
@@ -63,9 +64,9 @@
     const fragMulti = document.getElementById("frag-multi");
     await waitFor(() => fragMulti.querySelectorAll("p").length >= 2, { label: "greeting + extra loaded" });
     const paragraphs = fragMulti.querySelectorAll("p");
-    equal(paragraphs.length, 2, "exactly 2 paragraphs");
-    assert(paragraphs[0].textContent.includes("Hello from fragment!"), "first is greeting");
-    assert(paragraphs[1].textContent.includes("Extra paragraph."), "second is extra");
+    assert.equal(paragraphs.length, 2, "exactly 2 paragraphs");
+    assert.ok(paragraphs[0].textContent.includes("Hello from fragment!"), "first is greeting");
+    assert.ok(paragraphs[1].textContent.includes("Extra paragraph."), "second is extra");
 
     // --- with-scripts ---
 
@@ -76,7 +77,7 @@
       () => scripted.querySelector(".greeting")?.dataset.scripted === "true",
       { label: "script marked element" }
     );
-    equal(scripted.querySelector(".greeting").dataset.scripted, "true", "script set data attribute");
+    assert.equal(scripted.querySelector(".greeting").dataset.scripted, "true", "script set data attribute");
 
     await log("done");
   });

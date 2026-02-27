@@ -27,6 +27,25 @@ function isAutomatedHeadless() {
   return navigator.webdriver === true;
 }
 
+// Module-level assertion counter — reset by run(), read by finishOk/finishFail.
+// assert() and equal() are exported so they can be imported directly by helpers
+// and test files without going through the run() callback.
+let _assertions = 0;
+
+export function assert(cond, message = "assertion failed") {
+  _assertions += 1;
+  if (!cond) throw new Error(message);
+}
+
+export function equal(actual, expected, message = "not equal") {
+  _assertions += 1;
+  if (actual !== expected) {
+    throw new Error(
+      `${message}. expected=${JSON.stringify(expected)} actual=${JSON.stringify(actual)}`
+    );
+  }
+}
+
 function serializeError(err) {
   if (!err) return { message: "unknown error", stack: "" };
   if (typeof err === "string") return { message: err, stack: "" };
@@ -44,7 +63,7 @@ export function run(fn, options = {}) {
 
   let startedAt = null;
   const logs = [];
-  let assertions = 0;
+  _assertions = 0;
 
   // Step-through state
   let stepMode = false;
@@ -66,20 +85,6 @@ export function run(fn, options = {}) {
     if (stepMode) {
       render("paused");
       return new Promise((resolve) => { stepResolve = resolve; });
-    }
-  }
-
-  function assert(cond, message = "assertion failed") {
-    assertions += 1;
-    if (!cond) throw new Error(message);
-  }
-
-  function equal(actual, expected, message = "not equal") {
-    assertions += 1;
-    if (actual !== expected) {
-      throw new Error(
-        `${message}. expected=${JSON.stringify(expected)} actual=${JSON.stringify(actual)}`
-      );
     }
   }
 
@@ -129,7 +134,7 @@ export function run(fn, options = {}) {
     finished = true;
 
     const ms = startedAt == null ? 0 : Math.round(performance.now() - startedAt);
-    window.__TEST_RESULTS__ = { done: true, ok: true, logs, ms, assertions };
+    window.__TEST_RESULTS__ = { done: true, ok: true, logs, ms, assertions: _assertions };
 
     render("ok");
   }
@@ -148,7 +153,7 @@ export function run(fn, options = {}) {
       error: e,
       logs,
       ms,
-      assertions
+      assertions: _assertions
     };
 
     render("fail", e.message, e.stack);
@@ -246,7 +251,7 @@ export function run(fn, options = {}) {
   if (showUi) {
     ({ render, highlightLine } = createUi(
       { onRun: handleRun, onStep: handleStep, onNext: continueStep },
-      { logs, getAssertions: () => assertions, source: fn.toString() }
+      { logs, getAssertions: () => _assertions, source: fn.toString() }
     ));
   } else {
     // Headless automation: auto-start.

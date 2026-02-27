@@ -70,10 +70,11 @@ Dragging items into the form zone updates the form data below.</p>
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
   import { drag } from "../../../static/testing/helpers.js";
+  import * as assert from "../../../static/testing/assert.js";
 
-  run(async ({ assert, equal, waitFor, log, nextTick }) => {
+  run(async ({ waitFor, log, nextTick }) => {
     await log("checking element definition");
-    assert(customElements.get("pwc-zone-transfer"), "pwc-zone-transfer not defined");
+    assert.customElement("pwc-zone-transfer");
 
     const el = document.getElementById("zt");
     const output = document.getElementById("form-output");
@@ -84,35 +85,35 @@ Dragging items into the form zone updates the form data below.</p>
     const bob = zoneAvailable.querySelector('[data-pwc-item="b"]');
 
     await log("precondition: form is empty");
-    equal(output.textContent, "(empty)", "output should show (empty)");
+    assert.equal(output.textContent, "(empty)", "output should show (empty)");
 
     await log("drag Bob -> selected");
     drag(bob, zoneSelected);
     await nextTick("after drop");
 
     await waitFor(() => output.textContent.includes("bob"), { label: "bob in output" });
-    equal(output.textContent, "people=bob", "output should show bob");
+    assert.equal(output.textContent, "people=bob", "output should show bob");
 
     await log("drag Alice -> selected (after bob)");
     drag(alice, zoneSelected, { clientY: 9999 });
     await nextTick("after drop");
 
     await waitFor(() => output.textContent.includes("alice"), { label: "alice in output" });
-    equal(output.textContent, "people=bob\npeople=alice", "bob before alice");
+    assert.equal(output.textContent, "people=bob\npeople=alice", "bob before alice");
 
     await log("drag Alice back -> available");
     drag(alice, zoneAvailable);
     await nextTick("after drop");
 
     await waitFor(() => !output.textContent.includes("alice"), { label: "alice removed from output" });
-    equal(output.textContent, "people=bob", "output should show only bob");
+    assert.equal(output.textContent, "people=bob", "output should show only bob");
 
     await log("drag Alice -> selected (before bob)");
     drag(alice, zoneSelected, { clientY: 0 });
     await nextTick("after drop");
 
     await waitFor(() => output.textContent.includes("alice"), { label: "alice back in output" });
-    equal(output.textContent, "people=alice\npeople=bob", "alice before bob");
+    assert.equal(output.textContent, "people=alice\npeople=bob", "alice before bob");
 
     await log("done");
   });

@@ -50,18 +50,19 @@
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
   import { setValue, waitForEvent } from "../../../static/testing/helpers.js";
+  import * as assert from "../../../static/testing/assert.js";
 
   await window.mockRoutesReady;
 
-  run(async ({ assert, equal, waitFor, log }) => {
+  run(async ({ waitFor, log }) => {
 
     const el = document.getElementById("as-backend");
 
     await log("precondition: initial values");
-    equal(el.querySelector("#response-marker").textContent, "", "no response marker yet");
-    equal(el.querySelector("#first").value, "Alice", "first");
-    equal(el.querySelector("#last").value, "Smith", "last");
-    equal(el.querySelector("#color").value, "red", "color");
+    assert.equal(el.querySelector("#response-marker").textContent, "", "no response marker yet");
+    assert.equal(el.querySelector("#first").value, "Alice", "first");
+    assert.equal(el.querySelector("#last").value, "Smith", "last");
+    assert.equal(el.querySelector("#color").value, "red", "color");
 
     await log("change last → triggers auto-submit");
     const loadPromise = waitForEvent(el, "pwc-auto-submit:load");
@@ -71,12 +72,12 @@
     await loadPromise;
 
     await log("after transclusion: server echoed submitted values");
-    equal(el.querySelector("#response-marker").textContent, "mock-response", "response was transcluded");
-    equal(el.querySelector("#first").value, "Alice", "first unchanged (submitted as-is)");
-    equal(el.querySelector("#last").value, "Jones", "last has new value");
-    assert(document.activeElement !== el.querySelector("#color"), "color has lost the focus");
-    equal(el.querySelector("#color").value, "red", "color reset to server value (local change lost)");
-    equal(el.getAttribute("aria-busy"), null, "aria-busy removed");
+    assert.equal(el.querySelector("#response-marker").textContent, "mock-response", "response was transcluded");
+    assert.equal(el.querySelector("#first").value, "Alice", "first unchanged (submitted as-is)");
+    assert.equal(el.querySelector("#last").value, "Jones", "last has new value");
+    assert.ok(document.activeElement !== el.querySelector("#color"), "color has lost the focus");
+    assert.equal(el.querySelector("#color").value, "red", "color reset to server value (local change lost)");
+    assert.equal(el.getAttribute("aria-busy"), null, "aria-busy removed");
 
     await log("trigger again but change color before last");
     const loadPromise2 = waitForEvent(el, "pwc-auto-submit:load");
@@ -84,8 +85,8 @@
     setValue(el.querySelector("#last"), "Doe");
     await loadPromise2;
 
-    equal(el.querySelector("#last").value, "Doe", "last has new value");
-    equal(el.querySelector("#color").value, "blue", "color is now blue");
+    assert.equal(el.querySelector("#last").value, "Doe", "last has new value");
+    assert.equal(el.querySelector("#color").value, "blue", "color is now blue");
 
     await log("done");
   });

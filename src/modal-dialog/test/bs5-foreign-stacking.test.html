@@ -52,10 +52,11 @@
   <script type="module">
     import { run } from "../../../static/testing/harness.js";
     import { click } from "../../../static/testing/helpers.js";
+    import * as assert from "../../../static/testing/assert.js";
 
-    run(async ({ assert, equal, waitFor, log }) => {
+    run(async ({ waitFor, log }) => {
       const BsModal = window.bootstrap?.Modal;
-      assert(BsModal, "Bootstrap Modal missing on window.bootstrap.Modal");
+      assert.ok(BsModal, "Bootstrap Modal missing on window.bootstrap.Modal");
 
       const foreignEl = document.getElementById("foreign-modal");
 
@@ -73,7 +74,7 @@
       click(document.getElementById("open-foreign"));
 
       await waitForShownStable(foreignEl, "foreign");
-      assert(foreignEl.classList.contains("show"), "foreign modal is shown");
+      assert.hasClass(foreignEl, "show");
 
       // 2. Open a pwc-modal-dialog-bs5 on top
       await log("opening pwc modal on top of foreign");
@@ -85,17 +86,14 @@
       }, { label: "pwc child shown, foreign suspended" });
 
       const pwcChild = document.querySelector("pwc-modal-dialog-bs5.show");
-      assert(pwcChild, "pwc child modal exists and is shown");
+      assert.ok(pwcChild, "pwc child modal exists and is shown");
       await waitForShownStable(pwcChild, "pwc child");
 
-      equal(
+      assert.equal(
         document.querySelectorAll(".modal.show").length, 1,
         "exactly one shown modal (pwc child)"
       );
-      assert(
-        !foreignEl.classList.contains("show"),
-        "foreign modal is suspended (not shown)"
-      );
+      assert.noClass(foreignEl, "show");
 
       // 3. Close the pwc modal — foreign modal should restore
       await log("closing pwc child via close button");
@@ -107,14 +105,11 @@
       );
       await waitForShownStable(foreignEl, "foreign restored");
 
-      equal(
+      assert.equal(
         document.querySelectorAll(".modal.show").length, 1,
         "exactly one shown modal (restored foreign)"
       );
-      assert(
-        foreignEl.classList.contains("show"),
-        "foreign modal is restored and shown"
-      );
+      assert.hasClass(foreignEl, "show");
 
       // 4. Clean up — close the foreign modal
       await log("closing foreign modal");

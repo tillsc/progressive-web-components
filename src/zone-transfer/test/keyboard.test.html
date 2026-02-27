@@ -50,27 +50,28 @@
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
   import { key } from "../../../static/testing/helpers.js";
+  import * as assert from "../../../static/testing/assert.js";
 
-  run(async ({ assert, equal, waitFor, log, nextTick }) => {
+  run(async ({ waitFor, log, nextTick }) => {
     await log("checking element definition");
-    assert(customElements.get("pwc-zone-transfer"), "pwc-zone-transfer not defined");
+    assert.customElement("pwc-zone-transfer");
 
     const el = document.getElementById("zt");
-    assert(el, "missing <pwc-zone-transfer>");
+    assert.ok(el, "missing <pwc-zone-transfer>");
 
     const zoneA = el.querySelector('pwc-zone-transfer-zone[name="a"]');
     const zoneB = el.querySelector('pwc-zone-transfer-zone[name="b"]');
     const zoneC = el.querySelector('pwc-zone-transfer-zone[name="c"]');
-    assert(zoneA && zoneB && zoneC, "missing zones");
+    assert.ok(zoneA && zoneB && zoneC, "missing zones");
 
     const a2 = zoneA.querySelector("#a2");
-    assert(a2, "missing a2");
+    assert.ok(a2, "missing a2");
 
     await log("focus a2 (roving tabindex)");
     a2.tabIndex = 0;
     a2.focus();
     await nextTick("after focus");
-    equal(document.activeElement, a2, "a2 should be focused");
+    assert.equal(document.activeElement, a2, "a2 should be focused");
 
     await log("keyboard reorder within zone: Ctrl+ArrowDown moves a2 below a3");
     key(a2, "ArrowDown", { ctrlKey: true });
@@ -78,9 +79,9 @@
 
     {
       const ids = Array.from(zoneA.querySelectorAll("pwc-zone-transfer-item")).map((n) => n.id);
-      equal(ids[0], "a1", "a1 stays first");
-      equal(ids[1], "a3", "a3 becomes second");
-      equal(ids[2], "a2", "a2 becomes third");
+      assert.equal(ids[0], "a1", "a1 stays first");
+      assert.equal(ids[1], "a3", "a3 becomes second");
+      assert.equal(ids[2], "a2", "a2 becomes third");
     }
 
     await log("keyboard move to zone via hotkey: '2' moves focused item to zone b");
@@ -91,7 +92,7 @@
     await nextTick("after hotkey move");
 
     await waitFor(() => zoneB.querySelector("#a2"), { label: "a2 moved to zone b" });
-    equal(Boolean(zoneA.querySelector("#a2")), false, "a2 removed from zone a");
+    assert.equal(Boolean(zoneA.querySelector("#a2")), false, "a2 removed from zone a");
 
     await log("keyboard move to empty zone via hotkey: '3' moves focused item to zone c");
     zoneB.querySelector("#a2").focus();
@@ -101,7 +102,7 @@
     await nextTick("after hotkey move 2");
 
     await waitFor(() => zoneC.querySelector("#a2"), { label: "a2 moved to zone c" });
-    equal(Boolean(zoneB.querySelector("#a2")), false, "a2 removed from zone b");
+    assert.equal(Boolean(zoneB.querySelector("#a2")), false, "a2 removed from zone b");
 
     await log("done");
   });

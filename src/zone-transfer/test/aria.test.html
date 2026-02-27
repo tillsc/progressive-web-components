@@ -53,31 +53,32 @@
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
   import { key } from "../../../static/testing/helpers.js";
+  import * as assert from "../../../static/testing/assert.js";
 
-  run(async ({ assert, equal, waitFor, log, nextTick }) => {
+  run(async ({ waitFor, log, nextTick }) => {
     const el = document.getElementById("zt");
-    assert(el, "missing <pwc-zone-transfer>");
+    assert.ok(el, "missing <pwc-zone-transfer>");
 
     const zoneA = el.querySelector('[name="alpha"]');
     const zoneB = el.querySelector('[name="beta"]');
-    assert(zoneA && zoneB, "missing zones");
+    assert.ok(zoneA && zoneB, "missing zones");
 
     // --- Zones: role and aria-label ---
 
     await log("zones have role=listbox");
-    equal(zoneA.getAttribute("role"), "listbox", "zone alpha role");
-    equal(zoneB.getAttribute("role"), "listbox", "zone beta role");
+    assert.attr(zoneA, "role", "listbox");
+    assert.attr(zoneB, "role", "listbox");
 
     await log("zones have aria-label from name attribute");
-    equal(zoneA.getAttribute("aria-label"), "alpha", "zone alpha aria-label");
-    equal(zoneB.getAttribute("aria-label"), "beta", "zone beta aria-label");
+    assert.attr(zoneA, "aria-label", "alpha");
+    assert.attr(zoneB, "aria-label", "beta");
 
     // --- Items: role ---
 
     await log("items have role=option");
     const items = el.querySelectorAll("pwc-zone-transfer-item");
     for (const item of items) {
-      equal(item.getAttribute("role"), "option", `${item.id} has role=option`);
+      assert.attr(item, "role", "option");
     }
 
     // --- Live region: keyboard reorder ---
@@ -92,14 +93,14 @@
     await nextTick("after reorder");
 
     const liveRegion = el.querySelector("[aria-live]");
-    assert(liveRegion, "live region exists");
-    equal(liveRegion.getAttribute("aria-live"), "assertive", "live region is assertive");
-    equal(liveRegion.getAttribute("aria-atomic"), "true", "live region is atomic");
-    equal(liveRegion.getAttribute("role"), "status", "live region has role=status");
+    assert.ok(liveRegion, "live region exists");
+    assert.attr(liveRegion, "aria-live", "assertive");
+    assert.attr(liveRegion, "aria-atomic", "true");
+    assert.attr(liveRegion, "role", "status");
 
     await log("live region shows position number after reorder");
     // a2 moved from index 1 to index 2 (0-based), so announcement is "3" (1-based)
-    equal(liveRegion.textContent, "3", "position announcement after reorder");
+    assert.equal(liveRegion.textContent, "3", "position announcement after reorder");
 
     // --- Live region: keyboard zone move ---
 
@@ -111,7 +112,7 @@
     await nextTick("after zone move");
 
     await waitFor(() => zoneB.querySelector("#a2"), { label: "a2 moved to beta" });
-    equal(liveRegion.textContent, "beta", "zone name announcement after move");
+    assert.equal(liveRegion.textContent, "beta", "zone name announcement after move");
 
     await log("done");
   });

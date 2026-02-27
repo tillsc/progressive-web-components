@@ -81,18 +81,19 @@
   <script type="module">
     import { run } from "../../../static/testing/harness.js";
     import { click, setValue } from "../../../static/testing/helpers.js";
+    import * as assert from "../../../static/testing/assert.js";
 
    await window.mockRoutesReady;
 
-    run(async ({ assert, equal, waitFor, nextTick, log }) => {
+    run(async ({ waitFor, nextTick, log }) => {
       await log("checking element definition");
-      assert(customElements.get("pwc-dialog-opener"), "pwc-dialog-opener not defined");
+      assert.customElement("pwc-dialog-opener");
 
       const el = document.querySelector("#demo");
-      assert(el, "missing pwc-dialog-opener");
+      assert.ok(el, "missing pwc-dialog-opener");
 
       const link = el.querySelector("a");
-      assert(link, "missing link");
+      assert.ok(link, "missing link");
 
       await log("clicking link");
       click(link);
@@ -106,7 +107,7 @@
 
       const dlg = document.querySelector("dialog.pwc-modal-dialog");
       const iframe = dlg.querySelector("iframe");
-      assert(iframe, "iframe not created");
+      assert.ok(iframe, "iframe not created");
 
       await log("waiting for iframe to load form");
       await waitFor(() => {
@@ -119,12 +120,12 @@
       }, { timeoutMs: 10_000, message: "hoisted submit button not found" });
 
       const submitBtn = dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]");
-      assert(submitBtn, "hoisted submit button missing");
+      assert.ok(submitBtn, "hoisted submit button missing");
 
       // --- First submission: empty first_name → validation error ---
       await log("clearing first_name in iframe");
       const firstNameInput = iframe.contentDocument.querySelector("input[name=first_name]");
-      assert(firstNameInput, "first_name input not found in iframe");
+      assert.ok(firstNameInput, "first_name input not found in iframe");
       setValue(firstNameInput, "");
 
       await log("clicking hoisted submit (should trigger validation error)");
@@ -138,7 +139,7 @@
       }, { timeoutMs: 10_000, message: "validation error not shown in iframe" });
 
       const errorMsg = iframe.contentDocument.querySelector(".error");
-      assert(errorMsg.textContent.includes("First name is required"), "unexpected error text: " + errorMsg.textContent);
+      assert.ok(errorMsg.textContent.includes("First name is required"), "unexpected error text: " + errorMsg.textContent);
 
       // --- Second submission: fill first_name → success + redirect ---
       await log("waiting for new hoisted submit button after reload");
@@ -147,11 +148,11 @@
       }, { timeoutMs: 10_000, message: "hoisted submit button not found after reload" });
 
       const submitBtn2 = dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]");
-      assert(submitBtn2, "hoisted submit button missing after reload");
+      assert.ok(submitBtn2, "hoisted submit button missing after reload");
 
       await log("filling first_name in iframe");
       const firstNameInput2 = iframe.contentDocument.querySelector("input[name=first_name]");
-      assert(firstNameInput2, "first_name input not found after reload");
+      assert.ok(firstNameInput2, "first_name input not found after reload");
       setValue(firstNameInput2, "Jane");
 
       const lastNameInput2 = iframe.contentDocument.querySelector("input[name=last_name]");
@@ -168,7 +169,7 @@
         return el.textContent.includes("Jane Smith");
       }, { timeoutMs: 5_000, message: "name not updated after local reload" });
 
-      assert(el.textContent.includes("Jane Smith"), "element should contain Jane Smith");
+      assert.ok(el.textContent.includes("Jane Smith"), "element should contain Jane Smith");
     });
   </script>
 </body>

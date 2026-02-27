@@ -26,8 +26,9 @@
   <script type="module">
     import { run } from "../../../static/testing/harness.js";
     import { click } from "../../../static/testing/helpers.js";
+    import * as assert from "../../../static/testing/assert.js";
 
-    run(async ({ assert, equal, waitFor, log }) => {
+    run(async ({ waitFor, log }) => {
       const host = document.getElementById("demo");
 
       await log("waiting for UI to build");
@@ -37,29 +38,29 @@
       );
 
       const container = host.querySelector(".pwc-multiselect-dual-list-container");
-      assert(container, "container exists");
+      assert.ok(container, "container exists");
 
       // Check select is hidden
       const select = host.querySelector("select");
-      equal(select.style.display, "none", "select is hidden");
+      assert.equal(select.style.display, "none", "select is hidden");
 
       // Check available list has all items
       const availableItems = container.querySelectorAll(".pwc-multiselect-dual-list-available [data-value]");
-      equal(availableItems.length, 6, "6 available items rendered");
+      assert.equal(availableItems.length, 6, "6 available items rendered");
 
       // Check pre-selected item is in selected list
       const selectedItems = container.querySelectorAll(".pwc-multiselect-dual-list-selected [data-value]");
-      equal(selectedItems.length, 1, "1 pre-selected item");
-      equal(selectedItems[0].dataset.value, "4", "pre-selected item has value 4");
+      assert.equal(selectedItems.length, 1, "1 pre-selected item");
+      assert.equal(selectedItems[0].dataset.value, "4", "pre-selected item has value 4");
 
       // Check disabled item has no add button
       const disabledItem = container.querySelector("[data-value='5']");
-      assert(disabledItem.classList.contains("pwc-multiselect-dual-list-item--disabled"), "disabled item has disabled class");
-      assert(!disabledItem.querySelector("[data-action='add']"), "disabled item has no add button");
+      assert.hasClass(disabledItem, "pwc-multiselect-dual-list-item--disabled");
+      assert.ok(!disabledItem.querySelector("[data-action='add']"), "disabled item has no add button");
 
       // Check hierarchy indentation
       const child = container.querySelector(".pwc-multiselect-dual-list-available [data-value='2']");
-      assert(child.style.paddingLeft, "child item has indentation");
+      assert.ok(child.style.paddingLeft, "child item has indentation");
 
       // Test adding an item
       await log("adding item via click");
@@ -70,11 +71,11 @@
         () => container.querySelectorAll(".pwc-multiselect-dual-list-selected [data-value]").length === 2,
         { label: "item added to selected" }
       );
-      equal(select.querySelector("option[value='1']").selected, true, "option 1 is selected in native select");
+      assert.equal(select.querySelector("option[value='1']").selected, true, "option 1 is selected in native select");
 
       // Available entry should be marked as selected
       const availEntry = container.querySelector(".pwc-multiselect-dual-list-available [data-value='1']");
-      assert(availEntry.classList.contains("pwc-multiselect-dual-list-item--selected"), "available entry marked as selected");
+      assert.hasClass(availEntry, "pwc-multiselect-dual-list-item--selected");
 
       // Test removing an item
       await log("removing item via click");
@@ -85,7 +86,7 @@
         () => container.querySelectorAll(".pwc-multiselect-dual-list-selected [data-value]").length === 1,
         { label: "item removed from selected" }
       );
-      equal(select.querySelector("option[value='4']").selected, false, "option 4 is deselected in native select");
+      assert.equal(select.querySelector("option[value='4']").selected, false, "option 4 is deselected in native select");
 
       await log("done");
     });

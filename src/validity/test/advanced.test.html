@@ -51,10 +51,11 @@
 
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
+  import * as assert from "../../../static/testing/assert.js";
 
   const msgOf = (el) => el.nextElementSibling?.matches(".pwc-validity-message") ? el.nextElementSibling : null;
 
-  run(async ({ assert, equal, waitFor, log }) => {
+  run(async ({ waitFor, log }) => {
 
     // --- clear-on + clear-after combined ---
 
@@ -64,8 +65,8 @@
 
     bothInput.dispatchEvent(new Event("input", { bubbles: true }));
     await waitFor(() => !bothInput.validationMessage, { label: "both error cleared" });
-    equal(bothInput.validationMessage, "", "error cleared by event");
-    equal(msgOf(bothInput), null, "message span removed");
+    assert.equal(bothInput.validationMessage, "", "error cleared by event");
+    assert.equal(msgOf(bothInput), null, "message span removed");
 
     // --- Per-element clearing disabled via "off" ---
 
@@ -75,8 +76,8 @@
     await new Promise((r) => setTimeout(r, 100));
     noClearInput.dispatchEvent(new Event("input", { bubbles: true }));
     await new Promise((r) => setTimeout(r, 50));
-    equal(noClearInput.validationMessage, "Stays forever", "error still present");
-    assert(msgOf(noClearInput), "message span still present");
+    assert.equal(noClearInput.validationMessage, "Stays forever", "error still present");
+    assert.ok(msgOf(noClearInput), "message span still present");
 
     // --- Per-element clear override ---
 
@@ -86,18 +87,18 @@
 
     overrideInput.dispatchEvent(new Event("change", { bubbles: true }));
     await new Promise((r) => setTimeout(r, 50));
-    equal(overrideInput.validationMessage, "Override me", "change event did NOT clear (overridden)");
+    assert.equal(overrideInput.validationMessage, "Override me", "change event did NOT clear (overridden)");
 
     overrideInput.dispatchEvent(new Event("input", { bubbles: true }));
     await waitFor(() => !overrideInput.validationMessage, { label: "override cleared by input" });
-    equal(overrideInput.validationMessage, "", "input event cleared (per-element override)");
+    assert.equal(overrideInput.validationMessage, "", "input event cleared (per-element override)");
 
     await log("override: data-pwc-validity-clear-after overrides component clear-after");
     const overrideTimeout = document.getElementById("override-timeout");
     overrideTimeout.setAttribute("data-pwc-validity", "Quick timeout");
     // Element has clear-after="50" overriding component's "9999"
     await waitFor(() => !overrideTimeout.validationMessage, { label: "override-timeout cleared" });
-    equal(overrideTimeout.validationMessage, "", "cleared by per-element timeout");
+    assert.equal(overrideTimeout.validationMessage, "", "cleared by per-element timeout");
 
     // --- Dynamically added element ---
 
@@ -109,8 +110,8 @@
     vDynamic.appendChild(dynInput);
 
     await waitFor(() => dynInput.validationMessage, { label: "dynamic input has error" });
-    equal(dynInput.validationMessage, "Dynamic error", "dynamic error set");
-    equal(msgOf(dynInput)?.textContent, "Dynamic error", "dynamic message span");
+    assert.equal(dynInput.validationMessage, "Dynamic error", "dynamic error set");
+    assert.equal(msgOf(dynInput)?.textContent, "Dynamic error", "dynamic message span");
 
     await log("done");
   });

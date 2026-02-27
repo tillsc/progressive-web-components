@@ -235,15 +235,48 @@ handled with care.
 
 ### Test harness API
 
-`static/testing/harness.js` exports `run(fn)`. The callback receives a context `t`:
+`static/testing/harness.js` exports:
 
-- `t.assert(condition, message)` — counted assertion, throws on failure
-- `t.equal(actual, expected, message)` — strict equality assertion
-- `t.waitFor(predicate, { timeoutMs, intervalMs, message, label })` — poll until truthy
-- `t.nextTick(label?)` — await microtask
-- `t.log(message)` — log entry (doubles as step-through pause point in UI mode)
-- `t.suppressErrors(fn)` — suppress all console errors during `fn`
-- `t.suppressErrors(pattern, fn)` — suppress only errors matching `pattern`
+- `run(fn)` — runs the test; the callback receives a context `t`:
+  - `t.waitFor(predicate, { timeoutMs, intervalMs, message, label })` — poll until truthy
+  - `t.nextTick(label?)` — await microtask
+  - `t.log(message)` — log entry (doubles as step-through pause point in UI mode)
+  - `t.suppressErrors(fn)` — suppress all console errors during `fn`
+  - `t.suppressErrors(pattern, fn)` — suppress only errors matching `pattern`
+
+`static/testing/assert.js` provides all assertion helpers. The recommended import
+pattern is `import * as assert from ".../assert.js"`:
+
+- `assert.ok(condition, message)` — counted assertion, throws on failure
+- `assert.equal(actual, expected, message)` — strict equality assertion
+
+Layout:
+
+- `assert.top(el, expected, msg?)` — asserts `el`'s top position equals `expected` (number)
+  or matches another element's top position (`expected` is an `Element`)
+- `assert.above(a, b, msg?)` — asserts `a` is visually above `b`
+- `assert.width(el, expected, msg?)` — asserts `el`'s rounded pixel width equals `expected`
+
+DOM:
+
+- `assert.customElement(name, msg?)` — asserts the custom element name is registered
+- `assert.attr(el, name, expected, msg?)` — asserts `el.getAttribute(name) === expected`
+- `assert.hasClass(el, className, msg?)` — asserts `el.classList.contains(className)`
+- `assert.noClass(el, className, msg?)` — asserts `!el.classList.contains(className)`
+- `assert.hasAttr(el, name, msg?)` — asserts `el.hasAttribute(name)`
+- `assert.noAttr(el, name, msg?)` — asserts `!el.hasAttribute(name)`
+
+All helpers derive a self-explanatory default message from the element's ID and the
+assertion parameters, so the `msg` argument can usually be omitted.
+
+The assertion counter is module-level and reset by each `run()` call.
+
+Typical test file imports:
+
+```js
+import { run } from "../../../static/testing/harness.js";
+import * as assert from "../../../static/testing/assert.js";
+```
 
 `static/testing/mock-server.js` provides Service Worker based request mocking:
 

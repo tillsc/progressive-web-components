@@ -24,31 +24,32 @@
 
   <script type="module">
     import { run } from "../../../static/testing/harness.js";
+    import * as assert from "../../../static/testing/assert.js";
 
-    run(async ({ assert, equal, waitFor, log }) => {
+    run(async ({ waitFor, log }) => {
       const host = document.getElementById("demo");
       await waitFor(() => host.querySelector(".pwc-multiselect-dual-list-container"), { label: "container rendered" });
 
-      assert(host.filter, "host.filter returns pwc-filter element");
+      assert.ok(host.filter, "host.filter returns pwc-filter element");
 
       let lastEvent = null;
       host.addEventListener("pwc-filter:change", (e) => { lastEvent = e; });
 
       // --- filterText getter/setter + event ---
       await log("filterText property on pwc-filter");
-      equal(host.filter.filterText, "", "filterText is empty initially");
+      assert.equal(host.filter.filterText, "", "filterText is empty initially");
 
       host.filter.filterText = "alpha";
-      equal(host.filter.filterText, "alpha", "getter returns set value");
-      assert(lastEvent, "pwc-filter:change event dispatched");
-      equal(lastEvent.detail.filterText, "alpha", "detail.filterText");
-      equal(lastEvent.detail.matchCount, 1, "matchCount 1");
-      equal(lastEvent.detail.totalCount, 4, "totalCount 4");
+      assert.equal(host.filter.filterText, "alpha", "getter returns set value");
+      assert.ok(lastEvent, "pwc-filter:change event dispatched");
+      assert.equal(lastEvent.detail.filterText, "alpha", "detail.filterText");
+      assert.equal(lastEvent.detail.matchCount, 1, "matchCount 1");
+      assert.equal(lastEvent.detail.totalCount, 4, "totalCount 4");
 
       // --- matchCount = 0 ---
       await log("no-match case");
       host.filter.filterText = "zzz-no-match";
-      equal(lastEvent.detail.matchCount, 0, "matchCount 0 for no-match");
+      assert.equal(lastEvent.detail.matchCount, 0, "matchCount 0 for no-match");
 
       // --- Filter re-applied after dynamic option change ---
       await log("filter persistence across rebuild");
@@ -64,8 +65,8 @@
         { label: "new option rendered" }
       );
 
-      equal(lastEvent.detail.matchCount, 2, "matchCount 2 after adding Alpha Two");
-      equal(lastEvent.detail.totalCount, 5, "totalCount 5 after rebuild");
+      assert.equal(lastEvent.detail.matchCount, 2, "matchCount 2 after adding Alpha Two");
+      assert.equal(lastEvent.detail.totalCount, 5, "totalCount 5 after rebuild");
 
       await log("done");
     });

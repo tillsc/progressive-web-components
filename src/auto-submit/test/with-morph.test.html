@@ -62,20 +62,21 @@
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
   import { setValue, waitForEvent } from "../../../static/testing/helpers.js";
+  import * as assert from "../../../static/testing/assert.js";
 
   await window.mockRoutesReady;
 
-  run(async ({ assert, equal, waitFor, log }) => {
+  run(async ({ waitFor, log }) => {
 
     const el = document.getElementById("as-backend");
 
     await log("precondition: initial values");
-    equal(el.querySelector("#response-marker").textContent, "", "no response marker yet");
-    equal(el.querySelector("#first").value, "Alice", "first");
-    equal(el.querySelector("#last").value, "Smith", "last");
-    equal(el.querySelector("#color").value, "red", "color");
-    equal(el.querySelector("#readonly-computed").value, "", "readonly-computed empty initially");
-    equal(el.querySelector("#forced").value, "initial", "forced has initial value");
+    assert.equal(el.querySelector("#response-marker").textContent, "", "no response marker yet");
+    assert.equal(el.querySelector("#first").value, "Alice", "first");
+    assert.equal(el.querySelector("#last").value, "Smith", "last");
+    assert.equal(el.querySelector("#color").value, "red", "color");
+    assert.equal(el.querySelector("#readonly-computed").value, "", "readonly-computed empty initially");
+    assert.equal(el.querySelector("#forced").value, "initial", "forced has initial value");
 
     await log("change last → triggers auto-submit");
     const loadPromise = waitForEvent(el, "pwc-auto-submit:load");
@@ -85,17 +86,17 @@
     await loadPromise;
 
     await log("after transclusion: server echoed submitted values");
-    equal(el.querySelector("#response-marker").textContent, "mock-response", "response was transcluded");
-    equal(el.querySelector("#first").value, "Alice", "first unchanged (submitted as-is)");
-    equal(el.querySelector("#last").value, "Jones", "last has new value");
-    assert(document.activeElement == el.querySelector("#color"), "color input still has the focus");
-    equal(el.querySelector("#color").value, "blue", "color not reset to server value (local change not lost)");
+    assert.equal(el.querySelector("#response-marker").textContent, "mock-response", "response was transcluded");
+    assert.equal(el.querySelector("#first").value, "Alice", "first unchanged (submitted as-is)");
+    assert.equal(el.querySelector("#last").value, "Jones", "last has new value");
+    assert.ok(document.activeElement == el.querySelector("#color"), "color input still has the focus");
+    assert.equal(el.querySelector("#color").value, "blue", "color not reset to server value (local change not lost)");
 
     await log("readonly field updated from server");
-    equal(el.querySelector("#readonly-computed").value, "Alice Jones", "readonly field was updated by server");
+    assert.equal(el.querySelector("#readonly-computed").value, "Alice Jones", "readonly field was updated by server");
 
     await log("data-pwc-force-value overrides local value");
-    equal(el.querySelector("#forced").value, "FORCED", "editable field was force-updated by server");
+    assert.equal(el.querySelector("#forced").value, "FORCED", "editable field was force-updated by server");
 
     await log("done");
   });

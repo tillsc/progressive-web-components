@@ -110,14 +110,16 @@
 
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
+  import * as assert from "../../../static/testing/assert.js";
 
-  run(async ({ assert, equal, log, nextTick }) => {
+  run(async ({ log, nextTick }) => {
+
     await nextTick("wait for CSS");
 
     // ── CSS registered ─────────────────────────────────────────────────────
 
     await log("CSS injected: display:grid applied");
-    equal(getComputedStyle(document.getElementById("probe")).display, "grid", "display is grid");
+    assert.equal(getComputedStyle(document.getElementById("probe")).display, "grid", "display is grid");
 
     // ── Fixed columns ──────────────────────────────────────────────────────
 
@@ -127,10 +129,10 @@
     const f3 = document.getElementById("fixed-3");
     const f4 = document.getElementById("fixed-4");
 
-    equal(Math.round(f1.getBoundingClientRect().width), 100, "each of 3 cols is 100px");
-    assert(f1.getBoundingClientRect().top === f2.getBoundingClientRect().top, "items 1–2 same row");
-    assert(f1.getBoundingClientRect().top === f3.getBoundingClientRect().top, "items 1–3 same row");
-    assert(f4.getBoundingClientRect().top > f1.getBoundingClientRect().top,   "item 4 wraps");
+    assert.width(f1, 100);
+    assert.top(f1, f2);
+    assert.top(f1, f3);
+    assert.above(f1, f4);
 
     // ── Full-width item ────────────────────────────────────────────────────
 
@@ -138,10 +140,11 @@
     const wide = document.getElementById("wide-item");
     const rest = document.getElementById("wide-rest-1");
 
-    equal(Math.round(wide.getBoundingClientRect().width), 300, "wide item fills 300px");
-    assert(wide.getBoundingClientRect().top < rest.getBoundingClientRect().top, "wide item is above the rest");
+    assert.width(wide, 300);
+    assert.above(wide, rest);
 
     // ── Attribute shorthand ────────────────────────────────────────────────
+
     if (CSS.supports("width", "attr(x length, 0px)")) {
       await log("attribute shorthand: cols=3 produces same layout");
       const a1 = document.getElementById("attr-1");
@@ -149,10 +152,10 @@
       const a3 = document.getElementById("attr-3");
       const a4 = document.getElementById("attr-4");
 
-      equal(Math.round(a1.getBoundingClientRect().width), 100, "attr: each of 3 cols is 100px");
-      assert(a1.getBoundingClientRect().top === a2.getBoundingClientRect().top, "attr: items 1–2 same row");
-      assert(a1.getBoundingClientRect().top === a3.getBoundingClientRect().top, "attr: items 1–3 same row");
-      assert(a4.getBoundingClientRect().top > a1.getBoundingClientRect().top,   "attr: item 4 wraps");
+      assert.width(a1, 100);
+      assert.top(a1, a2);
+      assert.top(a1, a3);
+      assert.above(a1, a4);
     }
     else {
       await log("skipping attribute shorthand tests: no CSS attr() support");
@@ -165,17 +168,17 @@
     const sf2 = document.getElementById("sw-fit-2");
     const sf3 = document.getElementById("sw-fit-3");
 
-    assert(sf1.getBoundingClientRect().top === sf2.getBoundingClientRect().top, "switcher fit: items 1–2 same row");
-    assert(sf1.getBoundingClientRect().top === sf3.getBoundingClientRect().top, "switcher fit: items 1–3 same row");
+    assert.top(sf1, sf2);
+    assert.top(sf1, sf3);
 
     await log("switcher breaks: each item takes full width");
     const sb1 = document.getElementById("sw-brk-1");
     const sb2 = document.getElementById("sw-brk-2");
     const sb3 = document.getElementById("sw-brk-3");
 
-    equal(Math.round(sb1.getBoundingClientRect().width), 300, "switcher break: item 1 is 300px wide");
-    assert(sb1.getBoundingClientRect().top < sb2.getBoundingClientRect().top, "switcher break: items stack");
-    assert(sb2.getBoundingClientRect().top < sb3.getBoundingClientRect().top, "switcher break: items stack");
+    assert.width(sb1, 300);
+    assert.above(sb1, sb2);
+    assert.above(sb2, sb3);
 
     await log("done");
   });

@@ -35,33 +35,34 @@
 <script type="module">
   import { run } from "../../../static/testing/harness.js";
   import { setValue } from "../../../static/testing/helpers.js";
+  import * as assert from "../../../static/testing/assert.js";
 
-  run(async ({ assert, equal, waitFor, log }) => {
+  run(async ({ waitFor, log }) => {
 
     // === Auto-created hidden status ===
 
     const el = document.getElementById("filter-auto");
-    assert(el, "missing <pwc-filter> auto");
+    assert.ok(el, "missing <pwc-filter> auto");
 
     const input = el.querySelector("input[type=search]");
-    assert(input, "search input not created");
+    assert.ok(input, "search input not created");
 
     await log("input has aria-label from placeholder");
-    equal(input.getAttribute("aria-label"), "Search items…", "aria-label matches placeholder");
+    assert.attr(input, "aria-label", "Search items…");
 
     await log("auto status region exists");
     const status = el.querySelector("[role=status]");
-    assert(status, "status region not found");
-    equal(status.getAttribute("aria-live"), "polite", "aria-live is polite");
-    equal(status.getAttribute("aria-atomic"), "true", "aria-atomic is true");
+    assert.ok(status, "status region not found");
+    assert.attr(status, "aria-live", "polite");
+    assert.attr(status, "aria-atomic", "true");
 
     await log("status is empty before filtering");
-    equal(status.textContent, "", "status empty initially");
+    assert.equal(status.textContent, "", "status empty initially");
 
     await log("filtering for 'bob' updates auto status");
     setValue(input, "bob", { change: false });
     await waitFor(() => status.textContent !== "", { label: "status updated" });
-    equal(status.textContent, "1 / 3", "status shows 1 / 3");
+    assert.equal(status.textContent, "1 / 3", "status shows 1 / 3");
 
     await log("clearing filter clears auto status");
     setValue(input, "", { change: false });
@@ -70,38 +71,38 @@
     // === User-provided visible status ===
 
     const el2 = document.getElementById("filter-custom");
-    assert(el2, "missing <pwc-filter> custom");
+    assert.ok(el2, "missing <pwc-filter> custom");
 
     const customStatus = document.getElementById("custom-status");
-    assert(customStatus, "custom status element exists");
+    assert.ok(customStatus, "custom status element exists");
 
     await log("input is inside the placeholder element");
     const inputTarget = document.getElementById("custom-input-target");
     const input2 = el2.querySelector("input[type=search]");
-    equal(input2.parentNode, inputTarget, "input is child of placeholder");
+    assert.equal(input2.parentNode, inputTarget, "input is child of placeholder");
 
     await log("heading is before input in DOM order");
     const h3 = el2.querySelector("h3");
     const inputPos = input2.compareDocumentPosition(h3);
-    assert(inputPos & Node.DOCUMENT_POSITION_PRECEDING, "h3 precedes input");
+    assert.ok(inputPos & Node.DOCUMENT_POSITION_PRECEDING, "h3 precedes input");
 
     await log("user-provided status gets ARIA attributes");
-    equal(customStatus.getAttribute("role"), "status", "custom status has role=status");
-    equal(customStatus.getAttribute("aria-live"), "polite", "custom status has aria-live");
-    equal(customStatus.getAttribute("aria-atomic"), "true", "custom status has aria-atomic");
+    assert.attr(customStatus, "role", "status");
+    assert.attr(customStatus, "aria-live", "polite");
+    assert.attr(customStatus, "aria-atomic", "true");
 
     await log("user-provided status is NOT visually hidden");
     const cs = getComputedStyle(customStatus);
-    assert(cs.position !== "absolute" || cs.width !== "1px", "custom status is visible");
+    assert.ok(cs.position !== "absolute" || cs.width !== "1px", "custom status is visible");
 
     await log("no extra hidden status element was created");
     const allStatuses = el2.querySelectorAll("[role=status]");
-    equal(allStatuses.length, 1, "only one status element");
+    assert.equal(allStatuses.length, 1, "only one status element");
 
     await log("filtering updates user-provided status");
     setValue(input2, "dave", { change: false });
     await waitFor(() => customStatus.textContent !== "", { label: "custom status updated" });
-    equal(customStatus.textContent, "1 / 2", "custom status shows 1 / 2");
+    assert.equal(customStatus.textContent, "1 / 2", "custom status shows 1 / 2");
 
     await log("clearing filter clears user-provided status");
     setValue(input2, "", { change: false });
