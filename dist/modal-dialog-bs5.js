@@ -150,10 +150,6 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
     if (!BsModal) throw new Error("Bootstrap Modal required (globalThis.bootstrap.Modal)");
     return BsModal;
   }
-  onDisconnect() {
-    globalThis.bootstrap?.Modal?.getInstance(this)?.dispose();
-    super.onDisconnect();
-  }
   _render({ title, size = "lg", height, closeText, showCloseButton = true }) {
     globalThis.bootstrap?.Modal?.getInstance(this)?.dispose();
     this.innerHTML = `
@@ -178,12 +174,7 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
       btn.setAttribute("data-pwc-action", "close");
       this.querySelector(".modal-header").appendChild(btn);
     }
-    const contentEl = this.querySelector(".modal-content");
-    contentEl.style.maxHeight = "90vh";
-    contentEl.style.overflow = "hidden";
     const bodyEl = this.querySelector(".modal-body");
-    bodyEl.style.overflowY = "auto";
-    bodyEl.style.minHeight = "0";
     if (height) bodyEl.style.height = height;
     return {
       rootEl: this,

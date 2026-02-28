@@ -70,3 +70,14 @@ Handled in `ModalDialogBase.handleEvent()`:
 - Click directly on `ui.rootEl` (backdrop) → `close()` (vanilla only; BS5 delegates backdrop clicks to Bootstrap)
 
 `close()` sets `dataset.closeReason = "final"` and calls `_hide()`.
+
+## BS5 variant — `dispose()` timing
+
+Bootstrap's `hide()` schedules `_hideModal` via `_queueCallback`, which registers both a
+`transitionend` listener and a fallback `setTimeout`. `dispose()` nulls Bootstrap's
+internal `_element` — if it runs before the fallback fires, `_hideModal` crashes.
+
+Therefore `dispose()` is only called at the start of `_render()`, immediately before
+replacing `innerHTML`. At that point a new `open()` is beginning, so all Bootstrap timers
+from the previous close have long settled. It is intentionally **not** called from
+`teardown` or `onDisconnect`.

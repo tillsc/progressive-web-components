@@ -21,6 +21,8 @@ export class PwcModalDialogBs5 extends ModalDialogBase {
   }
 
   _render({ title, size = "lg", height, closeText, showCloseButton = true }) {
+    globalThis.bootstrap?.Modal?.getInstance(this)?.dispose();
+
     this.innerHTML = `
       <div class="modal-dialog modal-dialog-centered modal-${size}">
         <div class="modal-content">
@@ -56,8 +58,6 @@ export class PwcModalDialogBs5 extends ModalDialogBase {
       footerEl: this.querySelector(".modal-footer"),
       modal: null,
       teardown: () => {
-        const BsModal = this.requireBsModal();
-        BsModal.getInstance(this)?.dispose();
         this.innerHTML = "";
         this._finalClose = null;
       }
