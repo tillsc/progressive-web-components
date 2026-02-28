@@ -36,14 +36,15 @@ Opens the dialog.
 
 Supported options:
 - `title` – dialog title text
-- `size` – size token (`sm`, `lg` (default), `xl`)
+- `width` – overrides `--pwc-modal-dialog-width` for this open (vanilla only)
+- `size` – Bootstrap size preset: `sm`, `lg` (default), `xl` (BS5 only)
+- `height` – overrides `--pwc-modal-dialog-height` for this open
 - `closeText` – accessible label for close actions (default: `"Close"`)
 - `showCloseButton` – show the X button in the header (default: `true`)
 
 ```js
 dialog.open({
   title: "Edit item",
-  size: "lg",
   closeText: "Cancel"
 });
 ```
@@ -118,21 +119,32 @@ Key CSS hooks:
 - `.pwc-modal-dialog-body`
 - `.pwc-modal-dialog-footer`
 
-Custom properties are defined on the host element:
+### CSS custom properties
+
+Styling is controlled via CSS custom properties on the host element. The `width` and
+`height` options in `open()` overwrite the corresponding custom properties as inline styles
+for the duration of that open.
 
 ```css
 pwc-modal-dialog {
-  --pwc-modal-dialog-max-width: 720px;
-  --pwc-modal-dialog-width: 92vw;
+  --pwc-modal-dialog-width: 720px;      /* also settable via open({ width }) */
+  --pwc-modal-dialog-max-width: 92vw;
+  --pwc-modal-dialog-height: auto;      /* also settable via open({ height }) */
+  --pwc-modal-dialog-max-height: 90vh;
   --pwc-modal-dialog-padding-header: 12px 16px;
   --pwc-modal-dialog-padding-body: 16px;
   --pwc-modal-dialog-padding-footer: 12px 16px;
+  --pwc-modal-dialog-gap-footer: 8px;
   --pwc-modal-dialog-bg: #fff;
   --pwc-modal-dialog-backdrop: rgba(0, 0, 0, 0.45);
   --pwc-modal-dialog-border-radius: 6px;
   --pwc-modal-dialog-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
 }
 ```
+
+> [!NOTE]
+> `--pwc-modal-dialog-height` sets the body's flex-basis, not the dialog's total
+> height — unlike `width`, which applies to the dialog itself.
 
 ---
 
@@ -144,7 +156,6 @@ A Bootstrap 5 based implementation is available:
 <pwc-modal-dialog-bs5></pwc-modal-dialog-bs5>
 ```
 
-Notes:
-- Same JavaScript API as the vanilla component
+Same JavaScript API as the vanilla component, including the `size` option in `open()`.
 - Uses Bootstrap modal markup and classes
 - Can stack over regular Bootstrap modals (not just pwc modals)

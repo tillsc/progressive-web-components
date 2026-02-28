@@ -18,7 +18,7 @@
     document.getElementById("open-parent").addEventListener("click", (e) => {
       e.preventDefault();
       const modal = document.createElement("pwc-modal-dialog");
-      modal.open({ title: "Parent", size: "lg", closeText: "Close" });
+      modal.open({ title: "Parent", closeText: "Close" });
       modal.bodyEl.innerHTML = `
         <p>Parent body</p>
         <a href="#" id="open-child">Open Child</a>
@@ -26,7 +26,7 @@
       modal.bodyEl.querySelector("#open-child").addEventListener("click", (ev) => {
         ev.preventDefault();
         const child = document.createElement("pwc-modal-dialog");
-        child.open({ title: "Child", size: "sm", closeText: "Close" });
+        child.open({ title: "Child", width: "400px", closeText: "Close" });
         child.bodyEl.innerHTML = `<p>Child body</p>`;
       });
     });

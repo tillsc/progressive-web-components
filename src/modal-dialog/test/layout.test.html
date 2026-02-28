@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>pwc-modal-dialog: layout</title>
+  <script type="module" src="../../../dist/modal-dialog.js"></script>
+</head>
+<body>
+
+<h1>pwc-modal-dialog: layout</h1>
+
+<p>Tests sizing via CSS custom properties and <code>open()</code> options.</p>
+
+<ul>
+  <li><button id="btn-default">Default width</button> — expects 720px</li>
+  <li><button id="btn-width">Width: 400px</button> — <code>open({ width: "400px" })</code></li>
+  <li><button id="btn-max-width">Max-width: 300px</button> — <code>--pwc-modal-dialog-max-width: 300px</code></li>
+  <li><button id="btn-max-height">Max-height: 200px</button> — <code>--pwc-modal-dialog-max-height: 200px</code> + tall content</li>
+  <li><button id="btn-no-height">No height option</button> — body sizes to content</li>
+  <li><button id="btn-height">Height: 400px</button> — <code>open({ height: "400px" })</code></li>
+  <li><button id="btn-height-overflow">Height: 9999px</button> — dialog must never exceed viewport</li>
+</ul>
+
+<script type="module">
+  function openOn(btn, openOptions = {}, cssProps = {}) {
+    btn.addEventListener("click", () => {
+      const m = document.createElement("pwc-modal-dialog");
+      for (const [k, v] of Object.entries(cssProps)) m.style.setProperty(k, v);
+      m.open({ title: btn.textContent, closeText: "Close", ...openOptions });
+    });
+  }
+
+  openOn(document.getElementById("btn-default"));
+  openOn(document.getElementById("btn-width"),      { width: "400px" });
+  openOn(document.getElementById("btn-max-width"),  {}, { "--pwc-modal-dialog-max-width": "300px" });
+  openOn(document.getElementById("btn-max-height"), {}, { "--pwc-modal-dialog-max-height": "200px" });
+  openOn(document.getElementById("btn-no-height"));
+  openOn(document.getElementById("btn-height"),          { height: "400px" });
+  openOn(document.getElementById("btn-height-overflow"), { height: "9999px" });
+
+  document.getElementById("btn-max-height").addEventListener("click", () => {
+    // body content added after open — find the most recently opened dialog
+    const m = document.querySelector("pwc-modal-dialog:last-of-type");
+    if (m?.bodyEl) m.bodyEl.innerHTML = "<p>" + "Lots of content. ".repeat(200) + "</p>";
+  });
+</script>
+
+<script type="module">
+  import { run } from "../../../static/testing/harness.js";
+  import * as assert from "../../../static/testing/assert.js";
+  import { click } from "../../../static/testing/helpers.js";
+
+  function waitForDialog() {
+    return new Promise(r => requestAnimationFrame(r))
+      .then(() => document.querySelector("dialog.pwc-modal-dialog[open]"));
+  }
+
+  async function closeDialog(waitFor) {
+    const dlg = document.querySelector("dialog.pwc-modal-dialog[open]");
+    click(dlg.querySelector('[data-pwc-action="close"]'));
+    await waitFor(() => !document.querySelector("pwc-modal-dialog"), { label: "dialog closed" });
+  }
+
+  run(async ({ log, waitFor, nextTick }) => {
+
+    const maxW = Math.round(window.innerWidth * 0.92);
+    const maxH = Math.round(window.innerHeight * 0.9);
+
+    // ── Default width ────────────────────────────────────────────────────────
+
+    click(document.getElementById("btn-default"));
+    await waitFor(() => document.querySelector("dialog.pwc-modal-dialog[open]"), { label: "default opened" });
+    const expectedDefaultW = Math.min(720, maxW);
+    assert.width(document.querySelector("dialog.pwc-modal-dialog"), expectedDefaultW);
+    await log(`default width: ${expectedDefaultW}px ✓`);
+    await closeDialog(waitFor);
+
+    // ── width option ─────────────────────────────────────────────────────────
+
+    click(document.getElementById("btn-width"));
+    await waitFor(() => document.querySelector("dialog.pwc-modal-dialog[open]"), { label: "width opened" });
+    const expectedW400 = Math.min(400, maxW);
+    assert.width(document.querySelector("dialog.pwc-modal-dialog"), expectedW400);
+    await log(`width option: ${expectedW400}px ✓`);
+    await closeDialog(waitFor);
+
+    // ── --pwc-modal-dialog-max-width ─────────────────────────────────────────
+
+    click(document.getElementById("btn-max-width"));
+    await waitFor(() => document.querySelector("dialog.pwc-modal-dialog[open]"), { label: "max-width opened" });
+    const expectedMaxW = Math.min(300, maxW);
+    assert.width(document.querySelector("dialog.pwc-modal-dialog"), expectedMaxW);
+    await log(`--pwc-modal-dialog-max-width: ${expectedMaxW}px ✓`);
+    await closeDialog(waitFor);
+
+    // ── --pwc-modal-dialog-max-height ────────────────────────────────────────
+
+    click(document.getElementById("btn-max-height"));
+    await waitFor(() => document.querySelector("dialog.pwc-modal-dialog[open]"), { label: "max-height opened" });
+    await nextTick("after tall content");
+    const h = Math.round(document.querySelector("dialog.pwc-modal-dialog").getBoundingClientRect().height);
+    const expectedMaxH = Math.min(200, maxH);
+    assert.ok(h <= expectedMaxH, `dialog capped at ${expectedMaxH}px (got ${h}px)`);
+    await log(`--pwc-modal-dialog-max-height: dialog is ${h}px ✓`);
+    await closeDialog(waitFor);
+
+    // ── height option ────────────────────────────────────────────────────────
+
+    click(document.getElementById("btn-no-height"));
+    await waitFor(() => document.querySelector("dialog.pwc-modal-dialog[open]"), { label: "no-height opened" });
+    const emptyH = Math.round(document.querySelector(".pwc-modal-dialog-body").getBoundingClientRect().height);
+    await log(`no height option: body is ${emptyH}px`);
+    await closeDialog(waitFor);
+
+    click(document.getElementById("btn-height"));
+    await waitFor(() => document.querySelector("dialog.pwc-modal-dialog[open]"), { label: "height opened" });
+    const tallH = Math.round(document.querySelector(".pwc-modal-dialog-body").getBoundingClientRect().height);
+    assert.ok(tallH > emptyH, `body with height (${tallH}px) taller than without (${emptyH}px)`);
+    await log(`height option: body is ${tallH}px ✓`);
+    await closeDialog(waitFor);
+
+    // ── height larger than viewport ──────────────────────────────────────────
+
+    click(document.getElementById("btn-height-overflow"));
+    await waitFor(() => document.querySelector("dialog.pwc-modal-dialog[open]"), { label: "overflow opened" });
+    const overflowH = Math.round(document.querySelector("dialog.pwc-modal-dialog").getBoundingClientRect().height);
+    assert.ok(overflowH <= window.innerHeight, `dialog (${overflowH}px) never exceeds viewport (${window.innerHeight}px)`);
+    await log(`height: 9999px — dialog capped at ${overflowH}px ✓`);
+    await closeDialog(waitFor);
+
+    await log("done");
+  });
+</script>
+</body>
+</html>

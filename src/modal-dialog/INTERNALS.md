@@ -7,7 +7,7 @@ It defines a **subclass contract** — a set of hooks that variants must impleme
 
 | Hook | Responsibility |
 |------|---------------|
-| `_render(ctx)` | Build DOM, return `{ rootEl, bodyEl, headerEl, footerEl, teardown? }` |
+| `_render(ctx)` | Build DOM, return `{ rootEl, bodyEl, headerEl, footerEl, teardown? }`. Receives `{ title, height, closeText, showCloseButton, … }` plus variant-specific options (`width` for vanilla, `size` for BS5) |
 | `_getOpenSibling()` | Find an already-open modal (for stacking) |
 | `_suspend(el)` / `_restore(el)` | Hide/show a sibling modal during stacking |
 | `_show(ui, options)` / `_hide(ui)` | Actually show/hide the modal |
@@ -15,6 +15,20 @@ It defines a **subclass contract** — a set of hooks that variants must impleme
 
 The vanilla variant uses native `<dialog>` + `showModal()`.
 The BS5 variant uses `bootstrap.Modal`.
+
+## Vanilla layout
+
+The vanilla `<dialog>` uses a flex column layout to keep header and footer pinned while
+the body scrolls:
+
+- `dialog` — flex column, `max-height: var(--pwc-modal-dialog-max-height)`
+- `.pwc-modal-dialog-surface` — `flex: 1`, nested flex column, `overflow: hidden` (clips border-radius)
+- `.pwc-modal-dialog-header` / `.pwc-modal-dialog-footer` — `flex-shrink: 0`
+- `.pwc-modal-dialog-body` — `flex: 1 1 var(--pwc-modal-dialog-height)`, `overflow: auto`
+
+`width` and `height` options passed to `open()` are applied as inline custom properties
+(`--pwc-modal-dialog-width`, `--pwc-modal-dialog-height`) on the host element inside
+`_render()`, and cleared again if the next `open()` omits them.
 
 ## Open lifecycle
 

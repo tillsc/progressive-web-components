@@ -40,7 +40,7 @@ export class ModalDialogBase extends PwcSimpleInitElement {
     return false;
   }
 
-  open({ title = "", size = "lg", closeText = "Close", ...options }) {
+  open({ title = "", closeText = "Close", ...options }) {
     if (!this.isConnected) {
       this._autoRemove = true;
       document.body.appendChild(this);
@@ -48,7 +48,7 @@ export class ModalDialogBase extends PwcSimpleInitElement {
 
     this._teardown();
 
-    const ui = this._render({ title, size, closeText, ...options });
+    const ui = this._render({ title, closeText, ...options });
     this._ui = ui;
 
     const parent = this._getOpenSibling();
@@ -63,7 +63,7 @@ export class ModalDialogBase extends PwcSimpleInitElement {
       this._suspend(this._parent);
     }
 
-    this._show(ui, { title, size, closeText, ...options });
+    this._show(ui, { title, closeText, ...options });
   }
 
   close() {

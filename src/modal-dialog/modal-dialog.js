@@ -6,9 +6,9 @@ export class PwcModalDialog extends ModalDialogBase {
     return Boolean(this._ui?.rootEl?.open);
   }
 
-  _render({ title, size, closeText, showCloseButton = true }) {
+  _render({ title, width, height, closeText, showCloseButton = true }) {
     const dlg = document.createElement("dialog");
-    dlg.className = `pwc-modal-dialog pwc-modal-dialog--${size}`;
+    dlg.className = "pwc-modal-dialog";
 
     dlg.innerHTML = `
       <div class="pwc-modal-dialog-surface">
@@ -35,6 +35,11 @@ export class PwcModalDialog extends ModalDialogBase {
     }
 
     this.replaceChildren(dlg);
+
+    if (width) this.style.setProperty("--pwc-modal-dialog-width", width);
+    else this.style.removeProperty("--pwc-modal-dialog-width");
+    if (height) this.style.setProperty("--pwc-modal-dialog-height", height);
+    else this.style.removeProperty("--pwc-modal-dialog-height");
 
     return {
       rootEl: dlg,

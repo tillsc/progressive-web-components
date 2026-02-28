@@ -20,7 +20,7 @@ export class PwcModalDialogBs5 extends ModalDialogBase {
     return BsModal;
   }
 
-  _render({ title, size, closeText, showCloseButton = true }) {
+  _render({ title, size = "lg", height, closeText, showCloseButton = true }) {
     this.innerHTML = `
       <div class="modal-dialog modal-dialog-centered modal-${size}">
         <div class="modal-content">
@@ -46,9 +46,12 @@ export class PwcModalDialogBs5 extends ModalDialogBase {
       this.querySelector(".modal-header").appendChild(btn);
     }
 
+    const bodyEl = this.querySelector(".modal-body");
+    if (height) bodyEl.style.height = height;
+
     return {
       rootEl: this,
-      bodyEl: this.querySelector(".modal-body"),
+      bodyEl,
       headerEl: this.querySelector(".modal-header"),
       footerEl: this.querySelector(".modal-footer"),
       modal: null,
