@@ -82,7 +82,8 @@ people[]=bob&people[]=alice
 
 The server receives an ordered array `["bob", "alice"]`.
 
-> **Note:** The `[]` suffix is a convention used by frameworks like Rails, Phoenix, and
+> [!NOTE]
+> The `[]` suffix is a convention used by frameworks like Rails, Phoenix, and
 > Express to parse repeated parameters into arrays. Frameworks that don't use this
 > convention (e.g. Java Servlets) can simply omit the brackets and use
 > `request.getParameterValues("people")` on the repeated name.
@@ -190,8 +191,8 @@ Assign a key to a zone:
 
 Pressing that key moves the focused item into that zone.
 
-Note:
-- Keyboard-based zone moves are only active if **at least one** zone defines `data-pwc-zone-hotkey`.
+> [!NOTE]
+> Keyboard-based zone moves are only active if **at least one** zone defines `data-pwc-zone-hotkey`.
 
 ---
 
@@ -250,9 +251,9 @@ pwc-zone-transfer .pwc-zone-transfer-placeholder {
 }
 ```
 
-Notes:
-- The placeholder is a lightweight `<div aria-hidden="true">` with a height matching the dragged item.
-- The component does **not** clone items.
+> [!NOTE]
+> - The placeholder is a lightweight `<div aria-hidden="true">` with a height matching the dragged item.
+> - The component does **not** clone items.
 
 ---
 

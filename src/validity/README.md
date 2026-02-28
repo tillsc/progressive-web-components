@@ -104,6 +104,5 @@ A Bootstrap 5 styled variant is provided with the same API:
 </pwc-validity-bs5>
 ```
 
-Notes:
 - Same attributes and behavior as the vanilla component
 - Adds `is-invalid` class to the element and inserts a `<div class="invalid-feedback">`
