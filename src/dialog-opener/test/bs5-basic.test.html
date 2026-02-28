@@ -3,9 +3,8 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>dialog-opener-bs5: basic</title>
-
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>dialog-opener-bs5: basic</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 
@@ -14,94 +13,174 @@
 
   <h1>dialog-opener-bs5: basic</h1>
 
-  <h2>Click opens Bootstrap 5 dialog with iframe</h2>
+  <p>Opens a Bootstrap 5 dialog whose iframe loads a mock server-rendered form.
+  First submission has an empty first name and triggers a validation error.
+  Second submission succeeds and the backend (mock) redirects with the result.
+  <code>local-reload</code> swaps the element content without a full page load.</p>
 
-  <pwc-dialog-opener-bs5 id="opener" local-reload="with-scripts replace-url">
-    <a href="./bs5-iframe-target.html">Open dialog</a>
-    Hello <span id="first_name"></span> <span id="last_name"></span>
-    <input type="hidden" name="default_for_iframe_target">
-    <script type="module">
-      const url = new URL(window.location.href);
-      const firstName = url.searchParams.get("first_name") || "";
-      const lastName = url.searchParams.get("last_name") || "";
-      document.getElementById("first_name").textContent = firstName
-      document.getElementById("last_name").textContent = lastName
-      document.querySelector("input[name=default_for_iframe_target]").value = JSON.stringify({ firstName, lastName });
-    </script>
+  <pwc-dialog-opener-bs5 id="demo" hoist-actions="primary" local-reload>
+    <a href="./mock/bs5-form">Open</a><br>
+    Hello <span id="name">Anonymous</span>
   </pwc-dialog-opener-bs5>
+
+  <template id="form">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <h1>Backend form</h1>
+    <p class="alert alert-danger" id="error"></p>
+    <form method="get" action="" class="container py-3">
+      <div class="mb-3">
+        <label for="first_name" class="form-label">First name</label>
+        <input id="first_name" name="first_name" value="John" class="form-control" />
+      </div>
+
+      <div class="mb-3">
+        <label for="last_name" class="form-label">Last name</label>
+        <input id="last_name" name="last_name" value="Doe" class="form-control" />
+      </div>
+
+      <button type="submit" name="commit" value="ok" class="btn btn-primary">OK</button>
+    </form>
+  </template>
 
 </div>
 
-  <!-- component bundle -->
   <script type="module" src="../../../dist/dialog-opener-bs5.js"></script>
-
-  <!-- bootstrap js -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script type="module">
+    import { mockRoutes, echoElement } from "../../../static/testing/mock-server.js";
+
+    window.mockRoutesReady = mockRoutes([
+      {
+        path: "./mock/bs5-form",
+        handle(request) {
+          const p = new URL(request.url).searchParams;
+          const commit = p.get("commit");
+          const firstName = p.get("first_name") || "";
+          const lastName = p.get("last_name") || "";
+
+          if (commit) {
+            if (!firstName.trim()) {
+              return echoElement("#form", {
+                values: { "[name=first_name]": firstName, "[name=last_name]": lastName },
+                texts: { "#error": "First name is required" }
+              });
+            }
+            const target = new URL("./mock/bs5-page", location.href);
+            target.searchParams.set("pwc_done_with", `${firstName} ${lastName}`.trim());
+            return Response.redirect(target.toString());
+          }
+
+          return echoElement("#form", {
+            values: { "[name=first_name]": firstName, "[name=last_name]": lastName },
+          });
+        },
+      },
+      {
+        path: "./mock/bs5-page",
+        handle(request) {
+          const name = new URL(request.url).searchParams.get("pwc_done_with") || "";
+          return echoElement("#demo", { texts: { "#name": name } });
+        },
+      },
+    ]);
+  </script>
+
+  <script type="module">
     import { run } from "../../../static/testing/harness.js";
-    import { click } from "../../../static/testing/helpers.js";
+    import { click, setValue } from "../../../static/testing/helpers.js";
     import * as assert from "../../../static/testing/assert.js";
 
-    const u = new URL(window.location.href);
-    if (u.searchParams.has("commit")) {
-      // IFrame subission mode
-      if (u.searchParams.has("commit") && !u.searchParams.has("pwc_done_with")) {
-        // Ensure the iframe URL contains the marker param your component expects.
-        // This runs inside the iframe page.
-        // This would usually be done by the server handling the form submission,
-        // but we can simulate it here for testing.
-        u.searchParams.set("pwc_done_with", "ok");
-        window.location.replace(u.toString());
-      }
-    }
-    else {
+    await window.mockRoutesReady;
 
-      run(async ({ waitFor, log }) => {
-        await log("checking custom element definition");
-        assert.customElement("pwc-dialog-opener-bs5");
+    run(async ({ waitFor, nextTick, log }) => {
+      await log("checking element definition");
+      assert.customElement("pwc-dialog-opener-bs5");
 
-        const opener = document.getElementById("opener");
-        assert.ok(opener, "missing dialog opener element");
+      const el = document.querySelector("#demo");
+      assert.ok(el, "missing pwc-dialog-opener-bs5");
 
-        const link = opener.querySelector("a");
-        assert.ok(link, "missing link");
+      const link = el.querySelector("a");
+      assert.ok(link, "missing link");
 
-        await log("clicking opener link");
-        click(link);
+      await log("clicking link");
+      click(link);
+      await nextTick();
 
-        await log("waiting for bootstrap modal to appear");
-        await waitFor(() => document.querySelector(".modal.show"), {
-          message: "modal not shown"
-        });
-
-        const modal = document.querySelector(".modal.show");
-        assert.ok(modal, "modal element missing");
-
-        await log("checking iframe existence");
-        const iframe = modal.querySelector("iframe");
-        assert.ok(iframe, "iframe not created");
-
-        await log("waiting for iframe to load");
-        await waitFor(() => {
-          return iframe.contentDocument && iframe.contentDocument.readyState === "complete";
-        }, { message: "iframe did not load" });
-
-        await log("finding modal close button");
-        const closeButton = modal.querySelector("[data-pwc-action='close']");
-        assert.ok(closeButton, "close button not found on modal");
-
-        await log("clicking close button");
-        click(closeButton);
-
-        await log("waiting for modal to close");
-        await waitFor(() => !modal.classList.contains("show"), {
-          message: "modal did not close after clicking close button"
-        });
-
-        await log("done");
+      await log("waiting for modal to appear");
+      await waitFor(() => document.querySelector(".modal.show"), {
+        message: "modal did not appear"
       });
-    }
+
+      const modal = document.querySelector(".modal.show");
+      const iframe = modal.querySelector("iframe");
+      assert.ok(iframe, "iframe not created");
+
+      await log("waiting for iframe to load form");
+      await waitFor(() => {
+        return iframe.contentDocument && iframe.contentDocument.readyState === "complete";
+      }, { timeoutMs: 10_000, message: "iframe did not load" });
+
+      await log("waiting for hoisted submit button");
+      await waitFor(() => {
+        return Boolean(modal.querySelector(".pwc-dialog-opener-actions .btn-primary"));
+      }, { timeoutMs: 10_000, message: "hoisted submit button not found" });
+
+      const submitBtn = modal.querySelector(".pwc-dialog-opener-actions .btn-primary");
+      assert.ok(submitBtn, "hoisted submit button missing");
+
+      // --- First submission: empty first_name → validation error ---
+      await log("clearing first_name in iframe");
+      const firstNameInput = iframe.contentDocument.querySelector("input[name=first_name]");
+      assert.ok(firstNameInput, "first_name input not found in iframe");
+      setValue(firstNameInput, "");
+
+      await log("clicking hoisted submit (should trigger validation error)");
+      click(submitBtn);
+
+      await log("waiting for iframe to reload with error");
+      await waitFor(() => {
+        if (!iframe.contentDocument || iframe.contentDocument.readyState !== "complete") return false;
+        const err = iframe.contentDocument.querySelector("#error");
+        return err && err.textContent.trim().length > 0;
+      }, { timeoutMs: 10_000, message: "validation error not shown in iframe" });
+
+      const errorMsg = iframe.contentDocument.querySelector("#error");
+      assert.ok(errorMsg.textContent.includes("First name is required"), "unexpected error text: " + errorMsg.textContent);
+
+      // --- Second submission: fill first_name → success + redirect ---
+      await log("waiting for new hoisted submit button after reload");
+      await waitFor(() => {
+        return Boolean(modal.querySelector(".pwc-dialog-opener-actions .btn-primary"));
+      }, { timeoutMs: 10_000, message: "hoisted submit button not found after reload" });
+
+      const submitBtn2 = modal.querySelector(".pwc-dialog-opener-actions .btn-primary");
+
+      await log("filling first_name in iframe");
+      const firstNameInput2 = iframe.contentDocument.querySelector("input[name=first_name]");
+      assert.ok(firstNameInput2, "first_name input not found after reload");
+      setValue(firstNameInput2, "Jane");
+
+      const lastNameInput2 = iframe.contentDocument.querySelector("input[name=last_name]");
+      if (lastNameInput2) setValue(lastNameInput2, "Smith");
+
+      await log("clicking hoisted submit (should succeed)");
+      click(submitBtn2);
+
+      await log("waiting for modal to close after success");
+      await waitFor(() => !modal.classList.contains("show"), {
+        timeoutMs: 10_000,
+        message: "modal did not close after success"
+      });
+
+      await log("checking local-reload updated content");
+      await waitFor(() => el.textContent.includes("Jane Smith"), {
+        timeoutMs: 5_000,
+        message: "name not updated after local reload"
+      });
+
+      assert.ok(el.textContent.includes("Jane Smith"), "element should contain Jane Smith");
+    });
   </script>
 </body>
 
