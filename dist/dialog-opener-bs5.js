@@ -307,7 +307,7 @@ var PwcDialogOpenerBs5 = class extends BaseDialogOpener {
       size,
       height,
       closeText,
-      showClose: false,
+      showCloseButton: false,
       backdrop: true,
       keyboard: true,
       focus: true

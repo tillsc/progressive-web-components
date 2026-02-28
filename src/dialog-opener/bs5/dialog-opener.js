@@ -32,7 +32,7 @@ export class PwcDialogOpenerBs5 extends BaseDialogOpener {
       size,
       height,
       closeText,
-      showClose: false,
+      showCloseButton: false,
       backdrop: true,
       keyboard: true,
       focus: true

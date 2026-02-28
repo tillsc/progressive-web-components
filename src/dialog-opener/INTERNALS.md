@@ -49,3 +49,24 @@ When the dialog completes and `local-reload` is set:
 7. A `pwc-dialog-opener:local-reload` custom event is dispatched
 
 If any step fails, it falls back to full page navigation.
+
+## Height auto-sizing
+
+When no `height` attribute or `--pwc-dialog-opener-height` CSS custom property is set,
+`_adjustHeightToContent()` (called after each iframe load) sets the iframe's height to
+`iframe.contentDocument.documentElement.scrollHeight`. The dialog body then grows to wrap
+the iframe naturally via CSS flex. The dialog's `max-height` constraint (vanilla: CSS
+`max-height: 90vh`; BS5: inline `max-height: 90vh` on `.modal-content`) caps the height
+and triggers body scrolling for oversized content.
+
+## BS5 variant — modal element placement
+
+The `<pwc-modal-dialog-bs5>` created by `findOrCreateDialog` is **not** appended to the
+opener element. It is left disconnected so that `ModalDialogBase.open()` appends it to
+`<body>` with `_autoRemove: true`. This avoids a class of bugs where `local-reload`'s
+`transclude()` replaces the opener's children mid-animation, removing the modal from the
+DOM and triggering `onDisconnect` / `dispose()` while Bootstrap still has pending
+callbacks.
+
+Exception: if the page author pre-places a `<pwc-modal-dialog-bs5>` as a child of the
+opener, it is used in place and `_autoRemove` is not set.

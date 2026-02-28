@@ -324,8 +324,8 @@ pwc-dialog-opener {
 ```
 
 `height` and `width` are passed as options to the underlying `<pwc-modal-dialog>`'s
-`open()` call on every dialog open. The iframe fills the body at `height: 100%`.
-`height` defaults to `550px`. `width` defaults to the modal dialog's own default.
+`open()` call on every dialog open. When no `height` is configured, the iframe
+auto-sizes to fit its content. `width` defaults to the modal dialog's own default.
 
 ```html
 <pwc-dialog-opener height="600px" width="500px">

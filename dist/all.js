@@ -656,7 +656,7 @@ var PwcDialogOpener = class extends BaseDialogOpener {
       width,
       height,
       closeText,
-      showClose: false
+      showCloseButton: false
     });
     this.modalDialog.footerEl.classList.add("pwc-dialog-opener-actions");
     this.modalDialog.footerEl.innerHTML = `
