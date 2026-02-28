@@ -50,7 +50,8 @@ export class BaseDialogOpener extends PwcElement {
     iframe.src = src;
 
     iframe.style.width = "100%";
-    iframe.style.height = getComputedStyle(this).getPropertyValue("--pwc-dialog-opener-height").trim() || "550px";
+    iframe.style.height = "100%";
+    iframe.style.border = "none";
     iframe.style.display = "none";
 
     return iframe;
@@ -128,6 +129,19 @@ export class BaseDialogOpener extends PwcElement {
     this._installIFrameAdditionalEventTriggers();
     this._applyIFrameDomTransformations();
     this.iframe.style.display = "unset";
+    this._adjustHeightToContent();
+  }
+
+  _adjustHeightToContent() {
+    const configuredHeight = this.getAttribute("height") ||
+      getComputedStyle(this).getPropertyValue("--pwc-dialog-opener-height").trim();
+    if (configuredHeight) return;
+
+    const iframeDoc = this.iframe?.contentDocument;
+    if (!iframeDoc) return;
+
+    const iframeInnerHeight = iframeDoc.documentElement.scrollHeight;
+    this.iframe.style.height = iframeInnerHeight + "px";
   }
 
   async _tryLocalReload(newUri) {

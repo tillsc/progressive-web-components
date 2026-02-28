@@ -20,7 +20,9 @@ The base class never touches DOM rendering directly. Variants own the dialog cre
 2. `_prepareIFrameLink()` builds the iframe URL:
    - collects `input` values as `pwc_default` query param
    - appends `pwc_embedded=true`
-3. `findOrCreateDialog(src)` (variant hook) creates the modal and iframe
+3. `findOrCreateDialog(src)` (variant hook) creates the modal, calls `open()` with sizing
+   options (`width`/`height` for vanilla, `size`/`height` for BS5) resolved from
+   attributes or CSS custom properties, and places the iframe in the body
 4. `_enhanceIFrame()` waits for the iframe `load` event, then calls `_onIFrameLoad()`
 5. `_onIFrameLoad()` checks the iframe URL:
    - If `pwc_done_with` is present → close dialog, trigger reload or navigation

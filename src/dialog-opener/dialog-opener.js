@@ -8,8 +8,14 @@ export class PwcDialogOpener extends BaseDialogOpener {
       document.body.appendChild(this.modalDialog);
     }
 
+    const width = this.getAttribute("width") ||
+      getComputedStyle(this).getPropertyValue("--pwc-dialog-opener-width").trim() || null;
+    const height = this.getAttribute("height") ||
+      getComputedStyle(this).getPropertyValue("--pwc-dialog-opener-height").trim() || null;
     const closeText = this.getAttribute("close-text") || "Close";
     this.modalDialog.open({
+      width,
+      height,
       closeText,
       showClose: false
     });

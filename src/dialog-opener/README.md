@@ -312,14 +312,23 @@ close button.
 
 ### CSS custom properties
 
-| Property | Default | Description |
-|----------|---------|-------------|
-| `--pwc-dialog-opener-height` | `550px` | Height of the iframe inside the dialog |
+Sizing is controlled via CSS custom properties. The `height` and `width` HTML attributes
+are shorthands that set the corresponding custom properties — equivalent to an inline
+style.
 
 ```css
 pwc-dialog-opener {
-  --pwc-dialog-opener-height: 550px;
+  --pwc-dialog-opener-height: 550px;   /* also: height="…" attribute */
+  --pwc-dialog-opener-width: 400px;    /* also: width="…" attribute */
 }
+```
+
+`height` and `width` are passed as options to the underlying `<pwc-modal-dialog>`'s
+`open()` call on every dialog open. The iframe fills the body at `height: 100%`.
+`height` defaults to `550px`. `width` defaults to the modal dialog's own default.
+
+```html
+<pwc-dialog-opener height="600px" width="500px">
 ```
 
 ### Example: styling the vanilla close button
@@ -346,8 +355,17 @@ A Bootstrap 5 styled variant is provided with the same API:
 </pwc-dialog-opener-bs5>
 ```
 
-Notes:
-- Same attributes and behavior as the vanilla component
-- Uses Bootstrap modal markup and classes
+Uses Bootstrap modal markup and classes. All vanilla attributes are supported. Additional
+and differing attributes:
+
+### `size`
+
+Bootstrap size preset passed to `open()`. Maps to Bootstrap's `modal-sm`, `modal-lg`,
+`modal-xl` classes. Replaces `width` (not supported in the Bootstrap variant). Shorthand
+for `--pwc-dialog-opener-size`, defaults to `lg`.
+
+```html
+<pwc-dialog-opener-bs5 size="sm">
+```
 
 ---

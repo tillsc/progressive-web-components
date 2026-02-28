@@ -68,13 +68,13 @@ var ModalDialogBase = class extends PwcSimpleInitElement {
   get isOpen() {
     return false;
   }
-  open({ title = "", size = "lg", closeText = "Close", ...options }) {
+  open({ title = "", closeText = "Close", ...options }) {
     if (!this.isConnected) {
       this._autoRemove = true;
       document.body.appendChild(this);
     }
     this._teardown();
-    const ui = this._render({ title, size, closeText, ...options });
+    const ui = this._render({ title, closeText, ...options });
     this._ui = ui;
     const parent = this._getOpenSibling();
     this._parent = parent && parent !== ui.rootEl ? parent : null;
@@ -84,7 +84,7 @@ var ModalDialogBase = class extends PwcSimpleInitElement {
       this._parent.dataset.closeReason = "suspend";
       this._suspend(this._parent);
     }
-    this._show(ui, { title, size, closeText, ...options });
+    this._show(ui, { title, closeText, ...options });
   }
   close() {
     if (this._closed) return;
@@ -150,7 +150,12 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
     if (!BsModal) throw new Error("Bootstrap Modal required (globalThis.bootstrap.Modal)");
     return BsModal;
   }
-  _render({ title, size, closeText, showCloseButton = true }) {
+  onDisconnect() {
+    globalThis.bootstrap?.Modal?.getInstance(this)?.dispose();
+    super.onDisconnect();
+  }
+  _render({ title, size = "lg", height, closeText, showCloseButton = true }) {
+    globalThis.bootstrap?.Modal?.getInstance(this)?.dispose();
     this.innerHTML = `
       <div class="modal-dialog modal-dialog-centered modal-${size}">
         <div class="modal-content">
@@ -173,15 +178,20 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
       btn.setAttribute("data-pwc-action", "close");
       this.querySelector(".modal-header").appendChild(btn);
     }
+    const contentEl = this.querySelector(".modal-content");
+    contentEl.style.maxHeight = "90vh";
+    contentEl.style.overflow = "hidden";
+    const bodyEl = this.querySelector(".modal-body");
+    bodyEl.style.overflowY = "auto";
+    bodyEl.style.minHeight = "0";
+    if (height) bodyEl.style.height = height;
     return {
       rootEl: this,
-      bodyEl: this.querySelector(".modal-body"),
+      bodyEl,
       headerEl: this.querySelector(".modal-header"),
       footerEl: this.querySelector(".modal-footer"),
       modal: null,
       teardown: () => {
-        const BsModal = this.requireBsModal();
-        BsModal.getInstance(this)?.dispose();
         this.innerHTML = "";
         this._finalClose = null;
       }

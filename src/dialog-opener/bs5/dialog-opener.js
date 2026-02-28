@@ -18,20 +18,19 @@ export class PwcDialogOpenerBs5 extends BaseDialogOpener {
     if (!this.modalDialog) {
       // Use existing child socket if provided, otherwise create one.
       this.modalDialog = this.querySelector(tag) || document.createElement(tag);
-
-      // If caller didn't place it into the DOM, keep it associated with this component.
-      // ModalDialogBase will auto-append itself to <body> on open() if not connected.
-      if (!this.modalDialog.isConnected) {
-        this.appendChild(this.modalDialog);
-      }
     }
 
     const closeText = this.getAttribute("close-text") || "Close";
+    const size = this.getAttribute("size") ||
+      getComputedStyle(this).getPropertyValue("--pwc-dialog-opener-size").trim() || "lg";
+    const height = this.getAttribute("height") ||
+      getComputedStyle(this).getPropertyValue("--pwc-dialog-opener-height").trim() || null;
 
     // Open modal and get access to the body/footer containers.
     this.modalDialog.open({
       title: this.getAttribute("title") || "",
-      size: this.getAttribute("size") || "lg",
+      size,
+      height,
       closeText,
       showClose: false,
       backdrop: true,

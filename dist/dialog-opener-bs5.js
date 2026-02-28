@@ -139,7 +139,8 @@ var BaseDialogOpener = class extends PwcElement {
     const iframe = document.createElement("iframe");
     iframe.src = src;
     iframe.style.width = "100%";
-    iframe.style.height = getComputedStyle(this).getPropertyValue("--pwc-dialog-opener-height").trim() || "550px";
+    iframe.style.height = "100%";
+    iframe.style.border = "none";
     iframe.style.display = "none";
     return iframe;
   }
@@ -198,6 +199,15 @@ var BaseDialogOpener = class extends PwcElement {
     this._installIFrameAdditionalEventTriggers();
     this._applyIFrameDomTransformations();
     this.iframe.style.display = "unset";
+    this._adjustHeightToContent();
+  }
+  _adjustHeightToContent() {
+    const configuredHeight = this.getAttribute("height") || getComputedStyle(this).getPropertyValue("--pwc-dialog-opener-height").trim();
+    if (configuredHeight) return;
+    const iframeDoc = this.iframe?.contentDocument;
+    if (!iframeDoc) return;
+    const iframeInnerHeight = iframeDoc.documentElement.scrollHeight;
+    this.iframe.style.height = iframeInnerHeight + "px";
   }
   async _tryLocalReload(newUri) {
     const currentUri = new URL(window.location.href);
@@ -288,14 +298,14 @@ var PwcDialogOpenerBs5 = class extends BaseDialogOpener {
     const tag = "pwc-modal-dialog-bs5";
     if (!this.modalDialog) {
       this.modalDialog = this.querySelector(tag) || document.createElement(tag);
-      if (!this.modalDialog.isConnected) {
-        this.appendChild(this.modalDialog);
-      }
     }
     const closeText = this.getAttribute("close-text") || "Close";
+    const size = this.getAttribute("size") || getComputedStyle(this).getPropertyValue("--pwc-dialog-opener-size").trim() || "lg";
+    const height = this.getAttribute("height") || getComputedStyle(this).getPropertyValue("--pwc-dialog-opener-height").trim() || null;
     this.modalDialog.open({
       title: this.getAttribute("title") || "",
-      size: this.getAttribute("size") || "lg",
+      size,
+      height,
       closeText,
       showClose: false,
       backdrop: true,
@@ -365,13 +375,13 @@ var ModalDialogBase = class extends PwcSimpleInitElement {
   get isOpen() {
     return false;
   }
-  open({ title = "", size = "lg", closeText = "Close", ...options }) {
+  open({ title = "", closeText = "Close", ...options }) {
     if (!this.isConnected) {
       this._autoRemove = true;
       document.body.appendChild(this);
     }
     this._teardown();
-    const ui = this._render({ title, size, closeText, ...options });
+    const ui = this._render({ title, closeText, ...options });
     this._ui = ui;
     const parent = this._getOpenSibling();
     this._parent = parent && parent !== ui.rootEl ? parent : null;
@@ -381,7 +391,7 @@ var ModalDialogBase = class extends PwcSimpleInitElement {
       this._parent.dataset.closeReason = "suspend";
       this._suspend(this._parent);
     }
-    this._show(ui, { title, size, closeText, ...options });
+    this._show(ui, { title, closeText, ...options });
   }
   close() {
     if (this._closed) return;
@@ -437,7 +447,8 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
     if (!BsModal) throw new Error("Bootstrap Modal required (globalThis.bootstrap.Modal)");
     return BsModal;
   }
-  _render({ title, size, closeText, showCloseButton = true }) {
+  _render({ title, size = "lg", height, closeText, showCloseButton = true }) {
+    globalThis.bootstrap?.Modal?.getInstance(this)?.dispose();
     this.innerHTML = `
       <div class="modal-dialog modal-dialog-centered modal-${size}">
         <div class="modal-content">
@@ -460,15 +471,15 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
       btn.setAttribute("data-pwc-action", "close");
       this.querySelector(".modal-header").appendChild(btn);
     }
+    const bodyEl = this.querySelector(".modal-body");
+    if (height) bodyEl.style.height = height;
     return {
       rootEl: this,
-      bodyEl: this.querySelector(".modal-body"),
+      bodyEl,
       headerEl: this.querySelector(".modal-header"),
       footerEl: this.querySelector(".modal-footer"),
       modal: null,
       teardown: () => {
-        const BsModal = this.requireBsModal();
-        BsModal.getInstance(this)?.dispose();
         this.innerHTML = "";
         this._finalClose = null;
       }
