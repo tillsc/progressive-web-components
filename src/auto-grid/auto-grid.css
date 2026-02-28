@@ -24,11 +24,12 @@ pwc-auto-grid > .pwc-auto-grid-wide {
 
 /* Maps cols, gap, and min-width attributes to their CSS custom properties.
  * Guarded so older browsers fall back silently to the defaults above. */
-@supports (width: attr(x length, 0px)) {
+@supports (width: attr(x type(<length>), 0px)) {
   pwc-auto-grid {
-    --pwc-auto-grid-cols: attr(cols integer, -1);
-    --pwc-auto-grid-gap: attr(gap length, 10px);
-    --pwc-auto-grid-min-width: attr(min-width length, 100px);
+    --pwc-auto-grid-cols: attr(cols type(<integer>), -1);
+    --pwc-auto-grid-gap: attr(gap type(<length>), 10px);
+    --pwc-auto-grid-min-width: attr(min-width type(<length>), 100px);
+    --pwc-auto-grid-max-width: attr(max-width type(<length>), 1fr);
   }
 }
 

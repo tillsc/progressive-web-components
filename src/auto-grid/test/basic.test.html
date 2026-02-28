@@ -6,9 +6,8 @@
   <title>pwc-auto-grid: basic</title>
   <script type="module" src="../../../dist/auto-grid.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
     pwc-auto-grid > * {
+      box-sizing: border-box;
       background: #e8f0fe;
       border: 1px solid #9fb8e8;
       padding: 0.4rem 0.8rem;
@@ -18,16 +17,32 @@
       border-color: #e0aa5a;
     }
 
-    /* Visible boundary for 300px demo containers */
     .w300 { width: 300px; outline: 1px dashed #bbb; }
 
-    h2 { margin-top: 1.5rem; margin-bottom: 0.2rem; }
+    .no-attr-support {
+      display: block;
+      margin: 1rem 0;
+      padding: 0.6rem 1rem;
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 4px;
+    }
+
+    @supports (width: attr(x type(<length>), 0px)) {
+      .no-attr-support { display: none; }
+    }
   </style>
 </head>
 
 <body>
 
 <h1>pwc-auto-grid: basic</h1>
+
+<p class="no-attr-support">
+  ⚠ This browser does not support CSS <code>attr()</code> with type keywords — this test
+  will fail. See <a href="css-properties.test.html">css-properties.test.html</a> for a
+  test that works without this feature.
+</p>
 
 <!-- ── Auto-fit default ────────────────────────────────────────────────────── -->
 
@@ -43,37 +58,9 @@
   <div>Item 6</div>
 </pwc-auto-grid>
 
-<!-- ── Fixed columns ──────────────────────────────────────────────────────── -->
+<!-- ── Attribute shorthand — fixed columns ────────────────────────────────── -->
 
-<h2>Fixed columns — 3 cols in 300px (items 1–3 share a row, item 4 wraps)</h2>
-
-<div class="w300">
-  <pwc-auto-grid id="grid-fixed"
-    style="--pwc-auto-grid-cols: 3; --pwc-auto-grid-gap: 0px; --pwc-auto-grid-min-width: 1px">
-    <div id="fixed-1">Item 1</div>
-    <div id="fixed-2">Item 2</div>
-    <div id="fixed-3">Item 3</div>
-    <div id="fixed-4">Item 4 (wraps)</div>
-  </pwc-auto-grid>
-</div>
-
-<!-- ── Full-width item ────────────────────────────────────────────────────── -->
-
-<h2>Full-width item — <code>.pwc-auto-grid-wide</code> spans all columns</h2>
-
-<div class="w300">
-  <pwc-auto-grid id="grid-wide"
-    style="--pwc-auto-grid-cols: 3; --pwc-auto-grid-gap: 0px; --pwc-auto-grid-min-width: 1px">
-    <div id="wide-item" class="pwc-auto-grid-wide">⟵ spans all 3 columns ⟶</div>
-    <div id="wide-rest-1">Item 1</div>
-    <div id="wide-rest-2">Item 2</div>
-    <div id="wide-rest-3">Item 3</div>
-  </pwc-auto-grid>
-</div>
-
-<!-- ── Attribute shorthand ────────────────────────────────────────────────── -->
-
-<h2>Attribute shorthand — same result as above via <code>cols="3"</code></h2>
+<h2>Fixed columns via <code>cols="3"</code> — items 1–3 share a row, item 4 wraps</h2>
 
 <div class="w300">
   <pwc-auto-grid id="grid-attr" cols="3" gap="0px" min-width="1px">
@@ -84,13 +71,34 @@
   </pwc-auto-grid>
 </div>
 
+<!-- ── Attribute shorthand — full-width item ──────────────────────────────── -->
+
+<h2>Full-width item via <code>cols="3"</code> — <code>.pwc-auto-grid-wide</code> spans all columns</h2>
+
+<div class="w300">
+  <pwc-auto-grid id="grid-attr-wide" cols="3" gap="0px" min-width="1px">
+    <div id="attr-wide" class="pwc-auto-grid-wide">⟵ spans all 3 columns ⟶</div>
+    <div id="attr-wide-rest">Item 1</div>
+  </pwc-auto-grid>
+</div>
+
+<!-- ── Attribute shorthand — max-width cap ────────────────────────────────── -->
+
+<h2>Max-width cap via <code>max-width="100px"</code> — 2 items in 300px auto-fit, each capped at 100px</h2>
+
+<div class="w300">
+  <pwc-auto-grid id="grid-attr-maxwidth" gap="0px" min-width="1px" max-width="100px">
+    <div id="attr-mw-1">Item 1</div>
+    <div id="attr-mw-2">Item 2</div>
+  </pwc-auto-grid>
+</div>
+
 <!-- ── Switcher ───────────────────────────────────────────────────────────── -->
 
 <h2>Switcher — fits (3 × 80px = 240px ≤ 300px → one row)</h2>
 
 <div class="w300">
-  <pwc-auto-grid id="switcher-fits" class="switcher"
-    style="--pwc-auto-grid-cols: 3; --pwc-auto-grid-gap: 0px; --pwc-auto-grid-min-width: 80px">
+  <pwc-auto-grid id="switcher-fits" class="switcher" cols="3" gap="0px" min-width="80px">
     <div id="sw-fit-1">Item 1</div>
     <div id="sw-fit-2">Item 2</div>
     <div id="sw-fit-3">Item 3</div>
@@ -100,8 +108,7 @@
 <h2>Switcher — breaks (3 × 120px = 360px &gt; 300px → each item full width)</h2>
 
 <div class="w300">
-  <pwc-auto-grid id="switcher-breaks" class="switcher"
-    style="--pwc-auto-grid-cols: 3; --pwc-auto-grid-gap: 0px; --pwc-auto-grid-min-width: 120px">
+  <pwc-auto-grid id="switcher-breaks" class="switcher" cols="3" gap="0px" min-width="120px">
     <div id="sw-brk-1">Item 1</div>
     <div id="sw-brk-2">Item 2</div>
     <div id="sw-brk-3">Item 3</div>
@@ -119,57 +126,40 @@
     // ── CSS registered ─────────────────────────────────────────────────────
 
     await log("CSS injected: display:grid applied");
-    assert.equal(getComputedStyle(document.getElementById("probe")).display, "grid", "display is grid");
+    assert.equal(getComputedStyle(document.getElementById("probe")).display, "grid");
 
-    // ── Fixed columns ──────────────────────────────────────────────────────
+    // ── Attribute shorthand: fixed columns ─────────────────────────────────
 
-    await log("fixed cols: items 1–3 share a row, item 4 wraps");
-    const f1 = document.getElementById("fixed-1");
-    const f2 = document.getElementById("fixed-2");
-    const f3 = document.getElementById("fixed-3");
-    const f4 = document.getElementById("fixed-4");
+    await log("cols=3: items 1–3 share a row, item 4 wraps");
+    const a1 = document.getElementById("attr-1");
+    const a2 = document.getElementById("attr-2");
+    const a3 = document.getElementById("attr-3");
+    const a4 = document.getElementById("attr-4");
 
-    assert.width(f1, 100);
-    assert.top(f1, f2);
-    assert.top(f1, f3);
-    assert.above(f1, f4);
+    assert.width(a1, 100);
+    assert.top(a1, a2);
+    assert.top(a1, a3);
+    assert.above(a1, a4);
 
-    // ── Full-width item ────────────────────────────────────────────────────
+    // ── Attribute shorthand: full-width item ───────────────────────────────
 
-    await log("wide item spans full container width");
-    const wide = document.getElementById("wide-item");
-    const rest = document.getElementById("wide-rest-1");
+    await log("cols=3: wide item spans full container width");
+    const wide = document.getElementById("attr-wide");
+    const rest = document.getElementById("attr-wide-rest");
 
     assert.width(wide, 300);
     assert.above(wide, rest);
 
-    // ── Attribute shorthand ────────────────────────────────────────────────
+    // ── Attribute shorthand: max-width cap ─────────────────────────────────
 
-    if (CSS.supports("width", "attr(x length, 0px)")) {
-      await log("attribute shorthand: cols=3 produces same layout");
-      const a1 = document.getElementById("attr-1");
-      const a2 = document.getElementById("attr-2");
-      const a3 = document.getElementById("attr-3");
-      const a4 = document.getElementById("attr-4");
-
-      assert.width(a1, 100);
-      assert.top(a1, a2);
-      assert.top(a1, a3);
-      assert.above(a1, a4);
-    }
-    else {
-      await log("skipping attribute shorthand tests: no CSS attr() support");
-    }
+    await log("max-width=100px: 2 cols in 300px each capped at 100px");
+    assert.width(document.getElementById("attr-mw-1"), 100);
 
     // ── Switcher ───────────────────────────────────────────────────────────
 
     await log("switcher fits: all 3 items in one row");
-    const sf1 = document.getElementById("sw-fit-1");
-    const sf2 = document.getElementById("sw-fit-2");
-    const sf3 = document.getElementById("sw-fit-3");
-
-    assert.top(sf1, sf2);
-    assert.top(sf1, sf3);
+    assert.top(document.getElementById("sw-fit-1"), document.getElementById("sw-fit-2"));
+    assert.top(document.getElementById("sw-fit-1"), document.getElementById("sw-fit-3"));
 
     await log("switcher breaks: each item takes full width");
     const sb1 = document.getElementById("sw-brk-1");

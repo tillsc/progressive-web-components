@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>pwc-auto-grid: CSS custom properties</title>
+  <script type="module" src="../../../dist/auto-grid.js"></script>
+  <style>
+    pwc-auto-grid > * {
+      box-sizing: border-box;
+      background: #e8f0fe;
+      border: 1px solid #9fb8e8;
+      padding: 0.4rem 0.8rem;
+    }
+
+    .w300 { width: 300px; outline: 1px dashed #bbb; }
+  </style>
+</head>
+
+<body>
+
+<h1>pwc-auto-grid: CSS custom properties</h1>
+<p>
+  Showcase: layout controlled via <code>--pwc-auto-grid-*</code> custom properties.
+  Works in all browsers, including those without <code>attr()</code> type keyword support.
+</p>
+
+<!-- ── Fixed columns ──────────────────────────────────────────────────────── -->
+
+<h2>Fixed columns — 3 cols in 300px (items 1–3 share a row, item 4 wraps)</h2>
+
+<div class="w300">
+  <pwc-auto-grid id="grid-fixed"
+    style="--pwc-auto-grid-cols: 3; --pwc-auto-grid-gap: 0px; --pwc-auto-grid-min-width: 1px">
+    <div id="fixed-1">Item 1</div>
+    <div id="fixed-2">Item 2</div>
+    <div id="fixed-3">Item 3</div>
+    <div id="fixed-4">Item 4 (wraps)</div>
+  </pwc-auto-grid>
+</div>
+
+<!-- ── Max-width cap ───────────────────────────────────────────────────────── -->
+
+<h2>Max-width cap — 2 items in 300px, capped at 100px each</h2>
+
+<div class="w300">
+  <pwc-auto-grid id="grid-maxwidth"
+    style="--pwc-auto-grid-gap: 0px; --pwc-auto-grid-min-width: 1px; --pwc-auto-grid-max-width: 100px">
+    <div id="mw-1">Item 1</div>
+    <div id="mw-2">Item 2</div>
+  </pwc-auto-grid>
+</div>
+
+<script type="module">
+  import { run } from "../../../static/testing/harness.js";
+  import * as assert from "../../../static/testing/assert.js";
+
+  run(async ({ log, nextTick }) => {
+
+    await nextTick("wait for CSS");
+
+    await log("fixed cols: items 1–3 share a row, item 4 wraps");
+    const f1 = document.getElementById("fixed-1");
+    const f4 = document.getElementById("fixed-4");
+
+    assert.width(f1, 100);
+    assert.above(f1, f4);
+
+    // ── Max-width cap ──────────────────────────────────────────────────────
+
+    await log("max-width=100px: 2 items in 300px each capped at 100px");
+    assert.width(document.getElementById("mw-1"), 100);
+
+    await log("done");
+  });
+</script>
+</body>
+</html>

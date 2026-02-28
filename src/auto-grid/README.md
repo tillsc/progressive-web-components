@@ -49,6 +49,7 @@ Add the `pwc-auto-grid-wide` class to any direct child to span all columns:
 | `cols` | auto | Number of columns. Without this attribute columns auto-fit. |
 | `gap` | `10px` | Gap between grid cells |
 | `min-width` | `100px` | Minimum column width |
+| `max-width` | `1fr` | Maximum column width. Useful in auto-fit mode to prevent columns from growing too wide. |
 
 ```html
 <pwc-auto-grid cols="3" gap="1rem" min-width="200px">
@@ -57,7 +58,11 @@ Add the `pwc-auto-grid-wide` class to any direct child to span all columns:
 ```
 
 When `cols` is set the grid always has exactly that many columns, but columns
-will not shrink below `min-width`.
+will not shrink below `min-width`. 
+
+Attributes require CSS `attr()` with type
+keywords (Chrome 133+); use the CSS custom properties below for broader
+compatibility.
 
 ---
 
@@ -65,8 +70,6 @@ will not shrink below `min-width`.
 
 For cases where HTML attributes are insufficient — e.g. CSS-driven values,
 inheritance, or theming — the underlying custom properties can be set directly.
-`--pwc-auto-grid-max-width` has no attribute equivalent and can only be
-configured this way.
 
 | Property | Default | Description |
 |---|---|---|

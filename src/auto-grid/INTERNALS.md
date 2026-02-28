@@ -11,13 +11,20 @@ via a constructable `CSSStyleSheet` adopted on the document.
 The `cols`, `gap`, and `min-width` attributes are mapped to their CSS custom
 properties via `attr()` with type keywords (CSS Values Level 5,
 [spec](https://www.w3.org/TR/css-values-5/#attr-notation)), wrapped in an
-`@supports (width: attr(x length, 0px))` block so that browsers without support
-fall back silently to the plain custom property defaults. The test uses the
-`width` property because custom properties accept any value as valid and cannot
-be used for feature detection via `@supports`.
+`@supports (width: attr(x type(<length>), 0px))` block so that browsers without
+support fall back silently to the plain custom property defaults. The test uses
+the `width` property because custom properties accept any value as valid and
+cannot be used for feature detection via `@supports`.
 
-`--pwc-auto-grid-max-width` has no attribute counterpart because `1fr` is a
-`<flex>` unit with no corresponding `attr()` type keyword.
+Chrome 133+ ships the `type()` wrapper syntax — `attr(x type(<length>), 0px)`,
+`attr(x type(<integer>), 0)` — rather than the earlier draft bare-keyword form
+`attr(x length, 0px)`. Firefox does not yet support this feature.
+
+The `attr()` fallback does not need to match the declared type — `1fr` is a
+valid fallback for `type(<length>)` because fallback values are treated as
+`<declaration-value>` (arbitrary CSS). Chrome resolves the fallback in context,
+so `attr(max-width type(<length>), 1fr)` produces `1fr` when the attribute is
+absent, which is valid inside `minmax()`.
 
 ## Column width calculation
 
