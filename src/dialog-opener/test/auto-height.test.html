@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>dialog-opener: auto-height</title>
+  <script type="module" src="../../../dist/dialog-opener.js"></script>
+</head>
+
+<body>
+
+  <h1>dialog-opener: auto-height</h1>
+
+  <p>Opens a dialog. The iframe contains a button that reveals a large hidden
+  section. Clicking the button must cause the iframe height to grow automatically
+  via the ResizeObserver — no page reload involved.</p>
+
+  <pwc-dialog-opener id="demo">
+    <a href="./mock/page">Open</a>
+  </pwc-dialog-opener>
+
+  <template id="page">
+    <p>Initial content</p>
+    <button id="expand" onclick="document.getElementById('extra').style.display='block'">Show more</button>
+    <div id="extra" style="display:none; height:600px">Extra content</div>
+  </template>
+
+  <script type="module">
+    import { mockRoutes, echoElement } from "../../../static/testing/mock-server.js";
+
+    window.mockRoutesReady = mockRoutes([
+      {
+        path: "./mock/page",
+        handle() {
+          return echoElement("#page");
+        },
+      },
+    ]);
+  </script>
+
+  <script type="module">
+    import { run } from "../../../static/testing/harness.js";
+    import { click } from "../../../static/testing/helpers.js";
+    import * as assert from "../../../static/testing/assert.js";
+
+    await window.mockRoutesReady;
+
+    run(async ({ waitFor, log }) => {
+      assert.customElement("pwc-dialog-opener");
+
+      await log("clicking link to open dialog");
+      click(document.querySelector("#demo a"));
+
+      await waitFor(() => {
+        const dlg = document.querySelector("dialog.pwc-modal-dialog");
+        return dlg && dlg.open;
+      }, "dialog open");
+
+      const iframe = document.querySelector("dialog.pwc-modal-dialog iframe");
+      assert.ok(iframe, "iframe not created");
+
+      await waitFor(() => {
+        return iframe.contentDocument?.readyState === "complete";
+      }, "iframe loaded");
+
+      await waitFor(() => {
+        return /^\d+px$/.test(iframe.style.height);
+      }, "initial height set by _adjustHeightToContent");
+
+      const initialHeight = parseInt(iframe.style.height);
+      assert.ok(initialHeight > 0, "initial iframe height should be positive");
+
+      await log("clicking expand button inside iframe");
+      const expandBtn = iframe.contentDocument.querySelector("#expand");
+      assert.ok(expandBtn, "expand button not found in iframe");
+      click(expandBtn);
+
+      await waitFor(() => {
+        return parseInt(iframe.style.height) > initialHeight + 400;
+      }, "iframe height auto-adjusted after button click");
+
+      assert.ok(
+        parseInt(iframe.style.height) > initialHeight + 400,
+        `height should have grown by more than 400px (was ${initialHeight}px, now ${iframe.style.height})`
+      );
+
+      await log("closing dialog");
+      const dlg = document.querySelector("dialog.pwc-modal-dialog");
+      click(dlg.querySelector(".pwc-dialog-opener-close"));
+
+      await waitFor(() => !dlg.open, "dialog closed");
+    });
+  </script>
+</body>
+
+</html>

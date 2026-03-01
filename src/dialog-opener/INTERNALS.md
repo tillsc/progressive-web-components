@@ -59,6 +59,13 @@ the iframe naturally via CSS flex. The dialog's `max-height` constraint (vanilla
 `max-height: 90vh`; BS5: inline `max-height: 90vh` on `.modal-content`) caps the height
 and triggers body scrolling for oversized content.
 
+After the initial sizing, `_installHeightObserver()` installs a `ResizeObserver` on
+the iframe's inner `document.documentElement` (using `new iframeWin.ResizeObserver(...)`)
+so that subsequent content changes — new elements appearing, sections expanding, etc. —
+automatically retrigger `_adjustHeightToContent()`. The observer is disconnected on every
+new iframe load and on `onDisconnect()`. It is not installed when a fixed height is
+configured.
+
 ## BS5 variant — modal element placement
 
 The `<pwc-modal-dialog-bs5>` created by `findOrCreateDialog` is **not** appended to the

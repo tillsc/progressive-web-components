@@ -513,6 +513,8 @@ var BaseDialogOpener = class extends PwcElement {
     return s.toString();
   }
   _enhanceIFrame(iframeTitle) {
+    this._heightObserver?.disconnect();
+    this._heightObserver = null;
     this.iframe = this.dialog.querySelector("iframe");
     this.iframe.title = iframeTitle;
     this.iframe.removeEventListener("load", this._iframeLoadHandler);
@@ -551,6 +553,7 @@ var BaseDialogOpener = class extends PwcElement {
     this._applyIFrameDomTransformations();
     this.iframe.style.display = "unset";
     this._adjustHeightToContent();
+    this._installHeightObserver();
   }
   _adjustHeightToContent() {
     const configuredHeight = this.getAttribute("height") || getComputedStyle(this).getPropertyValue("--pwc-dialog-opener-height").trim();
@@ -559,6 +562,22 @@ var BaseDialogOpener = class extends PwcElement {
     if (!iframeDoc) return;
     const iframeInnerHeight = iframeDoc.documentElement.scrollHeight;
     this.iframe.style.height = iframeInnerHeight + "px";
+  }
+  _installHeightObserver() {
+    this._heightObserver?.disconnect();
+    this._heightObserver = null;
+    const configuredHeight = this.getAttribute("height") || getComputedStyle(this).getPropertyValue("--pwc-dialog-opener-height").trim();
+    if (configuredHeight) return;
+    const iframeWin = this.iframe?.contentWindow;
+    if (!iframeWin) return;
+    this._heightObserver = new iframeWin.ResizeObserver(() => {
+      this._adjustHeightToContent();
+    });
+    this._heightObserver.observe(iframeWin.document.body);
+  }
+  onDisconnect() {
+    this._heightObserver?.disconnect();
+    this._heightObserver = null;
   }
   async _tryLocalReload(newUri) {
     const currentUri = new URL(window.location.href);
