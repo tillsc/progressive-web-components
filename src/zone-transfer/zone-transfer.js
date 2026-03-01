@@ -24,7 +24,7 @@ import { defineOnce } from "../core/utils.js";
  * - pwc-zone-transfer:change { itemId, fromZone, toZone, index, trigger }
  */
 export class PwcZoneTransfer extends PwcChildrenObserverElement {
-  static events = ["dragstart", "dragover", "drop", "dragend", "keydown"];
+static events = ["pointerdown", "pointermove", "pointerup", "pointercancel", "keydown"];
   static observeMode = "tree";
 
   static zoneSelector = "pwc-zone-transfer-zone, [data-pwc-zone]";
@@ -34,7 +34,6 @@ export class PwcZoneTransfer extends PwcChildrenObserverElement {
   onChildrenChanged() {
     const items = this._items();
     for (const item of items) {
-      if (!item.hasAttribute("draggable")) item.setAttribute("draggable", "true");
       if (!item.hasAttribute("tabindex")) item.tabIndex = -1;
       if (!item.hasAttribute("role")) item.setAttribute("role", "option");
     }
@@ -55,10 +54,10 @@ export class PwcZoneTransfer extends PwcChildrenObserverElement {
   }
 
   handleEvent(e) {
-    if (e.type === "dragstart") return this._onDragStart(e);
-    if (e.type === "dragover") return this._onDragOver(e);
-    if (e.type === "drop") return this._onDrop(e);
-    if (e.type === "dragend") return this._onDragEnd();
+    if (e.type === "pointerdown") return this._onPointerDown(e);
+    if (e.type === "pointermove") return this._onPointerMove(e);
+    if (e.type === "pointerup") return this._onPointerUp(e);
+    if (e.type === "pointercancel") return this._onPointerCancel();
     if (e.type === "keydown") return this._onKeyDown(e);
   }
 
@@ -70,58 +69,82 @@ export class PwcZoneTransfer extends PwcChildrenObserverElement {
     return Array.from((zoneEl || this).querySelectorAll(this.constructor.itemSelector));
   }
 
-  _onDragStart(e) {
+  _onPointerDown(e) {
+    if (!e.isPrimary) return;
+
     const item = this._closestItem(e.target);
     if (!item) return;
 
-    if (item.querySelector(this.constructor.handleSelector) && !this._closestHandle(e.target)) {
-      e.preventDefault();
-      return;
-    }
+    if (item.querySelector(this.constructor.handleSelector) && !this._closestHandle(e.target)) return;
 
     const zone = this._closestZone(item);
     if (!zone) return;
 
-    this._drag = { item, fromZone: zone };
+    const rect = item.getBoundingClientRect();
+    this._drag = {
+      item,
+      fromZone: zone,
+      pointerId: e.pointerId,
+      offsetX: e.clientX - rect.left,
+      offsetY: e.clientY - rect.top,
+    };
 
-    // Optional UX hint for native DnD
-    if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
+    try { item.setPointerCapture(e.pointerId); } catch (_) {}
 
     item.classList.add("pwc-zone-transfer-dragging");
+    this._createGhost(item, rect);
     this._ensurePlaceholder(item);
   }
 
-  _onDragOver(e) {
-    if (!this._drag?.item) return;
+  _createGhost(item, rect) {
+    const ghost = item.cloneNode(true);
+    ghost.classList.add("pwc-zone-transfer-ghost");
+    ghost.setAttribute("aria-hidden", "true");
+    ghost.style.width = `${rect.width}px`;
+    ghost.style.height = `${rect.height}px`;
+    ghost.style.transform = `translate(${rect.left}px, ${rect.top}px)`;
+    document.body.appendChild(ghost);
+    this._ghost = ghost;
+  }
 
-    const zone = this._closestZone(e.target);
-    if (!zone) return;
+  _onPointerMove(e) {
+    if (!this._drag?.item) return;
+    if (e.pointerId !== this._drag.pointerId) return;
 
     e.preventDefault();
 
-    // Optional UX hint for native DnD
-    if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+    const x = e.clientX - this._drag.offsetX;
+    const y = e.clientY - this._drag.offsetY;
+    this._ghost.style.transform = `translate(${x}px, ${y}px)`;
 
-    this._ensurePlaceholder(this._drag.item);
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const zone = el ? this._closestZone(el) : null;
+    if (!zone) return;
 
     const beforeEl = this._beforeFromPointer(zone, e, this._drag.item);
     this._movePlaceholder(zone, beforeEl);
   }
 
-  _onDrop(e) {
+  _onPointerUp(e) {
     if (!this._drag?.item) return;
+    if (e.pointerId !== this._drag.pointerId) return;
 
-    const zone = this._closestZone(e.target);
-    if (!zone) return;
-
-    e.preventDefault();
-
-    this._applyMove(this._drag.item, this._drag.fromZone, zone, "drag");
-    this._clearPlaceholder();
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const zone = el ? this._closestZone(el) : null;
+    if (zone) {
+      this._applyMove(this._drag.item, this._drag.fromZone, zone, "drag");
+    }
+    this._clearDrag();
   }
 
-  _onDragEnd() {
+  _onPointerCancel() {
+    this._clearDrag();
+  }
+
+  _clearDrag() {
     if (this._drag?.item) this._drag.item.classList.remove("pwc-zone-transfer-dragging");
+    if (this._ghost?.parentNode) this._ghost.parentNode.removeChild(this._ghost);
+    this._ghost = null;
     this._drag = null;
     this._clearPlaceholder();
   }

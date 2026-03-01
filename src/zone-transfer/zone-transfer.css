@@ -1,12 +1,31 @@
-pwc-zone-transfer [draggable="true"] {
+pwc-zone-transfer pwc-zone-transfer-item,
+pwc-zone-transfer [data-pwc-item] {
+    touch-action: none;
+    cursor: grab;
+}
+
+pwc-zone-transfer pwc-zone-transfer-handle,
+pwc-zone-transfer [data-pwc-handle] {
+    touch-action: none;
     cursor: grab;
 }
 
 pwc-zone-transfer .pwc-zone-transfer-dragging {
-    cursor: grabbing;
-    opacity: 0.6;
+    opacity: 0.2;
 }
 
 pwc-zone-transfer .pwc-zone-transfer-placeholder {
     opacity: 0.3;
+    background: currentColor;
+}
+
+.pwc-zone-transfer-ghost {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    box-sizing: border-box;
+    opacity: 0.9;
+    cursor: grabbing;
 }
