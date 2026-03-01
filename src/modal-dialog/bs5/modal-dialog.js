@@ -21,7 +21,13 @@ export class PwcModalDialogBs5 extends ModalDialogBase {
   }
 
   _render({ title, size = "lg", height, closeText, showCloseButton = true }) {
-    globalThis.bootstrap?.Modal?.getInstance(this)?.dispose();
+    const existing = globalThis.bootstrap?.Modal?.getInstance(this);
+    if (existing) {
+      // Flush any pending _hideModal callback before dispose() nulls _element.
+      this.dispatchEvent(new Event("transitionend"));
+      existing.dispose();
+      this.style.display = "block"; // keep visible until Bootstrap's async _showElement fires
+    }
 
     this.innerHTML = `
       <div class="modal-dialog modal-dialog-centered modal-${size}">

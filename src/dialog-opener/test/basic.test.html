@@ -112,12 +112,12 @@
       await log("waiting for iframe to load form");
       await waitFor(() => {
         return iframe.contentDocument && iframe.contentDocument.readyState === "complete";
-      }, { timeoutMs: 10_000, message: "iframe did not load" });
+      }, { message: "iframe did not load" });
 
       await log("waiting for hoisted submit button");
       await waitFor(() => {
         return Boolean(dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]"));
-      }, { timeoutMs: 10_000, message: "hoisted submit button not found" });
+      }, { message: "hoisted submit button not found" });
 
       const submitBtn = dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]");
       assert.ok(submitBtn, "hoisted submit button missing");
@@ -136,7 +136,7 @@
         if (!iframe.contentDocument || iframe.contentDocument.readyState !== "complete") return false;
         const err = iframe.contentDocument.querySelector(".error");
         return err && err.textContent.trim().length > 0;
-      }, { timeoutMs: 10_000, message: "validation error not shown in iframe" });
+      }, { message: "validation error not shown in iframe" });
 
       const errorMsg = iframe.contentDocument.querySelector(".error");
       assert.ok(errorMsg.textContent.includes("First name is required"), "unexpected error text: " + errorMsg.textContent);
@@ -145,7 +145,7 @@
       await log("waiting for new hoisted submit button after reload");
       await waitFor(() => {
         return Boolean(dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]"));
-      }, { timeoutMs: 10_000, message: "hoisted submit button not found after reload" });
+      }, { message: "hoisted submit button not found after reload" });
 
       const submitBtn2 = dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]");
       assert.ok(submitBtn2, "hoisted submit button missing after reload");
@@ -162,12 +162,12 @@
       click(submitBtn2);
 
       await log("waiting for dialog to close after success");
-      await waitFor(() => dlg.open === false, { timeoutMs: 10_000, message: "dialog did not close after success" });
+      await waitFor(() => dlg.open === false, { message: "dialog did not close after success" });
 
       await log("checking local-reload updated content");
       await waitFor(() => {
         return el.textContent.includes("Jane Smith");
-      }, { timeoutMs: 5_000, message: "name not updated after local reload" });
+      }, { message: "name not updated after local reload" });
 
       assert.ok(el.textContent.includes("Jane Smith"), "element should contain Jane Smith");
     });

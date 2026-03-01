@@ -120,12 +120,12 @@
       await log("waiting for iframe to load form");
       await waitFor(() => {
         return iframe.contentDocument && iframe.contentDocument.readyState === "complete";
-      }, { timeoutMs: 10_000, message: "iframe did not load" });
+      }, { message: "iframe did not load" });
 
       await log("waiting for hoisted submit button");
       await waitFor(() => {
         return Boolean(modal.querySelector(".pwc-dialog-opener-actions .btn-primary"));
-      }, { timeoutMs: 10_000, message: "hoisted submit button not found" });
+      }, { message: "hoisted submit button not found" });
 
       const submitBtn = modal.querySelector(".pwc-dialog-opener-actions .btn-primary");
       assert.ok(submitBtn, "hoisted submit button missing");
@@ -144,7 +144,7 @@
         if (!iframe.contentDocument || iframe.contentDocument.readyState !== "complete") return false;
         const err = iframe.contentDocument.querySelector("#error");
         return err && err.textContent.trim().length > 0;
-      }, { timeoutMs: 10_000, message: "validation error not shown in iframe" });
+      }, { message: "validation error not shown in iframe" });
 
       const errorMsg = iframe.contentDocument.querySelector("#error");
       assert.ok(errorMsg.textContent.includes("First name is required"), "unexpected error text: " + errorMsg.textContent);
@@ -153,7 +153,7 @@
       await log("waiting for new hoisted submit button after reload");
       await waitFor(() => {
         return Boolean(modal.querySelector(".pwc-dialog-opener-actions .btn-primary"));
-      }, { timeoutMs: 10_000, message: "hoisted submit button not found after reload" });
+      }, { message: "hoisted submit button not found after reload" });
 
       const submitBtn2 = modal.querySelector(".pwc-dialog-opener-actions .btn-primary");
 
@@ -170,13 +170,11 @@
 
       await log("waiting for modal to close after success");
       await waitFor(() => !modal.classList.contains("show"), {
-        timeoutMs: 10_000,
         message: "modal did not close after success"
       });
 
       await log("checking local-reload updated content");
       await waitFor(() => el.textContent.includes("Jane Smith"), {
-        timeoutMs: 5_000,
         message: "name not updated after local reload"
       });
 

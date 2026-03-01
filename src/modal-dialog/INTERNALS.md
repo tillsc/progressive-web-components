@@ -71,13 +71,19 @@ Handled in `ModalDialogBase.handleEvent()`:
 
 `close()` sets `dataset.closeReason = "final"` and calls `_hide()`.
 
-## BS5 variant — `dispose()` timing
+e## BS5 variant — `dispose()` timing
 
-Bootstrap's `hide()` schedules `_hideModal` via `_queueCallback`, which registers both a
-`transitionend` listener and a fallback `setTimeout`. `dispose()` nulls Bootstrap's
-internal `_element` — if it runs before the fallback fires, `_hideModal` crashes.
+`dispose()` is called at the start of `_render()`, not from `teardown` or `onDisconnect`.
 
-Therefore `dispose()` is only called at the start of `_render()`, immediately before
-replacing `innerHTML`. At that point a new `open()` is beginning, so all Bootstrap timers
-from the previous close have long settled. It is intentionally **not** called from
-`teardown` or `onDisconnect`.
+Two timing hazards arise when `open()` is called before a previous hide animation settles:
+
+1. **Crash:** Bootstrap's `hide()` queues `_hideModal` via `_queueCallback` (a
+   `transitionend` listener + `setTimeout` fallback). `dispose()` nulls `_element` —
+   if that runs first, `_hideModal` crashes. Fix: dispatch a synthetic `transitionend`
+   before `dispose()` to flush the callback synchronously. `_finalClose` is already null
+   (cleared by `_teardown()`), so the resulting `hidden.bs.modal` is a no-op.
+
+2. **Zero height:** `_hideModal` sets `style.display = 'none'`. Bootstrap's `_showElement`
+   restores `display:block` only after the backdrop animation (async). If an iframe loads
+   in between, `scrollHeight` reads as 0. Fix: set `style.display = 'block'` immediately
+   after `dispose()`.

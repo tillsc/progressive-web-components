@@ -95,7 +95,7 @@ export function run(fn, options = {}) {
 
   async function waitFor(
     predicate,
-    { timeoutMs: tmo = 10_000, intervalMs = 25, message = "waitFor timeout", label } = {}
+    { timeoutMs: tmo = 2000, intervalMs = 25, message = "waitFor timeout", label } = {}
   ) {
     const start = performance.now();
     await log(`waitFor start${label ? `: ${label}` : ""}`);

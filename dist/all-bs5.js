@@ -315,6 +315,7 @@ var BaseDialogOpener = class extends PwcElement {
     iframe.src = src;
     iframe.style.width = "100%";
     iframe.style.height = "100%";
+    iframe.style.minHeight = "150px";
     iframe.style.border = "none";
     iframe.style.display = "none";
     return iframe;
@@ -609,7 +610,12 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
     return BsModal;
   }
   _render({ title, size = "lg", height, closeText, showCloseButton = true }) {
-    globalThis.bootstrap?.Modal?.getInstance(this)?.dispose();
+    const existing = globalThis.bootstrap?.Modal?.getInstance(this);
+    if (existing) {
+      this.dispatchEvent(new Event("transitionend"));
+      existing.dispose();
+      this.style.display = "block";
+    }
     this.innerHTML = `
       <div class="modal-dialog modal-dialog-centered modal-${size}">
         <div class="modal-content">

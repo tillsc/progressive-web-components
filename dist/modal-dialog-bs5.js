@@ -151,7 +151,12 @@ var PwcModalDialogBs5 = class extends ModalDialogBase {
     return BsModal;
   }
   _render({ title, size = "lg", height, closeText, showCloseButton = true }) {
-    globalThis.bootstrap?.Modal?.getInstance(this)?.dispose();
+    const existing = globalThis.bootstrap?.Modal?.getInstance(this);
+    if (existing) {
+      this.dispatchEvent(new Event("transitionend"));
+      existing.dispose();
+      this.style.display = "block";
+    }
     this.innerHTML = `
       <div class="modal-dialog modal-dialog-centered modal-${size}">
         <div class="modal-content">

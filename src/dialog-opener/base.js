@@ -51,6 +51,7 @@ export class BaseDialogOpener extends PwcElement {
 
     iframe.style.width = "100%";
     iframe.style.height = "100%";
+    iframe.style.minHeight = "150px";
     iframe.style.border = "none";
     iframe.style.display = "none";
 
