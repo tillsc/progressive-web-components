@@ -11,18 +11,6 @@ let browser;
 let baseUrl;
 let closeServer;
 
-before(async () => {
-  const server = await startServer({ port: 0 });
-  baseUrl = server.baseUrl;
-  closeServer = server.close;
-  browser = await chromium.launch({ headless: true });
-});
-
-after(async () => {
-  await browser?.close();
-  await closeServer?.();
-});
-
 async function processPage(t, url) {
   const page = await browser.newPage();
   const errors = [];
@@ -94,6 +82,18 @@ for await (const file of glob("src/*/test/*.test.html")) {
 testFiles.sort();
 
 describe("progressive-web-components", { concurrency: true }, () => {
+  before(async () => {
+    const server = await startServer({ port: 0 });
+    baseUrl = server.baseUrl;
+    closeServer = server.close;
+    browser = await chromium.launch({ headless: true });
+  });
+
+  after(async () => {
+    await browser?.close();
+    await closeServer?.();
+  });
+
   for (const file of testFiles) {
     it(file, async (t) => {
       await processPage(t, `${baseUrl}/${file}`);
