@@ -45,13 +45,13 @@
     await log("filtering for 'bob'");
     setValue(input, "bob", { change: false });
 
-    await waitFor(() => rows.filter((r) => !r.hidden).length === 1, { label: "bob filtered" });
+    await waitFor(() => rows.filter((r) => !r.hidden).length === 1, "bob filtered");
     assert.equal(rows.find((r) => !r.hidden)?.textContent.trim(), "BobBrown", "expected Bob Brown to remain visible");
 
     await log("clearing filter");
     setValue(input, "", { change: false });
 
-    await waitFor(() => rows.filter((r) => !r.hidden).length === 3, { label: "filter removed again" });
+    await waitFor(() => rows.filter((r) => !r.hidden).length === 3, "filter removed again");
 
     await log("filtering via filterText setter");
     el.filterText = "charlie";

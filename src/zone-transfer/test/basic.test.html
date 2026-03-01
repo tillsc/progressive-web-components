@@ -91,28 +91,28 @@ Dragging items into the form zone updates the form data below.</p>
     drag(bob, zoneSelected);
     await nextTick("after drop");
 
-    await waitFor(() => output.textContent.includes("bob"), { label: "bob in output" });
+    await waitFor(() => output.textContent.includes("bob"), "bob in output");
     assert.equal(output.textContent, "people=bob", "output should show bob");
 
     await log("drag Alice -> selected (after bob)");
     drag(alice, zoneSelected, { clientY: 9999 });
     await nextTick("after drop");
 
-    await waitFor(() => output.textContent.includes("alice"), { label: "alice in output" });
+    await waitFor(() => output.textContent.includes("alice"), "alice in output");
     assert.equal(output.textContent, "people=bob\npeople=alice", "bob before alice");
 
     await log("drag Alice back -> available");
     drag(alice, zoneAvailable);
     await nextTick("after drop");
 
-    await waitFor(() => !output.textContent.includes("alice"), { label: "alice removed from output" });
+    await waitFor(() => !output.textContent.includes("alice"), "alice removed from output");
     assert.equal(output.textContent, "people=bob", "output should show only bob");
 
     await log("drag Alice -> selected (before bob)");
     drag(alice, zoneSelected, { clientY: 0 });
     await nextTick("after drop");
 
-    await waitFor(() => output.textContent.includes("alice"), { label: "alice back in output" });
+    await waitFor(() => output.textContent.includes("alice"), "alice back in output");
     assert.equal(output.textContent, "people=alice\npeople=bob", "alice before bob");
 
     await log("done");

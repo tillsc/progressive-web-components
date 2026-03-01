@@ -58,7 +58,7 @@
       await waitFor(() => {
         const open = document.querySelectorAll("dialog.pwc-modal-dialog[open]");
         return open.length === 1 && open[0] !== parentDlg;
-      }, { label: "child opened, parent suspended" });
+      }, "child opened, parent suspended");
 
       const childDlg = document.querySelector("dialog.pwc-modal-dialog[open]");
 
@@ -70,7 +70,7 @@
       await log("closing child via X button");
       click(childDlg.querySelector('[data-pwc-action="close"]'));
 
-      await waitFor(() => parentDlg.open === true, { label: "parent restored" });
+      await waitFor(() => parentDlg.open === true, "parent restored");
 
       assert.equal(
         document.querySelectorAll("dialog.pwc-modal-dialog[open]").length, 1,

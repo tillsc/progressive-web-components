@@ -108,7 +108,7 @@
       click(link);
       await nextTick();
 
-      await waitFor(() => document.querySelector(".modal.show"), { label: "modal appeared" });
+      await waitFor(() => document.querySelector(".modal.show"), "modal appeared");
 
       const modal = document.querySelector(".modal.show");
       const iframe = modal.querySelector("iframe");
@@ -116,11 +116,11 @@
 
       await waitFor(() => {
         return iframe.contentDocument && iframe.contentDocument.readyState === "complete";
-      }, { label: "iframe loaded" });
+      }, "iframe loaded");
 
       await waitFor(() => {
         return Boolean(modal.querySelector(".pwc-dialog-opener-actions .btn-primary"));
-      }, { label: "hoisted submit button" });
+      }, "hoisted submit button");
 
       const submitBtn = modal.querySelector(".pwc-dialog-opener-actions .btn-primary");
       assert.ok(submitBtn, "hoisted submit button missing");
@@ -138,7 +138,7 @@
         if (!iframe.contentDocument || iframe.contentDocument.readyState !== "complete") return false;
         const err = iframe.contentDocument.querySelector("#error");
         return err && err.textContent.trim().length > 0;
-      }, { label: "validation error shown in iframe" });
+      }, "validation error shown in iframe");
 
       const errorMsg = iframe.contentDocument.querySelector("#error");
       assert.ok(errorMsg.textContent.includes("First name is required"), "unexpected error text: " + errorMsg.textContent);
@@ -146,7 +146,7 @@
       // --- Second submission: fill first_name → success + redirect ---
       await waitFor(() => {
         return Boolean(modal.querySelector(".pwc-dialog-opener-actions .btn-primary"));
-      }, { label: "hoisted submit button after reload" });
+      }, "hoisted submit button after reload");
 
       const submitBtn2 = modal.querySelector(".pwc-dialog-opener-actions .btn-primary");
 
@@ -161,9 +161,9 @@
       await log("clicking hoisted submit (should succeed)");
       click(submitBtn2);
 
-      await waitFor(() => !modal.classList.contains("show"), { label: "modal closed after success" });
+      await waitFor(() => !modal.classList.contains("show"), "modal closed after success");
 
-      await waitFor(() => el.textContent.includes("Jane Smith"), { label: "name updated after local reload" });
+      await waitFor(() => el.textContent.includes("Jane Smith"), "name updated after local reload");
 
       assert.ok(el.textContent.includes("Jane Smith"), "element should contain Jane Smith");
     });

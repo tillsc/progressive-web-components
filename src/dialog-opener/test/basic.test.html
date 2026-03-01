@@ -102,7 +102,7 @@
       await waitFor(() => {
         const dlg = document.querySelector("dialog.pwc-modal-dialog");
         return dlg && dlg.open;
-      }, { label: "dialog open" });
+      }, "dialog open");
 
       const dlg = document.querySelector("dialog.pwc-modal-dialog");
       const iframe = dlg.querySelector("iframe");
@@ -110,11 +110,11 @@
 
       await waitFor(() => {
         return iframe.contentDocument && iframe.contentDocument.readyState === "complete";
-      }, { label: "iframe loaded" });
+      }, "iframe loaded");
 
       await waitFor(() => {
         return Boolean(dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]"));
-      }, { label: "hoisted submit button" });
+      }, "hoisted submit button");
 
       const submitBtn = dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]");
       assert.ok(submitBtn, "hoisted submit button missing");
@@ -132,7 +132,7 @@
         if (!iframe.contentDocument || iframe.contentDocument.readyState !== "complete") return false;
         const err = iframe.contentDocument.querySelector(".error");
         return err && err.textContent.trim().length > 0;
-      }, { label: "validation error shown in iframe" });
+      }, "validation error shown in iframe");
 
       const errorMsg = iframe.contentDocument.querySelector(".error");
       assert.ok(errorMsg.textContent.includes("First name is required"), "unexpected error text: " + errorMsg.textContent);
@@ -140,7 +140,7 @@
       // --- Second submission: fill first_name → success + redirect ---
       await waitFor(() => {
         return Boolean(dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]"));
-      }, { label: "hoisted submit button after reload" });
+      }, "hoisted submit button after reload");
 
       const submitBtn2 = dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]");
       assert.ok(submitBtn2, "hoisted submit button missing after reload");
@@ -156,11 +156,11 @@
       await log("clicking hoisted submit (should succeed)");
       click(submitBtn2);
 
-      await waitFor(() => dlg.open === false, { label: "dialog closed after success" });
+      await waitFor(() => dlg.open === false, "dialog closed after success");
 
       await waitFor(() => {
         return el.textContent.includes("Jane Smith");
-      }, { label: "name updated after local reload" });
+      }, "name updated after local reload");
 
       assert.ok(el.textContent.includes("Jane Smith"), "element should contain Jane Smith");
     });

@@ -28,7 +28,7 @@
 
     run(async ({ waitFor, log }) => {
       const host = document.getElementById("demo");
-      await waitFor(() => host.querySelector(".pwc-multiselect-dual-list-container"), { label: "container rendered" });
+      await waitFor(() => host.querySelector(".pwc-multiselect-dual-list-container"), "container rendered");
 
       assert.ok(host.filter, "host.filter returns pwc-filter element");
 

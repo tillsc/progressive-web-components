@@ -65,7 +65,7 @@
     const bio = document.getElementById("bio");
     const clean = document.getElementById("clean");
 
-    await waitFor(() => name.validationMessage, { label: "name has validation message" });
+    await waitFor(() => name.validationMessage, "name has validation message");
     assert.equal(name.validationMessage, "Name is required", "name message");
     assert.equal(msgOf(name)?.textContent, "Name is required", "name message span");
     assert.equal(role.validationMessage, "Pick a role", "role message");
@@ -79,11 +79,11 @@
 
     await log("clear-on: error and message span clear on input event");
     const clearOnInput = document.getElementById("clear-on-input");
-    await waitFor(() => clearOnInput.validationMessage, { label: "clear-on has error" });
+    await waitFor(() => clearOnInput.validationMessage, "clear-on has error");
     assert.ok(msgOf(clearOnInput), "message span present before clear");
 
     clearOnInput.dispatchEvent(new Event("input", { bubbles: true }));
-    await waitFor(() => !clearOnInput.validationMessage, { label: "clear-on error cleared" });
+    await waitFor(() => !clearOnInput.validationMessage, "clear-on error cleared");
     assert.equal(clearOnInput.validationMessage, "", "error cleared after input event");
     assert.equal(msgOf(clearOnInput), null, "message span removed");
 
@@ -91,7 +91,7 @@
 
     await log("clear-after: error cleared after timeout");
     const clearAfterInput = document.getElementById("clear-after-input");
-    await waitFor(() => !clearAfterInput.validationMessage, { label: "clear-after error cleared" });
+    await waitFor(() => !clearAfterInput.validationMessage, "clear-after error cleared");
     assert.equal(clearAfterInput.validationMessage, "", "error cleared");
     assert.equal(msgOf(clearAfterInput), null, "message span removed");
 

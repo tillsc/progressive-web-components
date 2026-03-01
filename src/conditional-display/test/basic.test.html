@@ -101,102 +101,102 @@
 
     await log("shown-if: initial state (card selected)");
     const shownCard = document.getElementById("shown-card");
-    await waitFor(() => !shownCard.hidden, { label: "shown-card visible" });
+    await waitFor(() => !shownCard.hidden, "shown-card visible");
     assert.equal(shownCard.hidden, false, "shown-card should be visible for card");
 
     await log("shown-if: switch to paypal");
     setValue(payment, "paypal");
-    await waitFor(() => shownCard.hidden, { label: "shown-card hidden" });
+    await waitFor(() => shownCard.hidden, "shown-card hidden");
     assert.equal(shownCard.querySelector("input").disabled, true, "contained input should be disabled when hidden");
 
     await log("shown-if: switch back to card");
     setValue(payment, "card");
-    await waitFor(() => !shownCard.hidden, { label: "shown-card visible again" });
+    await waitFor(() => !shownCard.hidden, "shown-card visible again");
     assert.equal(shownCard.querySelector("input").disabled, false, "contained input should be re-enabled");
 
     // --- pwc-hidden-if with select ---
 
     await log("hidden-if: initial state (card selected)");
     const hiddenPaypal = document.getElementById("hidden-paypal");
-    await waitFor(() => !hiddenPaypal.hidden, { label: "hidden-paypal visible" });
+    await waitFor(() => !hiddenPaypal.hidden, "hidden-paypal visible");
 
     await log("hidden-if: switch to paypal");
     setValue(payment, "paypal");
-    await waitFor(() => hiddenPaypal.hidden, { label: "hidden-paypal hidden" });
+    await waitFor(() => hiddenPaypal.hidden, "hidden-paypal hidden");
 
     await log("hidden-if: switch to invoice");
     setValue(payment, "invoice");
-    await waitFor(() => !hiddenPaypal.hidden, { label: "hidden-paypal visible again" });
+    await waitFor(() => !hiddenPaypal.hidden, "hidden-paypal visible again");
 
     // --- pwc-enabled-if with select ---
 
     await log("enabled-if: initial state (invoice selected)");
     const enabledInvoice = document.getElementById("enabled-invoice");
     const invoiceInput = enabledInvoice.querySelector("input");
-    await waitFor(() => !invoiceInput.disabled, { label: "invoice input enabled" });
+    await waitFor(() => !invoiceInput.disabled, "invoice input enabled");
 
     await log("enabled-if: switch to card");
     setValue(payment, "card");
-    await waitFor(() => invoiceInput.disabled, { label: "invoice input disabled" });
+    await waitFor(() => invoiceInput.disabled, "invoice input disabled");
 
     await log("enabled-if: switch back to invoice");
     setValue(payment, "invoice");
-    await waitFor(() => !invoiceInput.disabled, { label: "invoice input enabled again" });
+    await waitFor(() => !invoiceInput.disabled, "invoice input enabled again");
 
     // --- pwc-disabled-if with select ---
 
     await log("disabled-if: initial state (invoice selected)");
     const disabledCard = document.getElementById("disabled-card");
     const couponInput = disabledCard.querySelector("input");
-    await waitFor(() => !couponInput.disabled, { label: "coupon enabled" });
+    await waitFor(() => !couponInput.disabled, "coupon enabled");
 
     await log("disabled-if: switch to card");
     setValue(payment, "card");
-    await waitFor(() => couponInput.disabled, { label: "coupon disabled" });
+    await waitFor(() => couponInput.disabled, "coupon disabled");
 
     // --- Radio group ---
 
     await log("radio: initial state (blue checked)");
     const shownRadio = document.getElementById("shown-radio");
-    await waitFor(() => shownRadio.hidden, { label: "radio section hidden for blue" });
+    await waitFor(() => shownRadio.hidden, "radio section hidden for blue");
 
     await log("radio: click red");
     clickRadio(document.querySelector("input[name=color][value=red]"));
-    await waitFor(() => !shownRadio.hidden, { label: "radio section visible for red" });
+    await waitFor(() => !shownRadio.hidden, "radio section visible for red");
 
     await log("radio: click green (comma-separated value)");
     clickRadio(document.querySelector("input[name=color][value=green]"));
-    await waitFor(() => !shownRadio.hidden, { label: "radio section visible for green" });
+    await waitFor(() => !shownRadio.hidden, "radio section visible for green");
 
     await log("radio: click blue again");
     clickRadio(document.querySelector("input[name=color][value=blue]"));
-    await waitFor(() => shownRadio.hidden, { label: "radio section hidden for blue again" });
+    await waitFor(() => shownRadio.hidden, "radio section hidden for blue again");
 
     // --- Checkbox without value ---
 
     await log("checkbox (no value): initial state (unchecked)");
     const shownCb = document.getElementById("shown-checkbox");
     const agree = document.getElementById("agree");
-    await waitFor(() => shownCb.hidden, { label: "checkbox section hidden" });
+    await waitFor(() => shownCb.hidden, "checkbox section hidden");
 
     await log("checkbox (no value): check");
     toggleCheckbox(agree);
-    await waitFor(() => !shownCb.hidden, { label: "checkbox section visible" });
+    await waitFor(() => !shownCb.hidden, "checkbox section visible");
 
     await log("checkbox (no value): uncheck");
     toggleCheckbox(agree);
-    await waitFor(() => shownCb.hidden, { label: "checkbox section hidden again" });
+    await waitFor(() => shownCb.hidden, "checkbox section hidden again");
 
     // --- Checkbox with value ---
 
     await log("checkbox (with value): initial state (unchecked)");
     const shownCbVal = document.getElementById("shown-checkbox-val");
     const colorCheck = document.getElementById("color-check");
-    await waitFor(() => shownCbVal.hidden, { label: "checkbox-val section hidden" });
+    await waitFor(() => shownCbVal.hidden, "checkbox-val section hidden");
 
     await log("checkbox (with value): check");
     toggleCheckbox(colorCheck);
-    await waitFor(() => !shownCbVal.hidden, { label: "checkbox-val section visible" });
+    await waitFor(() => !shownCbVal.hidden, "checkbox-val section visible");
 
     // --- Pre-disabled input preserved ---
 
@@ -204,7 +204,7 @@
     setValue(payment, "card");
     const preDisabled = document.getElementById("shown-pre-disabled");
     const preDisabledSelect = document.getElementById("pre-disabled-select");
-    await waitFor(() => !preDisabled.hidden, { label: "pre-disabled section visible" });
+    await waitFor(() => !preDisabled.hidden, "pre-disabled section visible");
     const alwaysDisabled = preDisabled.querySelector("[name=always_disabled]");
     const normalField = preDisabled.querySelector("[name=normal_field]");
     assert.equal(alwaysDisabled.disabled, true, "always_disabled stays disabled");
@@ -212,7 +212,7 @@
 
     await log("pre-disabled: hide section (value=b)");
     setValue(preDisabledSelect, "b");
-    await waitFor(() => preDisabled.hidden, { label: "pre-disabled section hidden" });
+    await waitFor(() => preDisabled.hidden, "pre-disabled section hidden");
     assert.equal(alwaysDisabled.disabled, true, "always_disabled still disabled");
     assert.noAttr(alwaysDisabled, "data-pwc-temporarily-disabled");
     assert.equal(normalField.disabled, true, "normal_field disabled when hidden");
@@ -220,7 +220,7 @@
 
     await log("pre-disabled: show section again (value=a)");
     setValue(preDisabledSelect, "a");
-    await waitFor(() => !preDisabled.hidden, { label: "pre-disabled section visible again" });
+    await waitFor(() => !preDisabled.hidden, "pre-disabled section visible again");
     assert.equal(alwaysDisabled.disabled, true, "always_disabled still disabled after re-show");
     assert.equal(normalField.disabled, false, "normal_field re-enabled after re-show");
 

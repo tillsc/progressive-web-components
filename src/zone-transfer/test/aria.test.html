@@ -111,7 +111,7 @@
     key(a2, "2"); // hotkey for zone beta
     await nextTick("after zone move");
 
-    await waitFor(() => zoneB.querySelector("#a2"), { label: "a2 moved to beta" });
+    await waitFor(() => zoneB.querySelector("#a2"), "a2 moved to beta");
     assert.equal(liveRegion.textContent, "beta", "zone name announcement after move");
 
     await log("done");

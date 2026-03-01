@@ -91,7 +91,7 @@
     key(document.activeElement, "2");
     await nextTick("after hotkey move");
 
-    await waitFor(() => zoneB.querySelector("#a2"), { label: "a2 moved to zone b" });
+    await waitFor(() => zoneB.querySelector("#a2"), "a2 moved to zone b");
     assert.equal(Boolean(zoneA.querySelector("#a2")), false, "a2 removed from zone a");
 
     await log("keyboard move to empty zone via hotkey: '3' moves focused item to zone c");
@@ -101,7 +101,7 @@
     key(document.activeElement, "3");
     await nextTick("after hotkey move 2");
 
-    await waitFor(() => zoneC.querySelector("#a2"), { label: "a2 moved to zone c" });
+    await waitFor(() => zoneC.querySelector("#a2"), "a2 moved to zone c");
     assert.equal(Boolean(zoneB.querySelector("#a2")), false, "a2 removed from zone b");
 
     await log("done");

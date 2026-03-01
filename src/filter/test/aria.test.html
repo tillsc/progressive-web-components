@@ -61,12 +61,12 @@
 
     await log("filtering for 'bob' updates auto status");
     setValue(input, "bob", { change: false });
-    await waitFor(() => status.textContent !== "", { label: "status updated" });
+    await waitFor(() => status.textContent !== "", "status updated");
     assert.equal(status.textContent, "1 / 3", "status shows 1 / 3");
 
     await log("clearing filter clears auto status");
     setValue(input, "", { change: false });
-    await waitFor(() => status.textContent === "", { label: "status cleared" });
+    await waitFor(() => status.textContent === "", "status cleared");
 
     // === User-provided visible status ===
 
@@ -101,12 +101,12 @@
 
     await log("filtering updates user-provided status");
     setValue(input2, "dave", { change: false });
-    await waitFor(() => customStatus.textContent !== "", { label: "custom status updated" });
+    await waitFor(() => customStatus.textContent !== "", "custom status updated");
     assert.equal(customStatus.textContent, "1 / 2", "custom status shows 1 / 2");
 
     await log("clearing filter clears user-provided status");
     setValue(input2, "", { change: false });
-    await waitFor(() => customStatus.textContent === "", { label: "custom status cleared" });
+    await waitFor(() => customStatus.textContent === "", "custom status cleared");
 
     await log("done");
   });

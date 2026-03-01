@@ -51,7 +51,7 @@
           const transitioning = inst && inst._isTransitioning === true;
           const shown = el.classList.contains("show");
           return shown && !transitioning;
-        }, { label: `modal shown & stable: ${label}` });
+        }, `modal shown & stable: ${label}`);
       };
 
       await log("clicking open-parent link");
@@ -75,7 +75,7 @@
       await waitFor(() => {
         const shown = document.querySelectorAll(".modal.show");
         return shown.length === 1 && shown[0] !== parent;
-      }, { label: "child shown, parent suspended" });
+      }, "child shown, parent suspended");
 
       const child = document.querySelector(".modal.show");
       await waitForShownStable(child, "child");

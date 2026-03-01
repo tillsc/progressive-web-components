@@ -45,7 +45,7 @@
 
     await log("basic: loads content from src");
     const basic = document.getElementById("basic");
-    await waitFor(() => basic.querySelector(".greeting"), { label: "basic content loaded" });
+    await waitFor(() => basic.querySelector(".greeting"), "basic content loaded");
     assert.ok(basic.querySelector(".greeting").textContent.includes("Hello from fragment!"), "greeting text");
     assert.ok(basic.querySelector(".detail"), "detail paragraph present");
     assert.equal(basic.getAttribute("aria-busy"), null, "aria-busy removed after load");
@@ -54,7 +54,7 @@
 
     await log("fragment: single match (.sidebar)");
     const fragSingle = document.getElementById("frag-single");
-    await waitFor(() => fragSingle.querySelector(".sidebar"), { label: "sidebar loaded" });
+    await waitFor(() => fragSingle.querySelector(".sidebar"), "sidebar loaded");
     assert.ok(fragSingle.querySelector(".sidebar p"), "sidebar has children");
     assert.ok(!fragSingle.querySelector(".greeting"), "greeting not present in sidebar fragment");
 
@@ -62,7 +62,7 @@
 
     await log("fragment: multiple matches (.greeting, .extra)");
     const fragMulti = document.getElementById("frag-multi");
-    await waitFor(() => fragMulti.querySelectorAll("p").length >= 2, { label: "greeting + extra loaded" });
+    await waitFor(() => fragMulti.querySelectorAll("p").length >= 2, "greeting + extra loaded");
     const paragraphs = fragMulti.querySelectorAll("p");
     assert.equal(paragraphs.length, 2, "exactly 2 paragraphs");
     assert.ok(paragraphs[0].textContent.includes("Hello from fragment!"), "first is greeting");
@@ -72,7 +72,7 @@
 
     await log("with-scripts: inline script executed");
     const scripted = document.getElementById("scripted");
-    await waitFor(() => scripted.querySelector(".greeting"), { label: "scripted content loaded" });
+    await waitFor(() => scripted.querySelector(".greeting"), "scripted content loaded");
     await waitFor(
       () => scripted.querySelector(".greeting")?.dataset.scripted === "true",
       { label: "script marked element" }

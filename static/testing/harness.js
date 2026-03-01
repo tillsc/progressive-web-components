@@ -95,10 +95,11 @@ export function run(fn, options = {}) {
 
   async function waitFor(
     predicate,
-    { timeoutMs: tmo = 2000, intervalMs = 25, message = "waitFor timeout", label } = {}
+    label,
+    { timeoutMs: tmo = 2000, intervalMs = 25, message = "waitFor timeout" } = {}
   ) {
     const start = performance.now();
-    await log(`waitFor start${label ? `: ${label}` : ""}`);
+    await log(`waitFor start: ${label}`);
 
     while (true) {
       try {
@@ -109,7 +110,7 @@ export function run(fn, options = {}) {
         // ignore while waiting
       }
       if (performance.now() - start > tmo) {
-        throw new Error(label ? `${message}: ${label}` : message);
+        throw new Error(`${message}: ${label}`);
       }
       await new Promise((r) => setTimeout(r, intervalMs));
     }

@@ -50,7 +50,7 @@
 
     await log("extract-styles: styles go to document.adoptedStyleSheets");
     const noShadow = document.getElementById("extract-styles");
-    await waitFor(() => noShadow.querySelector(".styled"), { label: "extract-styles content loaded" });
+    await waitFor(() => noShadow.querySelector(".styled"), "extract-styles content loaded");
     assert.ok(!noShadow.querySelector("style"), "no <style> element in DOM");
     const docSheets = document.adoptedStyleSheets;
     assert.ok(docSheets.length > 0, "document has adoptedStyleSheets");
@@ -63,7 +63,7 @@
       altEl.setAttribute("src", "./does-not-exist.html");
       altEl.setAttribute("alt", "./fragment.html");
       document.getElementById("alt-wrapper").appendChild(altEl);
-      await waitFor(() => altEl.querySelector(".greeting"), { label: "alt content loaded" });
+      await waitFor(() => altEl.querySelector(".greeting"), "alt content loaded");
       assert.ok(altEl.querySelector(".greeting"), "fallback content loaded from alt");
     });
 
@@ -86,14 +86,14 @@
     const dynamic = document.getElementById("dynamic");
     assert.ok(!dynamic.querySelector(".greeting"), "no content before src is set");
     dynamic.setAttribute("src", "./fragment.html");
-    await waitFor(() => dynamic.querySelector(".greeting"), { label: "dynamic content loaded" });
+    await waitFor(() => dynamic.querySelector(".greeting"), "dynamic content loaded");
     assert.ok(dynamic.querySelector(".greeting"), "content loaded after src change");
 
     // --- refresh() ---
 
     await log("refresh: re-fetches content");
     const refreshable = document.getElementById("refreshable");
-    await waitFor(() => refreshable.querySelector(".greeting"), { label: "refreshable initial load" });
+    await waitFor(() => refreshable.querySelector(".greeting"), "refreshable initial load");
     const loadPromise = waitForEvent(refreshable, "pwc-include:load");
     refreshable.refresh();
     await loadPromise;

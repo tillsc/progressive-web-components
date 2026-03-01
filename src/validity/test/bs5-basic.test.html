@@ -61,7 +61,7 @@
     const role = document.getElementById("role");
     const clean = document.getElementById("clean");
 
-    await waitFor(() => email.validationMessage, { label: "email has validation message" });
+    await waitFor(() => email.validationMessage, "email has validation message");
     assert.equal(email.validationMessage, "Invalid email address", "email message");
     assert.hasClass(email, "is-invalid");
     assert.equal(feedbackOf(email)?.textContent, "Invalid email address", "email feedback div");
@@ -78,12 +78,12 @@
 
     await log("clear-on: is-invalid class and feedback div removed on input");
     const clearOnInput = document.getElementById("clear-on-input");
-    await waitFor(() => clearOnInput.validationMessage, { label: "clear-on has error" });
+    await waitFor(() => clearOnInput.validationMessage, "clear-on has error");
     assert.hasClass(clearOnInput, "is-invalid");
     assert.ok(feedbackOf(clearOnInput), "feedback div present before clear");
 
     clearOnInput.dispatchEvent(new Event("input", { bubbles: true }));
-    await waitFor(() => !clearOnInput.validationMessage, { label: "clear-on error cleared" });
+    await waitFor(() => !clearOnInput.validationMessage, "clear-on error cleared");
     assert.noClass(clearOnInput, "is-invalid");
     assert.equal(feedbackOf(clearOnInput), null, "feedback div removed");
 
