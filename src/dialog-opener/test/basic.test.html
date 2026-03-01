@@ -85,7 +85,7 @@
 
    await window.mockRoutesReady;
 
-    run(async ({ waitFor, nextTick, log }) => {
+    run(async ({ waitFor, log }) => {
       await log("checking element definition");
       assert.customElement("pwc-dialog-opener");
 
@@ -97,8 +97,6 @@
 
       await log("clicking link");
       click(link);
-      await nextTick();
-
       await waitFor(() => {
         const dlg = document.querySelector("dialog.pwc-modal-dialog");
         return dlg && dlg.open;
