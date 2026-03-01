@@ -13,13 +13,19 @@
 
 <h2>ARIA roles, labels, and live region announcements</h2>
 
+<p>Focus an item, then: <kbd>↑</kbd>/<kbd>↓</kbd> to move focus,
+<kbd>Ctrl+↑/↓</kbd> to reorder, <kbd>1</kbd>/<kbd>2</kbd> to transfer to that zone.
+The live region below the zones announces position or zone name after each keyboard action.</p>
+
 <pwc-zone-transfer id="zt">
+    <h3>Alpha <small>(hotkey: 1)</small></h3>
     <pwc-zone-transfer-zone name="alpha" data-pwc-zone-hotkey="1">
         <pwc-zone-transfer-item id="a1">Item A1</pwc-zone-transfer-item>
         <pwc-zone-transfer-item id="a2">Item A2</pwc-zone-transfer-item>
         <pwc-zone-transfer-item id="a3">Item A3</pwc-zone-transfer-item>
     </pwc-zone-transfer-zone>
 
+    <h3>Beta <small>(hotkey: 2)</small></h3>
     <pwc-zone-transfer-zone name="beta" data-pwc-zone-hotkey="2">
         <pwc-zone-transfer-item id="b1">Item B1</pwc-zone-transfer-item>
     </pwc-zone-transfer-zone>
