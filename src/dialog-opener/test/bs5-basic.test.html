@@ -108,24 +108,19 @@
       click(link);
       await nextTick();
 
-      await log("waiting for modal to appear");
-      await waitFor(() => document.querySelector(".modal.show"), {
-        message: "modal did not appear"
-      });
+      await waitFor(() => document.querySelector(".modal.show"), { label: "modal appeared" });
 
       const modal = document.querySelector(".modal.show");
       const iframe = modal.querySelector("iframe");
       assert.ok(iframe, "iframe not created");
 
-      await log("waiting for iframe to load form");
       await waitFor(() => {
         return iframe.contentDocument && iframe.contentDocument.readyState === "complete";
-      }, { message: "iframe did not load" });
+      }, { label: "iframe loaded" });
 
-      await log("waiting for hoisted submit button");
       await waitFor(() => {
         return Boolean(modal.querySelector(".pwc-dialog-opener-actions .btn-primary"));
-      }, { message: "hoisted submit button not found" });
+      }, { label: "hoisted submit button" });
 
       const submitBtn = modal.querySelector(".pwc-dialog-opener-actions .btn-primary");
       assert.ok(submitBtn, "hoisted submit button missing");
@@ -139,21 +134,19 @@
       await log("clicking hoisted submit (should trigger validation error)");
       click(submitBtn);
 
-      await log("waiting for iframe to reload with error");
       await waitFor(() => {
         if (!iframe.contentDocument || iframe.contentDocument.readyState !== "complete") return false;
         const err = iframe.contentDocument.querySelector("#error");
         return err && err.textContent.trim().length > 0;
-      }, { message: "validation error not shown in iframe" });
+      }, { label: "validation error shown in iframe" });
 
       const errorMsg = iframe.contentDocument.querySelector("#error");
       assert.ok(errorMsg.textContent.includes("First name is required"), "unexpected error text: " + errorMsg.textContent);
 
       // --- Second submission: fill first_name → success + redirect ---
-      await log("waiting for new hoisted submit button after reload");
       await waitFor(() => {
         return Boolean(modal.querySelector(".pwc-dialog-opener-actions .btn-primary"));
-      }, { message: "hoisted submit button not found after reload" });
+      }, { label: "hoisted submit button after reload" });
 
       const submitBtn2 = modal.querySelector(".pwc-dialog-opener-actions .btn-primary");
 
@@ -168,15 +161,9 @@
       await log("clicking hoisted submit (should succeed)");
       click(submitBtn2);
 
-      await log("waiting for modal to close after success");
-      await waitFor(() => !modal.classList.contains("show"), {
-        message: "modal did not close after success"
-      });
+      await waitFor(() => !modal.classList.contains("show"), { label: "modal closed after success" });
 
-      await log("checking local-reload updated content");
-      await waitFor(() => el.textContent.includes("Jane Smith"), {
-        message: "name not updated after local reload"
-      });
+      await waitFor(() => el.textContent.includes("Jane Smith"), { label: "name updated after local reload" });
 
       assert.ok(el.textContent.includes("Jane Smith"), "element should contain Jane Smith");
     });

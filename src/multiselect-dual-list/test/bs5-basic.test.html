@@ -33,7 +33,6 @@
     run(async ({ waitFor, log }) => {
       const host = document.getElementById("demo");
 
-      await log("waiting for UI to build");
       await waitFor(
         () => host.querySelector(".row"),
         { label: "container rendered" }
