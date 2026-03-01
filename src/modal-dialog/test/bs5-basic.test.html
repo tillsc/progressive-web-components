@@ -57,11 +57,11 @@
       await log("clicking open-parent link");
       click(document.getElementById("open-parent"));
 
+      let parent;
       await waitFor(
-        () => document.querySelector("pwc-modal-dialog-bs5.show"),
+        () => parent = document.querySelector("pwc-modal-dialog-bs5.show"),
         { label: "parent shown" }
       );
-      const parent = document.querySelector("pwc-modal-dialog-bs5.show");
       await waitForShownStable(parent, "parent");
 
       assert.equal(

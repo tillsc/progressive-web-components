@@ -41,11 +41,11 @@
       await log("clicking open-parent link");
       click(document.getElementById("open-parent"));
 
+      let parentDlg;
       await waitFor(
-        () => document.querySelector("dialog.pwc-modal-dialog[open]"),
+        () => parentDlg = document.querySelector("dialog.pwc-modal-dialog[open]"),
         { label: "parent opened" }
       );
-      const parentDlg = document.querySelector("dialog.pwc-modal-dialog[open]");
 
       assert.equal(
         document.querySelectorAll("dialog.pwc-modal-dialog[open]").length, 1,

@@ -102,7 +102,6 @@
     await log("shown-if: initial state (card selected)");
     const shownCard = document.getElementById("shown-card");
     await waitFor(() => !shownCard.hidden, "shown-card visible");
-    assert.equal(shownCard.hidden, false, "shown-card should be visible for card");
 
     await log("shown-if: switch to paypal");
     setValue(payment, "paypal");

@@ -45,7 +45,6 @@
     await log("shadow-basic: content in shadow root");
     const basic = document.getElementById("shadow-basic");
     await waitFor(() => basic.shadowRoot?.querySelector(".greeting"), "shadow content loaded");
-    assert.ok(basic.shadowRoot.querySelector(".greeting"), "content is in shadowRoot");
     assert.ok(!basic.querySelector(".greeting"), "content is NOT in light DOM");
     assert.equal(basic.root, basic.shadowRoot, "root getter returns shadowRoot");
 

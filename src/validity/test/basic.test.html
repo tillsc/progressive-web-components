@@ -84,7 +84,6 @@
 
     clearOnInput.dispatchEvent(new Event("input", { bubbles: true }));
     await waitFor(() => !clearOnInput.validationMessage, "clear-on error cleared");
-    assert.equal(clearOnInput.validationMessage, "", "error cleared after input event");
     assert.equal(msgOf(clearOnInput), null, "message span removed");
 
     // --- clear-after ---
@@ -92,7 +91,6 @@
     await log("clear-after: error cleared after timeout");
     const clearAfterInput = document.getElementById("clear-after-input");
     await waitFor(() => !clearAfterInput.validationMessage, "clear-after error cleared");
-    assert.equal(clearAfterInput.validationMessage, "", "error cleared");
     assert.equal(msgOf(clearAfterInput), null, "message span removed");
 
     await log("done");

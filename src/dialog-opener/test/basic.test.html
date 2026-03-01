@@ -112,12 +112,8 @@
         return iframe.contentDocument && iframe.contentDocument.readyState === "complete";
       }, "iframe loaded");
 
-      await waitFor(() => {
-        return Boolean(dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]"));
-      }, "hoisted submit button");
-
-      const submitBtn = dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]");
-      assert.ok(submitBtn, "hoisted submit button missing");
+      let submitBtn;
+      await waitFor(() => submitBtn = dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]"), "hoisted submit button");
 
       // --- First submission: empty first_name → validation error ---
       await log("clearing first_name in iframe");
@@ -128,22 +124,17 @@
       await log("clicking hoisted submit (should trigger validation error)");
       click(submitBtn);
 
+      let errorMsg;
       await waitFor(() => {
         if (!iframe.contentDocument || iframe.contentDocument.readyState !== "complete") return false;
-        const err = iframe.contentDocument.querySelector(".error");
-        return err && err.textContent.trim().length > 0;
+        errorMsg = iframe.contentDocument.querySelector(".error");
+        return errorMsg && errorMsg.textContent.trim().length > 0;
       }, "validation error shown in iframe");
-
-      const errorMsg = iframe.contentDocument.querySelector(".error");
       assert.ok(errorMsg.textContent.includes("First name is required"), "unexpected error text: " + errorMsg.textContent);
 
       // --- Second submission: fill first_name → success + redirect ---
-      await waitFor(() => {
-        return Boolean(dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]"));
-      }, "hoisted submit button after reload");
-
-      const submitBtn2 = dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]");
-      assert.ok(submitBtn2, "hoisted submit button missing after reload");
+      let submitBtn2;
+      await waitFor(() => submitBtn2 = dlg.querySelector(".pwc-dialog-opener-actions button[type=submit]"), "hoisted submit button after reload");
 
       await log("filling first_name in iframe");
       const firstNameInput2 = iframe.contentDocument.querySelector("input[name=first_name]");
@@ -161,8 +152,6 @@
       await waitFor(() => {
         return el.textContent.includes("Jane Smith");
       }, "name updated after local reload");
-
-      assert.ok(el.textContent.includes("Jane Smith"), "element should contain Jane Smith");
     });
   </script>
 </body>

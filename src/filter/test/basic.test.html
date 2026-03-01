@@ -26,7 +26,7 @@
   import { setValue } from "../../../static/testing/helpers.js";
   import * as assert from "../../../static/testing/assert.js";
 
-  run(async ({ waitFor, log, nextTick }) => {
+  run(async ({ waitFor, log }) => {
     await log("checking element definition");
     assert.customElement("pwc-filter");
 

@@ -14,7 +14,7 @@
 // - Shows a "Run tests" button when NOT automated
 // - Auto-starts ONLY in headless automation (Playwright Chromium headless)
 // - Captures window.onerror + unhandledrejection ONLY while the test is running
-// - Counts assertions (assert + equal)
+// - Counts assertions (assert + equal + waitFor)
 // - Step mode: pauses at each log() call, user advances via "Next" button
 //
 // Notes
@@ -104,6 +104,7 @@ export function run(fn, options = {}) {
     while (true) {
       try {
         if (await predicate()) {
+          _assertions += 1;
           return;
         }
       } catch {

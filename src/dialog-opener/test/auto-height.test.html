@@ -80,11 +80,6 @@
         return parseInt(iframe.style.height) > initialHeight + 400;
       }, "iframe height auto-adjusted after button click");
 
-      assert.ok(
-        parseInt(iframe.style.height) > initialHeight + 400,
-        `height should have grown by more than 400px (was ${initialHeight}px, now ${iframe.style.height})`
-      );
-
       await log("closing dialog");
       const dlg = document.querySelector("dialog.pwc-modal-dialog");
       click(dlg.querySelector(".pwc-dialog-opener-close"));

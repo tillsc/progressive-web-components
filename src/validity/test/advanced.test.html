@@ -65,7 +65,6 @@
 
     bothInput.dispatchEvent(new Event("input", { bubbles: true }));
     await waitFor(() => !bothInput.validationMessage, "both error cleared");
-    assert.equal(bothInput.validationMessage, "", "error cleared by event");
     assert.equal(msgOf(bothInput), null, "message span removed");
 
     // --- Per-element clearing disabled via "off" ---
@@ -91,7 +90,6 @@
 
     overrideInput.dispatchEvent(new Event("input", { bubbles: true }));
     await waitFor(() => !overrideInput.validationMessage, "override cleared by input");
-    assert.equal(overrideInput.validationMessage, "", "input event cleared (per-element override)");
 
     await log("override: data-pwc-validity-clear-after overrides component clear-after");
     const overrideTimeout = document.getElementById("override-timeout");

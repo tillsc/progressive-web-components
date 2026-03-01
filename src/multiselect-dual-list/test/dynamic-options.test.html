@@ -28,9 +28,8 @@
 
     run(async ({ waitFor, log }) => {
       const host = document.getElementById("demo");
-      await waitFor(() => host.querySelector(".pwc-multiselect-dual-list-container"), "container rendered");
-
-      const container = host.querySelector(".pwc-multiselect-dual-list-container");
+      let container;
+      await waitFor(() => container = host.querySelector(".pwc-multiselect-dual-list-container"), "container rendered");
       const select = host.querySelector("select");
 
       // Modify selection before chunking: select a1, deselect a2

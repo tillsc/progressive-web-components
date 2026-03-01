@@ -31,13 +31,11 @@
     run(async ({ waitFor, log }) => {
       const host = document.getElementById("demo");
 
+      let container;
       await waitFor(
-        () => host.querySelector(".pwc-multiselect-dual-list-container"),
+        () => container = host.querySelector(".pwc-multiselect-dual-list-container"),
         { label: "container rendered" }
       );
-
-      const container = host.querySelector(".pwc-multiselect-dual-list-container");
-      assert.ok(container, "container exists");
 
       // Check select is hidden
       const select = host.querySelector("select");

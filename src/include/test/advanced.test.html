@@ -64,7 +64,6 @@
       altEl.setAttribute("alt", "./fragment.html");
       document.getElementById("alt-wrapper").appendChild(altEl);
       await waitFor(() => altEl.querySelector(".greeting"), "alt content loaded");
-      assert.ok(altEl.querySelector(".greeting"), "fallback content loaded from alt");
     });
 
     // --- Error event ---
@@ -87,7 +86,6 @@
     assert.ok(!dynamic.querySelector(".greeting"), "no content before src is set");
     dynamic.setAttribute("src", "./fragment.html");
     await waitFor(() => dynamic.querySelector(".greeting"), "dynamic content loaded");
-    assert.ok(dynamic.querySelector(".greeting"), "content loaded after src change");
 
     // --- refresh() ---
 
